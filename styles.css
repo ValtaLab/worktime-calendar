@@ -840,17 +840,108 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* ===================== 響應式 ===================== */
+/*
+ * 手機版（<= 480px）：改用「網格線分隔」風格，而非一日一卡片。
+ * 卡片式的邊框（2px）、圓角、背景與 3px 間隙在 7 欄分攤下會吃掉約 20% 寬度，
+ * 拿掉後每格內容寬度可由 38px 提升至 46px，讓描述與工數字數更寬裕。
+ * 格線用 grid 的 1px gap + 容器底色透出，避免每格各畫 border 造成雙線。
+ */
 @media (max-width: 480px) {
-  .day { min-height: 78px; padding: 5px 5px 6px; }
-  .day-desc { -webkit-line-clamp: 2; font-size: 10px; line-height: 1.28; }
-  .day-units { font-size: 10.5px; line-height: 1.2; }
-  .day-units.ot-units { font-size: 10px; }
+  .calendar-grid {
+    /* 列高以內容為基礎（auto），下限 64px。
+       不用 1fr：那會把只有少量記錄的月份硬拉成等高，在下方留下大片空區。
+       auto 讓有記錄的列自然長高、空白列維持 64px，網格收在內容結束處。
+
+       格線做法：容器鋪滿 --grid-line 底色，格子之間留 1px gap 讓底色透出，
+       形成連續的細格線。全域的 --border（#e4e8f0）在手機高解析度下
+       對比不足幾乎看不見，故另訂較深的 --grid-line。 */
+    --grid-line: color-mix(in srgb, var(--text) 22%, var(--surface));
+    grid-auto-rows: minmax(64px, auto);
+    gap: 1px;
+    align-content: start;
+    background: var(--grid-line);
+    padding: 1px 0;
+  }
+  .weekday-row { gap: 1px; }
+  /* 表頭也加上分隔線，與日期格對齊 */
+  .weekday-row {
+    border-bottom: 1px solid var(--grid-line);
+  }
+
+  .day {
+    min-height: 72px;
+    padding: 3px 3px 4px;
+    border: none;
+    border-radius: 0;
+    background: var(--surface);
+    gap: 2px;
+    transition: background .12s ease;
+  }
+  .day:active { transform: none; background: var(--surface-2); }
+
+  /* 網格風格下，週末與今日改用底色區分，而非邊框 */
+  .day.is-weekend { background: var(--surface-2); }
+  .day.is-blank { background: var(--surface); }
+  .day.is-today {
+    background: color-mix(in srgb, var(--work) 10%, var(--surface));
+  }
+  .day.has-entry { background: color-mix(in srgb, var(--work) 5%, var(--surface)); }
+  .day.has-entry.is-weekend { background: color-mix(in srgb, var(--work) 8%, var(--surface-2)); }
+
+  /* 日期數字：縮小並靠左上，把中段空間留給描述 */
+  .day-num { font-size: 11px; line-height: 1; gap: 2px; }
+  .day.is-today .day-num {
+    width: 16px; height: 16px;
+    font-size: 10px;
+    background: var(--work);
+    color: #fff;
+  }
+
+  /* 描述：放寬到 3 行，字級提升讓中文更易讀 */
+  .day-desc {
+    -webkit-line-clamp: 3;
+    font-size: 9.5px;
+    line-height: 1.25;
+    margin-top: 0;
+  }
+
+  /* 工數／加班：滿版底色塊，橫跨格子寬度並貼齊底部。
+     負 margin 抵銷格子的左右與底部 padding，讓色塊真正頂到格線，
+     視覺上形成連續的資料列，而非一顆顆獨立膠囊。
+     margin-top: auto 讓同一列的色塊對齊底部，維持網格的整齊感；
+     上下各留 2px 間隔，避免與描述或格線黏在一起。 */
+  .day-units-wrap {
+    gap: 1px;
+    padding-top: 0;
+    margin: auto -3px -4px;
+    flex: 0 0 auto;
+  }
+  .day-units {
+    font-size: 9.5px;
+    line-height: 1.6;
+    padding: 0 3px;
+    border-radius: 0;
+    /* 手機版色塊要夠明顯才有辨識度：15% 在白底上幾乎看不出來，
+       提高到 26%（工數）／30%（加班），維持淺色調但清楚可見。 */
+    background: color-mix(in srgb, var(--work) 26%, var(--surface));
+    color: color-mix(in srgb, var(--work) 88%, var(--text));
+    justify-content: center;
+  }
+  .day-units .u { font-size: 8px; }
   .day-units .ut { display: none; }
+  .day-units.ot-units {
+    font-size: 9px;
+    background: color-mix(in srgb, var(--ot) 30%, var(--surface));
+    color: color-mix(in srgb, var(--ot) 92%, var(--text));
+  }
+
+  /* 徽章改為角落小點，不佔排版空間 */
+  .day-badge { right: 3px; top: 3px; gap: 2px; }
+  .badge-dot { width: 4px; height: 4px; }
+
   .month-title { font-size: 19px; }
   .brand h1 { font-size: 15px; }
   .field-row { flex-direction: column; gap: 14px; }
-  .calendar-grid { grid-auto-rows: minmax(78px, auto); gap: 3px; align-content: start; }
-  .weekday-row { gap: 3px; }
   .unit-chip { min-width: 52px; height: 38px; font-size: 12.5px; flex: 1 1 28%; }
 }
 
