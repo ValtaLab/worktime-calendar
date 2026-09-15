@@ -4,6 +4,12 @@
 
 ![status](https://img.shields.io/badge/PWA-offline--ready-2563eb) ![license](https://img.shields.io/badge/license-MIT-green)
 
+**線上使用** → https://valtalab.github.io/worktime-calendar/
+
+| 月曆主介面 | 版本更新提示 |
+| --- | --- |
+| ![月曆主介面](screenshots/01-月曆主介面.png) | ![更新提示](screenshots/02-更新提示.png) |
+
 ---
 
 ## 功能
