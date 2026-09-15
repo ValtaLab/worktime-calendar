@@ -6,6 +6,10 @@
 (() => {
   'use strict';
 
+  // 由 bump-version.sh 自動維護
+  const APP_VERSION = '1.5.0';
+  const APP_BUILD = '20260915-1957';
+
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
 
@@ -170,6 +174,16 @@
     importFile: $('importFile'),
     clearAll: $('clearAll'),
     installHint: $('installHint'),
+
+    // 版本與更新
+    verCurrent: $('verCurrent'),
+    verBuild: $('verBuild'),
+    verStatus: $('verStatus'),
+    checkUpdateBtn: $('checkUpdateBtn'),
+    updateBar: $('updateBar'),
+    updateDesc: $('updateDesc'),
+    updateNowBtn: $('updateNowBtn'),
+    updateLaterBtn: $('updateLaterBtn'),
 
     toast: $('toast'),
   };
@@ -716,6 +730,279 @@
     }
   }
 
+  /* =========================================================
+   * 版本檢測與更新
+   * ========================================================= */
+  const version = {
+    remote: null,      // 遠端最新版本資訊
+    waiting: null,     // 等待接管的新版 Service Worker
+    updating: false,   // 是否正在更新
+    dismissed: null,   // 使用者選擇「稍後」的版本號
+  };
+
+  /** 版本號比對：a 是否比 b 新 */
+  function isNewer(a, b) {
+    if (!a || !b) return false;
+    const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
+    const pb = String(b).split('.').map((n) => parseInt(n, 10) || 0);
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+      const x = pa[i] || 0, y = pb[i] || 0;
+      if (x > y) return true;
+      if (x < y) return false;
+    }
+    return false;
+  }
+
+  function formatBuild(b) {
+    // 20260915-1848 → 2026/09/15 18:48
+    const m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})$/.exec(b || '');
+    return m ? `${m[1]}/${m[2]}/${m[3]} ${m[4]}:${m[5]}` : (b || '');
+  }
+
+  function renderVersionInfo() {
+    el.verCurrent.textContent = `v${APP_VERSION}`;
+    el.verBuild.textContent = APP_BUILD ? `建置於 ${formatBuild(APP_BUILD)}` : '';
+  }
+
+  /** 向伺服器查詢最新版本（繞過所有快取） */
+  async function fetchRemoteVersion() {
+    // 單檔模式（file://）無法連網，直接跳過，避免瀏覽器拋出無謂錯誤
+    if (location.protocol === 'file:') return null;
+    try {
+      const res = await fetch(`./version.json?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.version ? data : null;
+    } catch (e) {
+      console.info('[版本] 查詢失敗（可能離線）', e);
+      return null;
+    }
+  }
+
+  /** 檢查更新 → 'update' | 'latest' | 'error' */
+  async function checkForUpdate({ silent = false } = {}) {
+    if (version.updating) return 'error';
+    if (!silent) el.verStatus.textContent = '檢查中…';
+
+    // 1) 已有 waiting 的新版 SW → 這是新版鐵證，直接提示
+    if (version.waiting) {
+      showUpdateBar(null, true);
+      if (!silent) el.verStatus.textContent = '發現新版本，可立即更新';
+      return 'update';
+    }
+
+    // 2) 比對 version.json
+    const remote = await fetchRemoteVersion();
+    if (!remote) {
+      if (!silent) {
+        el.verStatus.textContent = (location.protocol === 'file:')
+          ? '單檔版不支援線上檢查更新'
+          : '目前離線，無法檢查更新';
+      }
+      return 'error';
+    }
+    version.remote = remote;
+
+    if (isNewer(remote.version, APP_VERSION)) {
+      showUpdateBar(remote);
+      if (!silent) el.verStatus.textContent = `發現新版本 v${remote.version}`;
+      return 'update';
+    }
+
+    if (!silent) {
+      el.verStatus.textContent = '已是最新版本';
+      toast('已是最新版本');
+    }
+    return 'latest';
+  }
+
+  /**
+   * 顯示更新提示橫幅
+   * @param {object}  remote   遠端版本資訊（可省略）
+   * @param {boolean} trusted  true = 已確認有新版本（例如 SW 進入 waiting），不再做版本比較
+   */
+  function showUpdateBar(remote, trusted) {
+    // 有遠端版本資訊就用它；沒有也照樣提示
+    const info = remote || version.remote || null;
+    const ver = info && info.version;
+
+    if (!trusted) {
+      // 只有在「非可信來源」時才做版本比較，避免誤報；
+      // 但若連版本號都拿不到，寧可提示也不要靜默失敗
+      if (ver && !isNewer(ver, APP_VERSION)) return;
+
+      // 使用者已選「稍後」→ 同一版本不再重複提示
+      if (ver && version.dismissed === ver) return;
+    } else if (ver && version.dismissed === ver) {
+      return;
+    }
+
+    el.updateDesc.textContent = (ver && isNewer(ver, APP_VERSION))
+      ? (info.notes ? `v${ver}：${info.notes}` : `更新至 v${ver}`)
+      : '已下載新版本，點此套用';
+
+    el.updateBar.hidden = false;
+    // 強制一次重排，確保 transition 由 transform 起始值開始
+    void el.updateBar.offsetHeight;
+    el.updateBar.classList.add('show');
+    el.updateBar.setAttribute('aria-hidden', 'false');
+  }
+
+  function hideUpdateBar() {
+    el.updateBar.classList.remove('show');
+    el.updateBar.setAttribute('aria-hidden', 'true');
+    setTimeout(() => { el.updateBar.hidden = true; }, 300);
+  }
+
+  /** 一鍵更新 */
+  async function performUpdate() {
+    if (version.updating) return;
+    version.updating = true;
+
+    const btn = el.updateNowBtn;
+    const originalText = btn.textContent;
+    btn.textContent = '更新中…';
+    btn.disabled = true;
+
+    try {
+      // A) 已有 waiting 的 SW → 請它立即接管，controllerchange 會帶動重載
+      if (version.waiting) {
+        version.waiting.postMessage({ type: 'SKIP_WAITING' });
+        setTimeout(() => hardReload(), 3000);   // 保險：3 秒後仍未重載就手動刷新
+        return;
+      }
+
+      // B) 僅偵測到版本差異 → 主動更新註冊，促使瀏覽器抓新檔
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          await reg.update();
+          await new Promise((r) => setTimeout(r, 800));
+          if (reg.waiting) {
+            version.waiting = reg.waiting;
+            version.waiting.postMessage({ type: 'SKIP_WAITING' });
+            setTimeout(() => hardReload(), 3000);
+            return;
+          }
+        }
+      }
+
+      // C) 沒有 SW（單檔模式）→ 清快取後重載
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      hardReload();
+    } catch (e) {
+      console.warn('[更新] 失敗', e);
+      version.updating = false;
+      btn.textContent = originalText;
+      btn.disabled = false;
+      toast('更新失敗，請稍後再試');
+    }
+  }
+
+  /** 強制重新載入（加上參數避開瀏覽器快取） */
+  function hardReload() {
+    const url = new URL(location.href);
+    url.searchParams.set('_v', Date.now().toString(36));
+    location.replace(url.toString());
+  }
+
+  /**
+   * SW 偵測到新版本 → 補抓一次遠端版本資訊（讓文案顯示正確版本號），再提示
+   * 注意：SW 進入 waiting 已是新版本的鐵證，即使版本檔因舊 SW 快取而過期，
+   *       仍必須提示使用者（trusted = true）。
+   */
+  async function announceWaitingSW(sw) {
+    version.waiting = sw;
+    if (!version.remote) {
+      const remote = await fetchRemoteVersion();
+      // 只在真的拿到「比目前新」的版本號時才採用，避免覆蓋成過期資料
+      if (remote && isNewer(remote.version, APP_VERSION)) version.remote = remote;
+    }
+    showUpdateBar(null, true);
+  }
+
+  /** 註冊 Service Worker 並掛上更新偵測 */
+  function setupServiceWorker() {
+    if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      /** 檢查註冊狀態，若有 waiting 中的新 SW 就提示 */
+      function detectWaiting(reg) {
+        if (!reg || !reg.waiting) return false;
+        if (!navigator.serviceWorker.controller) return false;
+        if (version.waiting === reg.waiting) return true;   // 已處理過
+        announceWaitingSW(reg.waiting);
+        return true;
+      }
+
+      // 上次沒更新就關掉分頁 → 這裡補提示
+      detectWaiting(reg);
+
+      // 新 SW 安裝完成 → 提示
+      reg.addEventListener('updatefound', () => {
+        const incoming = reg.installing;
+        if (!incoming) return;
+        incoming.addEventListener('statechange', () => {
+          if (incoming.state === 'installed') detectWaiting(reg);
+        });
+      });
+
+      // 保險：輪詢 waiting（updatefound / statechange 有時機競態，會漏事件）
+      const poll = setInterval(() => {
+        if (detectWaiting(reg)) clearInterval(poll);
+      }, 1000);
+      // 60 秒後停止輪詢，避免長期佔用
+      setTimeout(() => clearInterval(poll), 60000);
+
+      // 回到前景時檢查
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          reg.update().catch(() => {});
+          setTimeout(() => detectWaiting(reg), 1500);
+        }
+      });
+
+      // 定期檢查（30 分鐘）
+      setInterval(() => {
+        reg.update().catch(() => {});
+        setTimeout(() => detectWaiting(reg), 1500);
+      }, 30 * 60 * 1000);
+
+      // 啟動時比對一次版本檔
+      setTimeout(() => checkForUpdate({ silent: true }), 1500);
+
+    }).catch((e) => console.warn('[SW] 註冊失敗', e));
+
+    // 新 SW 接管 → 重載為新版
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      hardReload();
+    });
+  }
+
+  function bindVersionUI() {
+    el.updateNowBtn.addEventListener('click', performUpdate);
+
+    el.updateLaterBtn.addEventListener('click', () => {
+      const v = version.remote && version.remote.version;
+      if (v) version.dismissed = v;
+      hideUpdateBar();
+      el.verStatus.textContent = '已稍後提醒，可隨時在選單檢查更新';
+    });
+
+    el.checkUpdateBtn.addEventListener('click', async () => {
+      const r = await checkForUpdate();
+      if (r === 'latest') el.verStatus.textContent = '已是最新版本';
+      if (r === 'update') el.verStatus.textContent = '發現新版本，請點上方提示更新';
+    });
+  }
+
   /* ---------------- 啟動 ---------------- */
   function init() {
     load();
@@ -724,11 +1011,13 @@
     bind();
     render();
     setupInstallHint();
+    renderVersionInfo();
+    bindVersionUI();
 
-    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch((e) => console.warn('SW 註冊失敗', e));
-      });
+    if (window.addEventListener) {
+      window.addEventListener('load', setupServiceWorker);
+    } else {
+      setupServiceWorker();
     }
   }
 

@@ -19,6 +19,7 @@
 | **月度統計** | 月工數、月加班時數、記錄天數、達標率 |
 | **快捷操作** | 觸控裝置單擊即開；`←/→` 切換月份、`T` 回到本月、`⌘/Ctrl+Enter` 儲存 |
 | **離線可用** | Service Worker 快取，無網路也能開；資料存在瀏覽器 |
+| **自動檢測更新** | 開啟或回到前景時自動比對版本，有新版本彈出提示並可**一鍵更新** |
 | **可安裝** | 完整 Web App Manifest，加到主畫面後如原生 App |
 | **深色模式** | 跟隨系統自動切換 |
 | **資料匯出** | 匯出 CSV（工數 + 加班小時）、匯出／匯入 JSON 備份 |
@@ -82,8 +83,11 @@ worktime-calendar/
 ├── index.html                 # 主介面（月曆 + 編輯面板 + 選單）
 ├── styles.css                 # 樣式：響應式、深色模式
 ├── app.js                     # 邏輯：月曆渲染、儲存、匯出匯入
-├── sw.js                      # Service Worker（離線快取）
+├── sw.js                      # Service Worker（離線快取 + 更新偵測）
+├── version.json               # 目前版本（更新偵測的權威來源）
 ├── manifest.webmanifest       # PWA 資訊清單
+├── bump-version.sh            # 升版工具：同步更新 version.json / sw.js / app.js
+├── build-standalone.sh        # 打包單檔版（CSS/JS/圖示全部內嵌）
 ├── icons/
 │   ├── icon-192.png
 │   ├── icon-512.png
@@ -93,6 +97,46 @@ worktime-calendar/
 ├── .github/workflows/pages.yml
 └── README.md
 ```
+
+---
+
+## 版本與更新
+
+App 會**自動檢查版本**，發現新版時在底部彈出提示，按「立即更新」即可完成，**資料不會遺失**。
+
+### 更新的運作方式
+
+| 時機 | 行為 |
+| --- | --- |
+| 開啟 App 後 1.5 秒 | 靜默比對 `version.json`，有新版就提示 |
+| 切回前景（切換分頁／喚醒） | 重新檢查一次 |
+| 每 30 分鐘 | 背景再檢查 |
+| 選單 → 「檢查更新」 | 手動檢查，並顯示結果狀態 |
+| 按「立即更新」 | 請新版 Service Worker 接管 → 自動重載到最新版 |
+| 按「稍後再說」 | 同一個版本不再重複打擾（下次改版仍會提示） |
+
+> **為什麼要看得到版本號？** 選單底部顯示目前版本與建置時間，回報問題時可直接引用。
+
+### 發佈新版本
+
+```bash
+# 1) 升版（patch / minor / major，或指定版本號）
+bash bump-version.sh minor "這次改了什麼"
+
+# 2) 重新打包單檔版（可選）
+bash build-standalone.sh
+
+# 3) 推送，GitHub Actions 會自動部署
+git add -A && git commit -m "release: 1.6.0" && git push
+```
+
+`bump-version.sh` 會**同步更新三個地方**，避免版本號不一致導致更新偵測失效：
+
+| 檔案 | 更新的內容 |
+| --- | --- |
+| `version.json` | `version` 與 `build`（更新偵測的比對來源） |
+| `sw.js` | `CACHE` 快取名稱（改名才會清掉舊快取） |
+| `app.js` | `APP_VERSION` 與 `APP_BUILD`（畫面顯示用） |
 
 ---
 
