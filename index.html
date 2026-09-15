@@ -76,42 +76,67 @@
   </header>
 
   <div class="sheet-body">
-    <div class="field">
-      <label class="field-label" for="workDesc">
-        <span class="dot dot-work"></span>工時描述
-      </label>
-      <textarea id="workDesc" rows="3" placeholder="例：專案 A 開發、需求評審…"></textarea>
-    </div>
+    <!-- 工時區塊 -->
+    <section class="field-group">
+      <h4 class="group-title"><span class="dot dot-work"></span>工時</h4>
 
-    <div class="field-row">
       <div class="field">
-        <label class="field-label" for="workHours">
-          <span class="dot dot-work"></span>工時
-        </label>
-        <div class="stepper">
-          <button type="button" class="step-btn" data-target="workHours" data-delta="-0.5" aria-label="減少半小時">−</button>
-          <input id="workHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="8">
-          <button type="button" class="step-btn" data-target="workHours" data-delta="0.5" aria-label="增加半小時">+</button>
-        </div>
+        <label class="field-label" for="workDesc">描述</label>
+        <textarea id="workDesc" rows="3" placeholder="例：專案 A 開發、需求評審…"></textarea>
       </div>
-      <div class="field">
-        <label class="field-label" for="otHours">
-          <span class="dot dot-ot"></span>加班時數
-        </label>
-        <div class="stepper">
-          <button type="button" class="step-btn" data-target="otHours" data-delta="-0.5" aria-label="減少半小時">−</button>
-          <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
-          <button type="button" class="step-btn" data-target="otHours" data-delta="0.5" aria-label="增加半小時">+</button>
-        </div>
-      </div>
-    </div>
 
-    <div class="field">
-      <label class="field-label" for="otDesc">
-        <span class="dot dot-ot"></span>加班描述
-      </label>
-      <textarea id="otDesc" rows="2" placeholder="例：上線支援、客戶會議…"></textarea>
-    </div>
+      <div class="field">
+        <span class="field-label" id="workUnitsLabel">工時（1 工 = 標準工時）</span>
+        <div class="unit-picker" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="0"    role="radio" aria-checked="false">0 工</button>
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="0.5"  role="radio" aria-checked="false">0.5 工</button>
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="1"    role="radio" aria-checked="false">1 工</button>
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="1.5"  role="radio" aria-checked="false">1.5 工</button>
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="2"    role="radio" aria-checked="false">2 工</button>
+        </div>
+        <div class="custom-wrap" id="workCustomWrap" hidden>
+          <div class="stepper">
+            <button type="button" class="step-btn" data-target="workUnits" data-delta="-0.5" aria-label="減少半工">−</button>
+            <input id="workUnits" type="number" inputmode="decimal" step="0.5" min="0" max="9" value="1">
+            <button type="button" class="step-btn" data-target="workUnits" data-delta="0.5" aria-label="增加半工">+</button>
+          </div>
+          <span class="unit-suffix">工</span>
+        </div>
+        <button type="button" class="more-toggle" id="workMoreBtn" aria-expanded="false">自訂工數…</button>
+        <p class="field-help" id="workEquivalent">＝ 8 小時</p>
+      </div>
+    </section>
+
+    <!-- 加班區塊 -->
+    <section class="field-group">
+      <h4 class="group-title"><span class="dot dot-ot"></span>加班</h4>
+
+      <div class="field">
+        <label class="field-label" for="otDesc">描述</label>
+        <textarea id="otDesc" rows="2" placeholder="例：上線支援、客戶會議…"></textarea>
+      </div>
+
+      <div class="field">
+        <span class="field-label" id="otUnitsLabel">加班工時（1 工 = 標準工時）</span>
+        <div class="unit-picker" id="otUnitPicker" role="radiogroup" aria-labelledby="otUnitsLabel">
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="0"    role="radio" aria-checked="false">0 工</button>
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="0.5"  role="radio" aria-checked="false">0.5 工</button>
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="1"    role="radio" aria-checked="false">1 工</button>
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="1.5"  role="radio" aria-checked="false">1.5 工</button>
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="2"    role="radio" aria-checked="false">2 工</button>
+        </div>
+        <div class="custom-wrap" id="otCustomWrap" hidden>
+          <div class="stepper">
+            <button type="button" class="step-btn" data-target="otUnits" data-delta="-0.5" aria-label="減少半工">−</button>
+            <input id="otUnits" type="number" inputmode="decimal" step="0.5" min="0" max="9" value="0">
+            <button type="button" class="step-btn" data-target="otUnits" data-delta="0.5" aria-label="增加半工">+</button>
+          </div>
+          <span class="unit-suffix">工</span>
+        </div>
+        <button type="button" class="more-toggle" id="otMoreBtn" aria-expanded="false">自訂工數…</button>
+        <p class="field-help" id="otEquivalent">＝ 0 小時</p>
+      </div>
+    </section>
 
     <div class="field">
       <label class="field-label" for="tagsInput">標籤（選填）</label>
@@ -137,13 +162,13 @@
   </header>
 
   <div class="drawer-section">
-    <p class="drawer-label">標準每日工時</p>
+    <p class="drawer-label">1 工 = 幾小時</p>
     <div class="stepper stepper-wide">
       <button type="button" class="step-btn" data-target="stdHours" data-delta="-0.5">−</button>
-      <input id="stdHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="8">
+      <input id="stdHours" type="number" inputmode="decimal" step="0.5" min="0.5" max="24" value="8">
       <button type="button" class="step-btn" data-target="stdHours" data-delta="0.5">+</button>
     </div>
-    <p class="drawer-help">用於計算「本月應出勤工時」與達標率</p>
+    <p class="drawer-help">用來換算「1 工」對應的實際小時數，也是達標率的計算基準</p>
   </div>
 
   <div class="drawer-section">
@@ -153,7 +178,7 @@
       <input id="optWeekend" type="checkbox" checked>
     </label>
     <label class="switch-row">
-      <span>月曆上顯示時數</span>
+      <span>月曆上顯示工數</span>
       <input id="optShowHours" type="checkbox" checked>
     </label>
     <label class="switch-row">

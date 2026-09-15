@@ -271,16 +271,106 @@ input, textarea { font-family: inherit; }
   font-size: 12px;
 }
 
-.day-hours {
-  font-size: 11px;
+/* 面板區塊：工時 / 加班 */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.2px;
+}
+
+/* 工數選項 chips */
+.unit-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.unit-chip {
+  flex: 1 1 auto;
+  min-width: 60px;
+  height: 40px;
+  padding: 0 8px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform .12s ease, background .15s ease, color .15s ease, border-color .15s ease;
+}
+.unit-chip:active { transform: scale(.95); }
+.unit-chip:hover { border-color: color-mix(in srgb, var(--work) 45%, var(--border)); color: var(--text); }
+.unit-chip.is-active {
+  background: var(--work);
+  border-color: var(--work);
+  color: #fff;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--work) 35%, transparent);
+  transform: scale(1.02);
+}
+
+/* 加班的選中色改為橘色系 */
+#otUnitPicker .unit-chip.is-active {
+  background: var(--ot);
+  border-color: var(--ot);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ot) 35%, transparent);
+}
+#otUnitPicker .unit-chip:hover { border-color: color-mix(in srgb, var(--ot) 45%, var(--border)); }
+
+/* 自訂工數 */
+.custom-wrap {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.custom-wrap[hidden] { display: none; }
+.custom-wrap .stepper { flex: 1; }
+.custom-wrap .unit-suffix {
+  display: grid;
+  place-items: center;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 14px;
   font-weight: 800;
   color: var(--work);
-  line-height: 1.2;
-  letter-spacing: -.2px;
-  flex: 0 0 auto;
 }
-.day-hours .ot-part { color: var(--ot); }
 
+.more-toggle {
+  align-self: flex-start;
+  padding: 2px 0;
+  border: none;
+  background: none;
+  color: var(--work);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: .9;
+}
+.more-toggle:hover { opacity: 1; }
+
+.field-help {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+/* 描述在前，時數在後 */
 .day-desc {
   font-size: 10.5px;
   line-height: 1.32;
@@ -290,10 +380,40 @@ input, textarea { font-family: inherit; }
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   margin-top: 1px;
 }
 .day-desc.ot-text { color: var(--ot); opacity: .95; }
+
+/* 工數區塊：工時一行、加班另起一行 */
+.day-units-wrap {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 0 0 auto;
+  padding-top: 2px;
+}
+.day-units {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--work);
+  line-height: 1.25;
+  letter-spacing: -.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.day-units .u {
+  font-size: 9.5px;
+  font-weight: 700;
+  margin-left: 1px;
+  opacity: .8;
+}
+.day-units.ot-units {
+  color: var(--ot);
+  font-size: 10.5px;
+}
 
 .day-badge {
   position: absolute;
@@ -587,21 +707,25 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
 /* ===================== 響應式 ===================== */
 @media (max-width: 480px) {
-  .day { min-height: 70px; padding: 5px 5px 6px; }
-  .day-desc { -webkit-line-clamp: 2; font-size: 10px; line-height: 1.3; }
-  .day-hours { font-size: 10.5px; }
+  .day { min-height: 74px; padding: 5px 5px 6px; }
+  .day-desc { -webkit-line-clamp: 2; font-size: 10px; line-height: 1.28; }
+  .day-units { font-size: 10.5px; }
+  .day-units.ot-units { font-size: 10px; }
   .month-title { font-size: 19px; }
   .brand h1 { font-size: 15px; }
   .field-row { flex-direction: column; gap: 14px; }
-  .calendar-grid { grid-auto-rows: minmax(70px, 1fr); gap: 3px; }
+  .calendar-grid { grid-auto-rows: minmax(74px, 1fr); gap: 3px; }
   .weekday-row { gap: 3px; }
+  .unit-chip { min-width: 52px; height: 38px; font-size: 12.5px; flex: 1 1 28%; }
 }
 
 @media (min-width: 700px) {
   .day { min-height: 100px; padding: 8px 9px 9px; }
   .day-desc { -webkit-line-clamp: 3; font-size: 11.5px; }
   .day-num { font-size: 14px; }
-  .day-hours { font-size: 12.5px; }
+  .day-units { font-size: 12.5px; }
+  .day-units.ot-units { font-size: 11.5px; }
+  .field-group { padding: 14px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -672,42 +796,67 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   </header>
 
   <div class="sheet-body">
-    <div class="field">
-      <label class="field-label" for="workDesc">
-        <span class="dot dot-work"></span>工時描述
-      </label>
-      <textarea id="workDesc" rows="3" placeholder="例：專案 A 開發、需求評審…"></textarea>
-    </div>
+    <!-- 工時區塊 -->
+    <section class="field-group">
+      <h4 class="group-title"><span class="dot dot-work"></span>工時</h4>
 
-    <div class="field-row">
       <div class="field">
-        <label class="field-label" for="workHours">
-          <span class="dot dot-work"></span>工時
-        </label>
-        <div class="stepper">
-          <button type="button" class="step-btn" data-target="workHours" data-delta="-0.5" aria-label="減少半小時">−</button>
-          <input id="workHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="8">
-          <button type="button" class="step-btn" data-target="workHours" data-delta="0.5" aria-label="增加半小時">+</button>
-        </div>
+        <label class="field-label" for="workDesc">描述</label>
+        <textarea id="workDesc" rows="3" placeholder="例：專案 A 開發、需求評審…"></textarea>
       </div>
-      <div class="field">
-        <label class="field-label" for="otHours">
-          <span class="dot dot-ot"></span>加班時數
-        </label>
-        <div class="stepper">
-          <button type="button" class="step-btn" data-target="otHours" data-delta="-0.5" aria-label="減少半小時">−</button>
-          <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
-          <button type="button" class="step-btn" data-target="otHours" data-delta="0.5" aria-label="增加半小時">+</button>
-        </div>
-      </div>
-    </div>
 
-    <div class="field">
-      <label class="field-label" for="otDesc">
-        <span class="dot dot-ot"></span>加班描述
-      </label>
-      <textarea id="otDesc" rows="2" placeholder="例：上線支援、客戶會議…"></textarea>
-    </div>
+      <div class="field">
+        <span class="field-label" id="workUnitsLabel">工時（1 工 = 標準工時）</span>
+        <div class="unit-picker" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="0"    role="radio" aria-checked="false">0 工</button>
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="0.5"  role="radio" aria-checked="false">0.5 工</button>
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="1"    role="radio" aria-checked="false">1 工</button>
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="1.5"  role="radio" aria-checked="false">1.5 工</button>
+          <button type="button" class="unit-chip" data-target="workUnits" data-value="2"    role="radio" aria-checked="false">2 工</button>
+        </div>
+        <div class="custom-wrap" id="workCustomWrap" hidden>
+          <div class="stepper">
+            <button type="button" class="step-btn" data-target="workUnits" data-delta="-0.5" aria-label="減少半工">−</button>
+            <input id="workUnits" type="number" inputmode="decimal" step="0.5" min="0" max="9" value="1">
+            <button type="button" class="step-btn" data-target="workUnits" data-delta="0.5" aria-label="增加半工">+</button>
+          </div>
+          <span class="unit-suffix">工</span>
+        </div>
+        <button type="button" class="more-toggle" id="workMoreBtn" aria-expanded="false">自訂工數…</button>
+        <p class="field-help" id="workEquivalent">＝ 8 小時</p>
+      </div>
+    </section>
+
+    <!-- 加班區塊 -->
+    <section class="field-group">
+      <h4 class="group-title"><span class="dot dot-ot"></span>加班</h4>
+
+      <div class="field">
+        <label class="field-label" for="otDesc">描述</label>
+        <textarea id="otDesc" rows="2" placeholder="例：上線支援、客戶會議…"></textarea>
+      </div>
+
+      <div class="field">
+        <span class="field-label" id="otUnitsLabel">加班工時（1 工 = 標準工時）</span>
+        <div class="unit-picker" id="otUnitPicker" role="radiogroup" aria-labelledby="otUnitsLabel">
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="0"    role="radio" aria-checked="false">0 工</button>
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="0.5"  role="radio" aria-checked="false">0.5 工</button>
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="1"    role="radio" aria-checked="false">1 工</button>
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="1.5"  role="radio" aria-checked="false">1.5 工</button>
+          <button type="button" class="unit-chip" data-target="otUnits" data-value="2"    role="radio" aria-checked="false">2 工</button>
+        </div>
+        <div class="custom-wrap" id="otCustomWrap" hidden>
+          <div class="stepper">
+            <button type="button" class="step-btn" data-target="otUnits" data-delta="-0.5" aria-label="減少半工">−</button>
+            <input id="otUnits" type="number" inputmode="decimal" step="0.5" min="0" max="9" value="0">
+            <button type="button" class="step-btn" data-target="otUnits" data-delta="0.5" aria-label="增加半工">+</button>
+          </div>
+          <span class="unit-suffix">工</span>
+        </div>
+        <button type="button" class="more-toggle" id="otMoreBtn" aria-expanded="false">自訂工數…</button>
+        <p class="field-help" id="otEquivalent">＝ 0 小時</p>
+      </div>
+    </section>
 
     <div class="field">
       <label class="field-label" for="tagsInput">標籤（選填）</label>
@@ -733,13 +882,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   </header>
 
   <div class="drawer-section">
-    <p class="drawer-label">標準每日工時</p>
+    <p class="drawer-label">1 工 = 幾小時</p>
     <div class="stepper stepper-wide">
       <button type="button" class="step-btn" data-target="stdHours" data-delta="-0.5">−</button>
-      <input id="stdHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="8">
+      <input id="stdHours" type="number" inputmode="decimal" step="0.5" min="0.5" max="24" value="8">
       <button type="button" class="step-btn" data-target="stdHours" data-delta="0.5">+</button>
     </div>
-    <p class="drawer-help">用於計算「本月應出勤工時」與達標率</p>
+    <p class="drawer-help">用來換算「1 工」對應的實際小時數，也是達標率的計算基準</p>
   </div>
 
   <div class="drawer-section">
@@ -749,7 +898,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       <input id="optWeekend" type="checkbox" checked>
     </label>
     <label class="switch-row">
-      <span>月曆上顯示時數</span>
+      <span>月曆上顯示工數</span>
       <input id="optShowHours" type="checkbox" checked>
     </label>
     <label class="switch-row">
@@ -795,7 +944,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   };
 
   /* ---------------- 狀態 ---------------- */
-  let entries = {};              // { 'YYYY-MM-DD': {workDesc, workHours, otDesc, otHours, tags, updatedAt} }
+  let entries = {};              // { 'YYYY-MM-DD': {workDesc, workUnits, otDesc, otUnits, tags, updatedAt} }
   let settings = { ...DEFAULTS };
   let view = new Date();         // 目前顯示月份
   let editingKey = null;         // 正在編輯的日期 key
@@ -804,10 +953,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   const pad = (n) => String(n).padStart(2, '0');
   const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const todayKey = () => keyOf(new Date());
-  const isSameMonth = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
   const num = (v) => { const n = parseFloat(v); return Number.isFinite(n) && n > 0 ? n : 0; };
   const round1 = (n) => Math.round(n * 10) / 10;
   const fmtH = (n) => round1(n).toString().replace(/\.0$/, '');
+
+  // 工數顯示：整數不帶小數，半工保留 .5
+  const fmtUnits = (u) => round1(u).toString().replace(/\.0$/, '');
 
   const WEEK_TC = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -818,18 +969,57 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   /* ---------------- 儲存 ---------------- */
   function load() {
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed && typeof parsed === 'object') entries = parsed.data || parsed;
-      }
-    } catch (e) { console.warn('讀取資料失敗', e); }
-
+    // 先讀設定，讓遷移能用到正確的「1 工 = N 小時」基準
     try {
       const rs = localStorage.getItem(SETTINGS_KEY);
       if (rs) settings = { ...DEFAULTS, ...JSON.parse(rs) };
     } catch (e) { /* 用預設 */ }
+
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          const result = migrate(parsed.data || parsed);
+          entries = result.data;
+          if (result.converted > 0) save();   // 遷移後立即寫回，避免每次載入重複轉換
+        }
+      }
+    } catch (e) { console.warn('讀取資料失敗', e); }
+  }
+
+  /**
+   * 舊版資料（workHours / otHours，單位小時）轉換為新版（workUnits / otUnits，單位「工」）。
+   * 換算基準為設定的標準工時：預設 8 小時 = 1 工。
+   * 回傳 { data, converted }，由呼叫方決定是否寫回儲存。
+   */
+  function migrate(data) {
+    if (!data || typeof data !== 'object') return { data: {}, converted: 0 };
+    const base = num(settings.stdHours) || num(DEFAULTS.stdHours) || 8;
+    const out = {};
+    let converted = 0;
+
+    for (const [k, e] of Object.entries(data)) {
+      if (!e || typeof e !== 'object') continue;
+      const next = { ...e };
+
+      if (next.workUnits == null && next.workHours != null) {
+        next.workUnits = round1(num(next.workHours) / base);
+        delete next.workHours;
+        converted++;
+      }
+      if (next.otUnits == null && next.otHours != null) {
+        next.otUnits = round1(num(next.otHours) / base);
+        delete next.otHours;
+        converted++;
+      }
+      out[k] = next;
+    }
+
+    if (converted) {
+      console.info(`[工時月曆] 已將 ${converted} 個舊版小時欄位轉換為「工」（1 工 = ${base} 小時）`);
+    }
+    return { data: out, converted };
   }
 
   function save() {
@@ -863,13 +1053,23 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     sheetTitle: $('sheetTitle'),
     sheetClose: $('sheetClose'),
     workDesc: $('workDesc'),
-    workHours: $('workHours'),
     otDesc: $('otDesc'),
-    otHours: $('otHours'),
     tagsInput: $('tagsInput'),
     saveBtn: $('saveBtn'),
     cancelBtn: $('cancelBtn'),
     deleteBtn: $('deleteBtn'),
+
+    // 工數選擇
+    workUnits: $('workUnits'),
+    otUnits: $('otUnits'),
+    workUnitPicker: $('workUnitPicker'),
+    otUnitPicker: $('otUnitPicker'),
+    workCustomWrap: $('workCustomWrap'),
+    otCustomWrap: $('otCustomWrap'),
+    workMoreBtn: $('workMoreBtn'),
+    otMoreBtn: $('otMoreBtn'),
+    workEquivalent: $('workEquivalent'),
+    otEquivalent: $('otEquivalent'),
 
     drawer: $('drawer'),
     drawerBackdrop: $('drawerBackdrop'),
@@ -912,23 +1112,23 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   function renderStats() {
     const y = view.getFullYear(), m = view.getMonth();
     const list = entriesOfMonth(y, m);
-    const totalWork = list.reduce((s, e) => s + num(e.workHours), 0);
-    const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);
-    const days = list.filter((e) => num(e.workHours) > 0 || num(e.otHours) > 0 || e.workDesc || e.otDesc).length;
+    const totalWork = list.reduce((s, e) => s + num(e.workUnits), 0);
+    const totalOt = list.reduce((s, e) => s + num(e.otUnits), 0);
+    const days = list.filter((e) => num(e.workUnits) > 0 || num(e.otUnits) > 0 || e.workDesc || e.otDesc).length;
 
-    // 本月應出勤工時：週一至週五天數 × 標準工時
+    // 本月應出勤工數：週一至週五天數 × 1 工
     const dim = new Date(y, m + 1, 0).getDate();
     let workdays = 0;
     for (let d = 1; d <= dim; d++) {
       const dow = new Date(y, m, d).getDay();
       if (dow !== 0 && dow !== 6) workdays++;
     }
-    const expected = workdays * num(settings.stdHours);
+    const expected = workdays;   // 每個工作日 = 1 工
     const rate = expected > 0 ? Math.round((totalWork / expected) * 100) : 0;
 
     el.monthStats.innerHTML = `
-      <span class="stat-pill">工時 <b>${fmtH(totalWork)}</b> h</span>
-      <span class="stat-pill ot">加班 <b>${fmtH(totalOt)}</b> h</span>
+      <span class="stat-pill">工時 <b>${fmtUnits(totalWork)}</b> 工</span>
+      <span class="stat-pill ot">加班 <b>${fmtUnits(totalOt)}</b> 工</span>
       <span class="stat-pill">記錄 <b>${days}</b> 天</span>
       <span class="stat-pill">達標 <b>${rate}</b>%</span>
     `;
@@ -989,10 +1189,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       return `<div class="day is-blank" aria-hidden="true"></div>`;
     }
     const e = c.entry || {};
-    const wh = num(e.workHours);
-    const oh = num(e.otHours);
-    const hasWork = wh > 0 || (e.workDesc && e.workDesc.trim());
-    const hasOt = oh > 0 || (e.otDesc && e.otDesc.trim());
+    const wu = num(e.workUnits);
+    const ou = num(e.otUnits);
+    const hasWork = wu > 0 || (e.workDesc && e.workDesc.trim());
+    const hasOt = ou > 0 || (e.otDesc && e.otDesc.trim());
     const hasEntry = hasWork || hasOt;
 
     const classes = ['day'];
@@ -1000,19 +1200,22 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     if (c.isToday) classes.push('is-today');
     if (hasEntry) classes.push('has-entry');
 
-    let hours = '';
-    if (settings.showHours && hasEntry) {
-      const parts = [];
-      if (wh > 0) parts.push(`${fmtH(wh)}h`);
-      if (oh > 0) parts.push(`<span class="ot-part">+${fmtH(oh)}h</span>`);
-      if (parts.length) hours = `<div class="day-hours">${parts.join(' ')}</div>`;
+    // 描述在前
+    let descHtml = '';
+    if (e.workDesc && e.workDesc.trim()) {
+      descHtml = `<div class="day-desc">${escapeHtml(e.workDesc.trim())}</div>`;
+    } else if (e.otDesc && e.otDesc.trim()) {
+      descHtml = `<div class="day-desc ot-text">${escapeHtml(e.otDesc.trim())}</div>`;
     }
 
-    const descHtml = e.workDesc && e.workDesc.trim()
-      ? `<div class="day-desc">${escapeHtml(e.workDesc.trim())}</div>`
-      : e.otDesc && e.otDesc.trim()
-        ? `<div class="day-desc ot-text">${escapeHtml(e.otDesc.trim())}</div>`
-        : '';
+    // 時數在後：工時一行，加班另起一行
+    let unitsHtml = '';
+    if (settings.showHours && hasEntry) {
+      const rows = [];
+      if (hasWork) rows.push(`<div class="day-units">${fmtUnits(wu)}<span class="u">工</span></div>`);
+      if (hasOt) rows.push(`<div class="day-units ot-units">${fmtUnits(ou)}<span class="u">工</span>加班</div>`);
+      if (rows.length) unitsHtml = `<div class="day-units-wrap">${rows.join('')}</div>`;
+    }
 
     let badges = '';
     if (hasEntry) {
@@ -1022,12 +1225,19 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       </div>`;
     }
 
-    const label = `${fmtDateLabel(new Date(c.key + 'T00:00:00'))}${hasEntry ? '，已有記錄' : '，尚無記錄'}`;
-    return `<div class="${classes.join(' ')}" data-key="${c.key}" role="gridcell" tabindex="0" aria-label="${escapeAttr(label)}">
+    const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
+    if (hasEntry) {
+      if (hasWork) labelParts.push(`工時 ${fmtUnits(wu)} 工`);
+      if (hasOt) labelParts.push(`加班 ${fmtUnits(ou)} 工`);
+    } else {
+      labelParts.push('尚無記錄');
+    }
+
+    return `<div class="${classes.join(' ')}" data-key="${c.key}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
       ${badges}
       <div class="day-num">${c.day}</div>
-      ${hours}
       ${descHtml}
+      ${unitsHtml}
     </div>`;
   }
 
@@ -1046,6 +1256,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   /* ---------------- 面板：開啟 / 關閉 ---------------- */
   let lastFocused = null;
 
+  const PRESETS = [0, 0.5, 1, 1.5, 2];
+
   function openSheet(key) {
     editingKey = key;
     const d = new Date(key + 'T00:00:00');
@@ -1054,10 +1266,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.sheetDate.textContent = fmtDateLabel(d);
     el.sheetTitle.textContent = hasContent(e) ? '編輯記錄' : '新增記錄';
     el.workDesc.value = e.workDesc || '';
-    el.workHours.value = e.workHours != null ? e.workHours : num(settings.stdHours);
     el.otDesc.value = e.otDesc || '';
-    el.otHours.value = e.otHours != null ? e.otHours : 0;
     el.tagsInput.value = (e.tags || []).join(', ');
+
+    setUnits('work', e.workUnits != null ? num(e.workUnits) : 1);
+    setUnits('ot', e.otUnits != null ? num(e.otUnits) : 0);
+
     el.deleteBtn.hidden = !hasContent(e);
 
     lastFocused = document.activeElement;
@@ -1065,10 +1279,48 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
   }
 
+  /** 設定工時／加班的工數，並同步預設選項與自訂欄位 */
+  function setUnits(kind, value) {
+    const v = round1(num(value));
+    const input = kind === 'work' ? el.workUnits : el.otUnits;
+    const picker = kind === 'work' ? el.workUnitPicker : el.otUnitPicker;
+    const wrap = kind === 'work' ? el.workCustomWrap : el.otCustomWrap;
+    const moreBtn = kind === 'work' ? el.workMoreBtn : el.otMoreBtn;
+
+    input.value = v;
+    const isPreset = PRESETS.includes(v);
+
+    picker.querySelectorAll('.unit-chip').forEach((chip) => {
+      const on = isPreset && parseFloat(chip.dataset.value) === v;
+      chip.classList.toggle('is-active', on);
+      chip.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+
+    // 非預設值才展開自訂輸入
+    wrap.hidden = isPreset;
+    moreBtn.hidden = !isPreset;
+    moreBtn.setAttribute('aria-expanded', 'false');
+    if (!isPreset) moreBtn.setAttribute('aria-expanded', 'true');
+
+    updateEquivalent(kind);
+  }
+
+  function getUnits(kind) {
+    const input = kind === 'work' ? el.workUnits : el.otUnits;
+    return round1(num(input.value));
+  }
+
+  /** 更新「＝ N 小時」換算提示 */
+  function updateEquivalent(kind) {
+    const hours = round1(getUnits(kind) * (num(settings.stdHours) || 8));
+    const node = kind === 'work' ? el.workEquivalent : el.otEquivalent;
+    node.textContent = `＝ ${fmtH(hours)} 小時`;
+  }
+
   function hasContent(e) {
     if (!e) return false;
     return !!(String(e.workDesc || '').trim() || String(e.otDesc || '').trim() ||
-      num(e.workHours) > 0 || num(e.otHours) > 0);
+      num(e.workUnits) > 0 || num(e.otUnits) > 0);
   }
 
   function closeSheet() {
@@ -1101,15 +1353,15 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     if (!editingKey) return;
     const workDesc = el.workDesc.value.trim();
     const otDesc = el.otDesc.value.trim();
-    const workHours = num(el.workHours.value);
-    const otHours = num(el.otHours.value);
+    const workUnits = getUnits('work');
+    const otUnits = getUnits('ot');
     const tags = el.tagsInput.value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
 
-    const empty = !workDesc && !otDesc && workHours === 0 && otHours === 0 && tags.length === 0;
+    const empty = !workDesc && !otDesc && workUnits === 0 && otUnits === 0 && tags.length === 0;
     if (empty) {
       delete entries[editingKey];
     } else {
-      entries[editingKey] = { workDesc, workHours, otDesc, otHours, tags, updatedAt: Date.now() };
+      entries[editingKey] = { workDesc, workUnits, otDesc, otUnits, tags, updatedAt: Date.now() };
     }
 
     save();
@@ -1207,6 +1459,27 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       if (ev.key === 'Escape') { ev.preventDefault(); closeSheet(); }
     });
 
+    /* ---- 工數選項（預設選項 + 自訂）---- */
+    [['work', el.workUnitPicker], ['ot', el.otUnitPicker]].forEach(([kind, picker]) => {
+      picker.addEventListener('click', (ev) => {
+        const chip = ev.target.closest('.unit-chip');
+        if (!chip) return;
+        setUnits(kind, parseFloat(chip.dataset.value));
+      });
+    });
+
+    [['work', el.workMoreBtn], ['ot', el.otMoreBtn]].forEach(([kind, btn]) => {
+      btn.addEventListener('click', () => {
+        const wrap = kind === 'work' ? el.workCustomWrap : el.otCustomWrap;
+        wrap.hidden = false;
+        btn.hidden = true;
+        btn.setAttribute('aria-expanded', 'true');
+        const input = kind === 'work' ? el.workUnits : el.otUnits;
+        input.focus();
+        input.select && input.select();
+      });
+    });
+
     /* ---- 步進器（面板內 + 抽屜內）---- */
     document.querySelectorAll('.step-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -1215,12 +1488,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         const delta = parseFloat(btn.dataset.delta);
         const cur = parseFloat(input.value) || 0;
         let next = round1(cur + delta);
+        const max = parseFloat(input.max) || 24;
         if (next < 0) next = 0;
-        if (next > 24) next = 24;
+        if (next > max) next = max;
         input.value = next;
         input.dispatchEvent(new Event('change', { bubbles: true }));
       });
     });
+
+    // 自訂工數變動 → 更新換算提示
+    el.workUnits.addEventListener('input', () => updateEquivalent('work'));
+    el.otUnits.addEventListener('input', () => updateEquivalent('ot'));
 
     /* ---- 抽屜 ---- */
     el.menuBtn.addEventListener('click', () => {
@@ -1240,6 +1518,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       el.stdHours.value = settings.stdHours;
       saveSettings();
       renderStats();
+      // 面板開著時同步更新小時換算
+      if (!el.sheet.hidden) { updateEquivalent('work'); updateEquivalent('ot'); }
     });
 
     const toggleMap = [
@@ -1259,14 +1539,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.exportCsv.addEventListener('click', () => {
       const y = view.getFullYear(), m = view.getMonth();
       const prefix = `${y}-${pad(m + 1)}-`;
-      const rows = [['日期', '星期', '工時', '工時描述', '加班時數', '加班描述', '標籤']];
+      const base = num(settings.stdHours) || 8;
+      const rows = [['日期', '星期', '工時(工)', '工時描述', '加班(工)', '加班描述', '工時(小時)', '加班(小時)', '標籤']];
       Object.keys(entries).filter((k) => k.startsWith(prefix)).sort().forEach((k) => {
         const e = entries[k];
         const d = new Date(k + 'T00:00:00');
+        const wu = num(e.workUnits), ou = num(e.otUnits);
         rows.push([
           k, `週${WEEK_TC[d.getDay()]}`,
-          e.workHours || 0, e.workDesc || '',
-          e.otHours || 0, e.otDesc || '',
+          wu, e.workDesc || '',
+          ou, e.otDesc || '',
+          round1(wu * base), round1(ou * base),
           (e.tags || []).join(' / '),
         ]);
       });
@@ -1294,7 +1577,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('格式錯誤');
         const incoming = Object.keys(data).length;
         if (!confirm(`將匯入 ${incoming} 筆記錄，同名日期會被覆蓋。確定繼續？`)) return;
-        entries = { ...entries, ...data };
+        // 舊版小時制備份也會自動轉換為「工」
+        entries = { ...entries, ...migrate(data).data };
         if (parsed.settings) settings = { ...settings, ...parsed.settings };
         save(); saveSettings();
         closeDrawer();
