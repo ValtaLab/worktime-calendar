@@ -279,9 +279,14 @@ input, textarea { font-family: inherit; }
 /* 工數選項 chips */
 .unit-picker {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
 }
+.unit-picker-2 .unit-chip-lg {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
 .unit-chip {
   flex: 1 1 auto;
   min-width: 60px;
@@ -302,7 +307,50 @@ input, textarea { font-family: inherit; }
   border-color: var(--work);
   color: #fff;
   box-shadow: 0 2px 10px color-mix(in srgb, var(--work) 35%, transparent);
-  transform: scale(1.02);
+}
+
+/* 兩個大選項（0.5 工 / 1 工） */
+.unit-chip-lg {
+  height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 12px;
+}
+.unit-chip-lg .chip-main { font-size: 15.5px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15; }
+.unit-chip-lg .chip-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  opacity: .7;
+  letter-spacing: .3px;
+  line-height: 1.15;
+}
+.unit-chip-lg.is-active .chip-sub { opacity: .9; }
+
+/* 加班時數 stepper（0.5 小時遞進） */
+.stepper-ot { width: 100%; }
+.stepper-ot .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; }
+.stepper-display {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+.stepper-display input {
+  width: 2.8em;
+  max-width: 60%;
+  text-align: right;
+  padding: 11px 0;
+}
+.stepper-unit {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  flex: 0 0 auto;
 }
 
 /* 加班的選中色改為橘色系 */
@@ -313,39 +361,9 @@ input, textarea { font-family: inherit; }
 }
 #otUnitPicker .unit-chip:hover { border-color: color-mix(in srgb, var(--ot) 45%, var(--border)); }
 
-/* 自訂工數 */
-.custom-wrap {
-  display: flex;
-  align-items: stretch;
-  gap: 8px;
-}
-.custom-wrap[hidden] { display: none; }
-.custom-wrap .stepper { flex: 1; }
-.custom-wrap .unit-suffix {
-  display: grid;
-  place-items: center;
-  padding: 0 14px;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--work);
-}
-
-.more-toggle {
-  align-self: flex-start;
-  padding: 2px 0;
-  border: none;
-  background: none;
-  color: var(--work);
-  font-size: 12.5px;
-  font-weight: 700;
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  opacity: .9;
-}
-.more-toggle:hover { opacity: 1; }
+/* 加班 stepper 的加減號用橘色 */
+.stepper-ot .step-btn:active { background: color-mix(in srgb, var(--ot) 16%, transparent); }
+.stepper-ot .step-btn { color: var(--ot); }
 
 .field-help {
   margin: 0;

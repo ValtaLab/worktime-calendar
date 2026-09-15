@@ -86,23 +86,17 @@
       </div>
 
       <div class="field">
-        <span class="field-label" id="workUnitsLabel">工時（1 工 = 標準工時）</span>
-        <div class="unit-picker" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
-          <button type="button" class="unit-chip" data-target="workUnits" data-value="0"    role="radio" aria-checked="false">0 工</button>
-          <button type="button" class="unit-chip" data-target="workUnits" data-value="0.5"  role="radio" aria-checked="false">0.5 工</button>
-          <button type="button" class="unit-chip" data-target="workUnits" data-value="1"    role="radio" aria-checked="false">1 工</button>
-          <button type="button" class="unit-chip" data-target="workUnits" data-value="1.5"  role="radio" aria-checked="false">1.5 工</button>
-          <button type="button" class="unit-chip" data-target="workUnits" data-value="2"    role="radio" aria-checked="false">2 工</button>
+        <span class="field-label" id="workUnitsLabel">工數</span>
+        <div class="unit-picker unit-picker-2" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
+          <button type="button" class="unit-chip unit-chip-lg" data-value="0.5" role="radio" aria-checked="false">
+            <span class="chip-main">0.5 工</span>
+            <span class="chip-sub">半日</span>
+          </button>
+          <button type="button" class="unit-chip unit-chip-lg" data-value="1" role="radio" aria-checked="false">
+            <span class="chip-main">1 工</span>
+            <span class="chip-sub">全日</span>
+          </button>
         </div>
-        <div class="custom-wrap" id="workCustomWrap" hidden>
-          <div class="stepper">
-            <button type="button" class="step-btn" data-target="workUnits" data-delta="-0.5" aria-label="減少半工">−</button>
-            <input id="workUnits" type="number" inputmode="decimal" step="0.5" min="0" max="9" value="1">
-            <button type="button" class="step-btn" data-target="workUnits" data-delta="0.5" aria-label="增加半工">+</button>
-          </div>
-          <span class="unit-suffix">工</span>
-        </div>
-        <button type="button" class="more-toggle" id="workMoreBtn" aria-expanded="false">自訂工數…</button>
         <p class="field-help" id="workEquivalent">＝ 8 小時</p>
       </div>
     </section>
@@ -117,24 +111,16 @@
       </div>
 
       <div class="field">
-        <span class="field-label" id="otUnitsLabel">加班工時（1 工 = 標準工時）</span>
-        <div class="unit-picker" id="otUnitPicker" role="radiogroup" aria-labelledby="otUnitsLabel">
-          <button type="button" class="unit-chip" data-target="otUnits" data-value="0"    role="radio" aria-checked="false">0 工</button>
-          <button type="button" class="unit-chip" data-target="otUnits" data-value="0.5"  role="radio" aria-checked="false">0.5 工</button>
-          <button type="button" class="unit-chip" data-target="otUnits" data-value="1"    role="radio" aria-checked="false">1 工</button>
-          <button type="button" class="unit-chip" data-target="otUnits" data-value="1.5"  role="radio" aria-checked="false">1.5 工</button>
-          <button type="button" class="unit-chip" data-target="otUnits" data-value="2"    role="radio" aria-checked="false">2 工</button>
-        </div>
-        <div class="custom-wrap" id="otCustomWrap" hidden>
-          <div class="stepper">
-            <button type="button" class="step-btn" data-target="otUnits" data-delta="-0.5" aria-label="減少半工">−</button>
-            <input id="otUnits" type="number" inputmode="decimal" step="0.5" min="0" max="9" value="0">
-            <button type="button" class="step-btn" data-target="otUnits" data-delta="0.5" aria-label="增加半工">+</button>
+        <span class="field-label" id="otUnitsLabel">加班時數</span>
+        <div class="stepper stepper-ot">
+          <button type="button" class="step-btn" data-target="otHours" data-delta="-0.5" aria-label="減少半小時">−</button>
+          <div class="stepper-display">
+            <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
+            <span class="stepper-unit">小時</span>
           </div>
-          <span class="unit-suffix">工</span>
+          <button type="button" class="step-btn" data-target="otHours" data-delta="0.5" aria-label="增加半小時">+</button>
         </div>
-        <button type="button" class="more-toggle" id="otMoreBtn" aria-expanded="false">自訂工數…</button>
-        <p class="field-help" id="otEquivalent">＝ 0 小時</p>
+        <p class="field-help" id="otEquivalent">每次調整 0.5 小時</p>
       </div>
     </section>
 

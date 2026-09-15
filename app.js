@@ -17,7 +17,7 @@
   };
 
   /* ---------------- 狀態 ---------------- */
-  let entries = {};              // { 'YYYY-MM-DD': {workDesc, workUnits, otDesc, otUnits, tags, updatedAt} }
+  let entries = {};              // { 'YYYY-MM-DD': {workDesc, workUnits, otDesc, otHours, tags, updatedAt} }
   let settings = { ...DEFAULTS };
   let view = new Date();         // 目前顯示月份
   let editingKey = null;         // 正在編輯的日期 key
@@ -32,6 +32,9 @@
 
   // 工數顯示：整數不帶小數，半工保留 .5
   const fmtUnits = (u) => round1(u).toString().replace(/\.0$/, '');
+
+  // 工數僅提供 0.5 工（半日）與 1 工（全日）兩個選擇
+  const WORK_CHOICES = [0.5, 1];
 
   const WEEK_TC = ['日', '一', '二', '三', '四', '五', '六'];
 
@@ -62,8 +65,11 @@
   }
 
   /**
-   * 舊版資料（workHours / otHours，單位小時）轉換為新版（workUnits / otUnits，單位「工」）。
-   * 換算基準為設定的標準工時：預設 8 小時 = 1 工。
+   * 資料遷移，兼容兩代舊格式：
+   *   v1：workHours / otHours（小時）
+   *   v2：workUnits / otUnits（皆為「工」）
+   * 目前格式：workUnits（工，僅 0.5 或 1）＋ otHours（小時）
+   * 「工」與「小時」的換算基準為設定的標準工時，預設 8 小時 = 1 工。
    * 回傳 { data, converted }，由呼叫方決定是否寫回儲存。
    */
   function migrate(data) {
@@ -76,21 +82,35 @@
       if (!e || typeof e !== 'object') continue;
       const next = { ...e };
 
+      // 工數：v1 的 workHours（小時）→ 工
       if (next.workUnits == null && next.workHours != null) {
         next.workUnits = round1(num(next.workHours) / base);
-        delete next.workHours;
         converted++;
       }
-      if (next.otUnits == null && next.otHours != null) {
-        next.otUnits = round1(num(next.otHours) / base);
-        delete next.otHours;
+      // 加班：v2 的 otUnits（工）→ 小時；v1 的 otHours（小時）沿用
+      if (next.otHours == null && next.otUnits != null) {
+        next.otHours = round1(num(next.otUnits) * base);
         converted++;
       }
+      delete next.workHours;
+      delete next.otUnits;
+
+      // 工數僅保留兩個選項，超出範圍者夾到最近值
+      if (next.workUnits != null && next.workUnits !== 0) {
+        const v = num(next.workUnits);
+        if (v > 0) {
+          const nearest = WORK_CHOICES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+          if (nearest !== v) { next.workUnits = nearest; converted++; }
+        } else {
+          next.workUnits = 0;
+        }
+      }
+
       out[k] = next;
     }
 
     if (converted) {
-      console.info(`[工時月曆] 已將 ${converted} 個舊版小時欄位轉換為「工」（1 工 = ${base} 小時）`);
+      console.info(`[工時月曆] 已遷移 ${converted} 個欄位（1 工 = ${base} 小時）`);
     }
     return { data: out, converted };
   }
@@ -132,17 +152,10 @@
     cancelBtn: $('cancelBtn'),
     deleteBtn: $('deleteBtn'),
 
-    // 工數選擇
-    workUnits: $('workUnits'),
-    otUnits: $('otUnits'),
+    // 工數（0.5 工 / 1 工）與加班時數（0.5 小時遞進）
     workUnitPicker: $('workUnitPicker'),
-    otUnitPicker: $('otUnitPicker'),
-    workCustomWrap: $('workCustomWrap'),
-    otCustomWrap: $('otCustomWrap'),
-    workMoreBtn: $('workMoreBtn'),
-    otMoreBtn: $('otMoreBtn'),
     workEquivalent: $('workEquivalent'),
-    otEquivalent: $('otEquivalent'),
+    otHours: $('otHours'),
 
     drawer: $('drawer'),
     drawerBackdrop: $('drawerBackdrop'),
@@ -185,9 +198,9 @@
   function renderStats() {
     const y = view.getFullYear(), m = view.getMonth();
     const list = entriesOfMonth(y, m);
-    const totalWork = list.reduce((s, e) => s + num(e.workUnits), 0);
-    const totalOt = list.reduce((s, e) => s + num(e.otUnits), 0);
-    const days = list.filter((e) => num(e.workUnits) > 0 || num(e.otUnits) > 0 || e.workDesc || e.otDesc).length;
+    const totalWork = list.reduce((s, e) => s + num(e.workUnits), 0);      // 工
+    const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);          // 小時
+    const days = list.filter((e) => num(e.workUnits) > 0 || num(e.otHours) > 0 || e.workDesc || e.otDesc).length;
 
     // 本月應出勤工數：週一至週五天數 × 1 工
     const dim = new Date(y, m + 1, 0).getDate();
@@ -201,7 +214,7 @@
 
     el.monthStats.innerHTML = `
       <span class="stat-pill">工時 <b>${fmtUnits(totalWork)}</b> 工</span>
-      <span class="stat-pill ot">加班 <b>${fmtUnits(totalOt)}</b> 工</span>
+      <span class="stat-pill ot">加班 <b>${fmtH(totalOt)}</b> h</span>
       <span class="stat-pill">記錄 <b>${days}</b> 天</span>
       <span class="stat-pill">達標 <b>${rate}</b>%</span>
     `;
@@ -263,9 +276,9 @@
     }
     const e = c.entry || {};
     const wu = num(e.workUnits);
-    const ou = num(e.otUnits);
+    const oh = num(e.otHours);
     const hasWork = wu > 0 || (e.workDesc && e.workDesc.trim());
-    const hasOt = ou > 0 || (e.otDesc && e.otDesc.trim());
+    const hasOt = oh > 0 || (e.otDesc && e.otDesc.trim());
     const hasEntry = hasWork || hasOt;
 
     const classes = ['day'];
@@ -281,12 +294,12 @@
       descHtml = `<div class="day-desc ot-text">${escapeHtml(e.otDesc.trim())}</div>`;
     }
 
-    // 時數在後：工時一行，加班另起一行
+    // 時數在後：工數一行，加班另起一行
     let unitsHtml = '';
     if (settings.showHours && hasEntry) {
       const rows = [];
       if (hasWork) rows.push(`<div class="day-units">${fmtUnits(wu)}<span class="u">工</span></div>`);
-      if (hasOt) rows.push(`<div class="day-units ot-units">${fmtUnits(ou)}<span class="u">工</span>加班</div>`);
+      if (hasOt) rows.push(`<div class="day-units ot-units">+${fmtH(oh)}<span class="u">h</span> 加班</div>`);
       if (rows.length) unitsHtml = `<div class="day-units-wrap">${rows.join('')}</div>`;
     }
 
@@ -301,7 +314,7 @@
     const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
     if (hasEntry) {
       if (hasWork) labelParts.push(`工時 ${fmtUnits(wu)} 工`);
-      if (hasOt) labelParts.push(`加班 ${fmtUnits(ou)} 工`);
+      if (hasOt) labelParts.push(`加班 ${fmtH(oh)} 小時`);
     } else {
       labelParts.push('尚無記錄');
     }
@@ -329,8 +342,6 @@
   /* ---------------- 面板：開啟 / 關閉 ---------------- */
   let lastFocused = null;
 
-  const PRESETS = [0, 0.5, 1, 1.5, 2];
-
   function openSheet(key) {
     editingKey = key;
     const d = new Date(key + 'T00:00:00');
@@ -342,8 +353,8 @@
     el.otDesc.value = e.otDesc || '';
     el.tagsInput.value = (e.tags || []).join(', ');
 
-    setUnits('work', e.workUnits != null ? num(e.workUnits) : 1);
-    setUnits('ot', e.otUnits != null ? num(e.otUnits) : 0);
+    setWorkUnits(e.workUnits != null && num(e.workUnits) > 0 ? num(e.workUnits) : 1);
+    el.otHours.value = e.otHours != null ? num(e.otHours) : 0;
 
     el.deleteBtn.hidden = !hasContent(e);
 
@@ -352,48 +363,42 @@
     setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
   }
 
-  /** 設定工時／加班的工數，並同步預設選項與自訂欄位 */
-  function setUnits(kind, value) {
-    const v = round1(num(value));
-    const input = kind === 'work' ? el.workUnits : el.otUnits;
-    const picker = kind === 'work' ? el.workUnitPicker : el.otUnitPicker;
-    const wrap = kind === 'work' ? el.workCustomWrap : el.otCustomWrap;
-    const moreBtn = kind === 'work' ? el.workMoreBtn : el.otMoreBtn;
+  /** 設定工數（僅 0.5 工 / 1 工 兩個選項）並更新換算提示 */
+  function setWorkUnits(value) {
+    const v = num(value);
+    // 夾到最接近的合法選項
+    const chosen = WORK_CHOICES.includes(v)
+      ? v
+      : WORK_CHOICES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
 
-    input.value = v;
-    const isPreset = PRESETS.includes(v);
-
-    picker.querySelectorAll('.unit-chip').forEach((chip) => {
-      const on = isPreset && parseFloat(chip.dataset.value) === v;
+    el.workUnitPicker.querySelectorAll('.unit-chip').forEach((chip) => {
+      const on = parseFloat(chip.dataset.value) === chosen;
       chip.classList.toggle('is-active', on);
       chip.setAttribute('aria-checked', on ? 'true' : 'false');
     });
 
-    // 非預設值才展開自訂輸入
-    wrap.hidden = isPreset;
-    moreBtn.hidden = !isPreset;
-    moreBtn.setAttribute('aria-expanded', 'false');
-    if (!isPreset) moreBtn.setAttribute('aria-expanded', 'true');
-
-    updateEquivalent(kind);
+    updateWorkEquivalent();
   }
 
-  function getUnits(kind) {
-    const input = kind === 'work' ? el.workUnits : el.otUnits;
-    return round1(num(input.value));
+  function getWorkUnits() {
+    const active = el.workUnitPicker.querySelector('.unit-chip.is-active');
+    return active ? round1(num(active.dataset.value)) : 0;
   }
 
-  /** 更新「＝ N 小時」換算提示 */
-  function updateEquivalent(kind) {
-    const hours = round1(getUnits(kind) * (num(settings.stdHours) || 8));
-    const node = kind === 'work' ? el.workEquivalent : el.otEquivalent;
-    node.textContent = `＝ ${fmtH(hours)} 小時`;
+  function getOtHours() {
+    return round1(num(el.otHours.value));
+  }
+
+  /** 工數 → 小時換算提示 */
+  function updateWorkEquivalent() {
+    const hours = round1(getWorkUnits() * (num(settings.stdHours) || 8));
+    el.workEquivalent.textContent = `＝ ${fmtH(hours)} 小時`;
   }
 
   function hasContent(e) {
     if (!e) return false;
     return !!(String(e.workDesc || '').trim() || String(e.otDesc || '').trim() ||
-      num(e.workUnits) > 0 || num(e.otUnits) > 0);
+      num(e.workUnits) > 0 || num(e.otHours) > 0);
   }
 
   function closeSheet() {
@@ -426,15 +431,15 @@
     if (!editingKey) return;
     const workDesc = el.workDesc.value.trim();
     const otDesc = el.otDesc.value.trim();
-    const workUnits = getUnits('work');
-    const otUnits = getUnits('ot');
+    const workUnits = getWorkUnits();
+    const otHours = getOtHours();
     const tags = el.tagsInput.value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
 
-    const empty = !workDesc && !otDesc && workUnits === 0 && otUnits === 0 && tags.length === 0;
+    const empty = !workDesc && !otDesc && workUnits === 0 && otHours === 0 && tags.length === 0;
     if (empty) {
       delete entries[editingKey];
     } else {
-      entries[editingKey] = { workDesc, workUnits, otDesc, otUnits, tags, updatedAt: Date.now() };
+      entries[editingKey] = { workDesc, workUnits, otDesc, otHours, tags, updatedAt: Date.now() };
     }
 
     save();
@@ -532,28 +537,14 @@
       if (ev.key === 'Escape') { ev.preventDefault(); closeSheet(); }
     });
 
-    /* ---- 工數選項（預設選項 + 自訂）---- */
-    [['work', el.workUnitPicker], ['ot', el.otUnitPicker]].forEach(([kind, picker]) => {
-      picker.addEventListener('click', (ev) => {
-        const chip = ev.target.closest('.unit-chip');
-        if (!chip) return;
-        setUnits(kind, parseFloat(chip.dataset.value));
-      });
+    /* ---- 工數選項（僅 0.5 工 / 1 工）---- */
+    el.workUnitPicker.addEventListener('click', (ev) => {
+      const chip = ev.target.closest('.unit-chip');
+      if (!chip) return;
+      setWorkUnits(parseFloat(chip.dataset.value));
     });
 
-    [['work', el.workMoreBtn], ['ot', el.otMoreBtn]].forEach(([kind, btn]) => {
-      btn.addEventListener('click', () => {
-        const wrap = kind === 'work' ? el.workCustomWrap : el.otCustomWrap;
-        wrap.hidden = false;
-        btn.hidden = true;
-        btn.setAttribute('aria-expanded', 'true');
-        const input = kind === 'work' ? el.workUnits : el.otUnits;
-        input.focus();
-        input.select && input.select();
-      });
-    });
-
-    /* ---- 步進器（面板內 + 抽屜內）---- */
+    /* ---- 步進器（加班時數 + 抽屜設定）---- */
     document.querySelectorAll('.step-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const input = $(btn.dataset.target);
@@ -568,10 +559,6 @@
         input.dispatchEvent(new Event('change', { bubbles: true }));
       });
     });
-
-    // 自訂工數變動 → 更新換算提示
-    el.workUnits.addEventListener('input', () => updateEquivalent('work'));
-    el.otUnits.addEventListener('input', () => updateEquivalent('ot'));
 
     /* ---- 抽屜 ---- */
     el.menuBtn.addEventListener('click', () => {
@@ -592,7 +579,7 @@
       saveSettings();
       renderStats();
       // 面板開著時同步更新小時換算
-      if (!el.sheet.hidden) { updateEquivalent('work'); updateEquivalent('ot'); }
+      if (!el.sheet.hidden) updateWorkEquivalent();
     });
 
     const toggleMap = [
@@ -612,17 +599,14 @@
     el.exportCsv.addEventListener('click', () => {
       const y = view.getFullYear(), m = view.getMonth();
       const prefix = `${y}-${pad(m + 1)}-`;
-      const base = num(settings.stdHours) || 8;
-      const rows = [['日期', '星期', '工時(工)', '工時描述', '加班(工)', '加班描述', '工時(小時)', '加班(小時)', '標籤']];
+      const rows = [['日期', '星期', '工數(工)', '工時描述', '加班(小時)', '加班描述', '標籤']];
       Object.keys(entries).filter((k) => k.startsWith(prefix)).sort().forEach((k) => {
         const e = entries[k];
         const d = new Date(k + 'T00:00:00');
-        const wu = num(e.workUnits), ou = num(e.otUnits);
         rows.push([
           k, `週${WEEK_TC[d.getDay()]}`,
-          wu, e.workDesc || '',
-          ou, e.otDesc || '',
-          round1(wu * base), round1(ou * base),
+          num(e.workUnits), e.workDesc || '',
+          num(e.otHours), e.otDesc || '',
           (e.tags || []).join(' / '),
         ]);
       });
