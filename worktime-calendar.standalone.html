@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
+<meta name="theme-color" content="#2563eb">
+<meta name="description" content="工時月曆 — 快速記錄每日工時與加班，月曆一目了然">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="工時月曆">
+
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" href="data:image/png;base64,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">
+<title>工時月曆</title>
+<!-- 單檔版本：無需伺服器，可直接用瀏覽器開啟 -->
+<style>
+/* ===================== 設計變數 ===================== */
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e4e8f0;
+  --text: #0f172a;
+  --text-2: #5a6782;
+  --text-3: #93a0b8;
+
+  --work: #2563eb;
+  --work-soft: #e5efff;
+  --ot: #f97316;
+  --ot-soft: #fff0e2;
+  --ok: #10b981;
+  --danger: #e11d48;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .04);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, .10);
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, .20);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --surface: #161b25;
+    --surface-2: #1c2230;
+    --border: #2a3345;
+    --text: #e8edf7;
+    --text-2: #a3b0c7;
+    --text-3: #6b7a94;
+
+    --work: #5b9bff;
+    --work-soft: #17253d;
+    --ot: #fb923c;
+    --ot-soft: #3a2415;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, .45);
+    --shadow-lg: 0 24px 60px rgba(0, 0, 0, .6);
+  }
+}
+
+/* ===================== 基礎 ===================== */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+    "Hiragino Sans TC", "Microsoft JhengHei", "Noto Sans TC", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+body { display: flex; flex-direction: column; }
+
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===================== 頂部 ===================== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 8px;
+}
+
+.brand { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  flex: 0 0 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--work), #7c3aed);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.brand h1 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -.2px;
+  white-space: nowrap;
+}
+
+.month-nav { display: flex; align-items: center; gap: 4px; }
+
+.nav-btn, .icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-2);
+  transition: transform .12s ease, background .15s ease, color .15s ease;
+}
+.nav-btn:active, .icon-btn:active { transform: scale(.93); }
+.nav-btn:hover, .icon-btn:hover { color: var(--text); background: var(--surface-2); }
+
+.today-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform .12s ease;
+}
+.today-btn:active { transform: scale(.95); }
+
+.month-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 16px 12px;
+  flex-wrap: wrap;
+}
+.month-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.6px;
+}
+.month-stats {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+  flex-wrap: wrap;
+}
+.stat-pill {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stat-pill b { color: var(--work); font-weight: 800; }
+.stat-pill.ot b { color: var(--ot); }
+
+/* ===================== 月曆 ===================== */
+.calendar-wrap {
+  padding: 0 10px 10px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding: 0 0 6px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: .4px;
+  flex: 0 0 auto;
+}
+.weekday-row span.wk-sat { color: var(--work); opacity: .75; }
+.weekday-row span.wk-sun { color: var(--ot); opacity: .8; }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(78px, 1fr);
+  gap: 4px;
+  padding-bottom: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: start;
+}
+
+.day {
+  position: relative;
+  min-height: 78px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 5px 6px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.day:active { transform: scale(.97); }
+
+.day.is-blank {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.day.is-weekend { background: var(--surface-2); }
+
+.day.is-today { border-color: var(--work); box-shadow: 0 0 0 2px color-mix(in srgb, var(--work) 24%, transparent); }
+
+.day.has-entry { border-color: color-mix(in srgb, var(--work) 38%, var(--border)); }
+
+.day.is-holiday .day-num { color: var(--ot); }
+
+.day-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.day.is-today .day-num {
+  color: #fff;
+  background: var(--work);
+  width: 21px; height: 21px;
+  border-radius: 50%;
+  justify-content: center;
+  font-size: 12px;
+}
+
+.day-hours {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--work);
+  line-height: 1.2;
+  letter-spacing: -.2px;
+  flex: 0 0 auto;
+}
+.day-hours .ot-part { color: var(--ot); }
+
+.day-desc {
+  font-size: 10.5px;
+  line-height: 1.32;
+  color: var(--text-2);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  flex: 1 1 auto;
+  margin-top: 1px;
+}
+.day-desc.ot-text { color: var(--ot); opacity: .95; }
+
+.day-badge {
+  position: absolute;
+  right: 5px; top: 5px;
+  display: flex;
+  gap: 3px;
+}
+.badge-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--work);
+}
+.badge-dot.ot { background: var(--ot); }
+
+/* ===================== 底部提示 ===================== */
+.hint-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px calc(12px + var(--safe-b));
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+}
+.hint-icon { font-size: 13px; }
+
+/* ===================== 面板 / 抽屜 ===================== */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 14, 26, .45);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity .22s ease;
+}
+.sheet-backdrop.show { opacity: 1; }
+
+.sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow-lg);
+  max-width: 860px;
+  margin: 0 auto;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(102%);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+  padding-bottom: var(--safe-b);
+}
+.sheet.show { transform: translateY(0); }
+
+.sheet-handle {
+  width: 40px; height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  margin: 9px auto 2px;
+  flex: 0 0 auto;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px 10px;
+  flex: 0 0 auto;
+}
+.sheet-date {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--work);
+  letter-spacing: .2px;
+}
+.sheet-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.3px; }
+
+.sheet-body {
+  padding: 2px 16px 6px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 0; min-width: 0; }
+.field-row { display: flex; gap: 12px; }
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 7px; }
+.dot-work { background: var(--work); }
+.dot-ot { background: var(--ot); }
+
+textarea, .field input[type="text"] {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+textarea:focus, .field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--work);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--work) 16%, transparent);
+  background: var(--surface);
+}
+textarea::placeholder, input::placeholder { color: var(--text-3); }
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.step-btn {
+  width: 40px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1;
+  transition: background .15s ease;
+}
+.step-btn:active { background: color-mix(in srgb, var(--work) 14%, transparent); }
+.stepper input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 11px 0;
+  -moz-appearance: textfield;
+}
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper input:focus { outline: none; }
+
+.sheet-foot {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex: 0 0 auto;
+}
+
+.btn {
+  flex: 1;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14.5px;
+  font-weight: 700;
+  transition: transform .12s ease, filter .15s ease;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--work); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-ghost { background: var(--surface-2); color: var(--text-2); border-color: var(--border); }
+.btn-danger { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); flex: 0 0 84px; }
+.btn-danger:hover { background: color-mix(in srgb, var(--danger) 20%, transparent); }
+
+/* ===================== 抽屜 ===================== */
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(340px, 88vw);
+  z-index: 100;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(102%);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px calc(20px + var(--safe-b));
+  gap: 18px;
+}
+.drawer.show { transform: translateX(0); }
+
+.drawer-head { display: flex; align-items: center; justify-content: space-between; }
+.drawer-head h3 { margin: 0; font-size: 17px; font-weight: 800; }
+
+.drawer-section { display: flex; flex-direction: column; gap: 9px; }
+.drawer-label {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+.switch-row input[type="checkbox"] {
+  appearance: none;
+  width: 44px; height: 26px;
+  border-radius: 999px;
+  background: var(--border);
+  position: relative;
+  transition: background .2s ease;
+  flex: 0 0 44px;
+  margin: 0;
+  cursor: pointer;
+}
+.switch-row input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s cubic-bezier(.22, 1, .36, 1);
+}
+.switch-row input[type="checkbox"]:checked { background: var(--work); }
+.switch-row input[type="checkbox"]:checked::after { transform: translateX(18px); }
+
+.drawer-btn {
+  height: 42px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 650;
+  transition: transform .12s ease, background .15s ease;
+  text-align: left;
+  padding: 0 14px;
+}
+.drawer-btn:active { transform: scale(.98); }
+.drawer-btn:hover { background: color-mix(in srgb, var(--work) 8%, var(--surface-2)); }
+.drawer-btn-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, var(--border)); }
+
+.drawer-help { margin: 0; font-size: 11.5px; line-height: 1.55; color: var(--text-3); }
+.drawer-about { border-top: 1px solid var(--border); padding-top: 14px; }
+
+/* ===================== Toast ===================== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + var(--safe-b));
+  transform: translate(-50%, 16px);
+  z-index: 200;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .94);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: none;
+  max-width: 84vw;
+  text-align: center;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ===================== 響應式 ===================== */
+@media (max-width: 480px) {
+  .day { min-height: 70px; padding: 5px 5px 6px; }
+  .day-desc { -webkit-line-clamp: 2; font-size: 10px; line-height: 1.3; }
+  .day-hours { font-size: 10.5px; }
+  .month-title { font-size: 19px; }
+  .brand h1 { font-size: 15px; }
+  .field-row { flex-direction: column; gap: 14px; }
+  .calendar-grid { grid-auto-rows: minmax(70px, 1fr); gap: 3px; }
+  .weekday-row { gap: 3px; }
+}
+
+@media (min-width: 700px) {
+  .day { min-height: 100px; padding: 8px 9px 9px; }
+  .day-desc { -webkit-line-clamp: 3; font-size: 11.5px; }
+  .day-num { font-size: 14px; }
+  .day-hours { font-size: 12.5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="17" rx="2.5"></rect>
+            <path d="M3 9.5h18M8 2.5v4M16 2.5v4"></path>
+          </svg>
+        </span>
+        <h1>工時月曆</h1>
+      </div>
+
+      <nav class="month-nav" aria-label="月份切換">
+        <button id="prevMonth" class="nav-btn" type="button" aria-label="上一個月">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button id="todayBtn" class="today-btn" type="button">今天</button>
+        <button id="nextMonth" class="nav-btn" type="button" aria-label="下一個月">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </nav>
+
+      <button id="menuBtn" class="icon-btn" type="button" aria-label="更多操作" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+      </button>
+    </div>
+
+    <div class="month-title-row">
+      <h2 id="monthTitle" class="month-title">—</h2>
+      <div id="monthStats" class="month-stats"></div>
+    </div>
+  </header>
+
+  <main class="calendar-wrap">
+    <div class="weekday-row" id="weekdayRow"></div>
+    <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="月曆"></div>
+  </main>
+
+  <footer class="hint-bar">
+    <span class="hint-icon" aria-hidden="true">👆</span>
+    <span>雙擊日期可新增工時 / 加班描述</span>
+  </footer>
+</div>
+
+<!-- ============ 編輯面板 ============ -->
+<div id="sheetBackdrop" class="sheet-backdrop" hidden></div>
+<section id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-handle" aria-hidden="true"></div>
+
+  <header class="sheet-head">
+    <div>
+      <p id="sheetDate" class="sheet-date">—</p>
+      <h3 id="sheetTitle" class="sheet-title">新增記錄</h3>
+    </div>
+    <button id="sheetClose" class="icon-btn" type="button" aria-label="關閉">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </header>
+
+  <div class="sheet-body">
+    <div class="field">
+      <label class="field-label" for="workDesc">
+        <span class="dot dot-work"></span>工時描述
+      </label>
+      <textarea id="workDesc" rows="3" placeholder="例：專案 A 開發、需求評審…"></textarea>
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label class="field-label" for="workHours">
+          <span class="dot dot-work"></span>工時
+        </label>
+        <div class="stepper">
+          <button type="button" class="step-btn" data-target="workHours" data-delta="-0.5" aria-label="減少半小時">−</button>
+          <input id="workHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="8">
+          <button type="button" class="step-btn" data-target="workHours" data-delta="0.5" aria-label="增加半小時">+</button>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label" for="otHours">
+          <span class="dot dot-ot"></span>加班時數
+        </label>
+        <div class="stepper">
+          <button type="button" class="step-btn" data-target="otHours" data-delta="-0.5" aria-label="減少半小時">−</button>
+          <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
+          <button type="button" class="step-btn" data-target="otHours" data-delta="0.5" aria-label="增加半小時">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="otDesc">
+        <span class="dot dot-ot"></span>加班描述
+      </label>
+      <textarea id="otDesc" rows="2" placeholder="例：上線支援、客戶會議…"></textarea>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="tagsInput">標籤（選填）</label>
+      <input id="tagsInput" type="text" placeholder="以逗號分隔，例：出差, 遠端">
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <button id="deleteBtn" class="btn btn-danger" type="button" hidden>刪除</button>
+    <button id="cancelBtn" class="btn btn-ghost" type="button">取消</button>
+    <button id="saveBtn" class="btn btn-primary" type="button">儲存</button>
+  </footer>
+</section>
+
+<!-- ============ 側邊選單 ============ -->
+<div id="drawerBackdrop" class="sheet-backdrop" hidden></div>
+<aside id="drawer" class="drawer" hidden aria-label="選單">
+  <header class="drawer-head">
+    <h3>工時月曆</h3>
+    <button id="drawerClose" class="icon-btn" type="button" aria-label="關閉">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </header>
+
+  <div class="drawer-section">
+    <p class="drawer-label">標準每日工時</p>
+    <div class="stepper stepper-wide">
+      <button type="button" class="step-btn" data-target="stdHours" data-delta="-0.5">−</button>
+      <input id="stdHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="8">
+      <button type="button" class="step-btn" data-target="stdHours" data-delta="0.5">+</button>
+    </div>
+    <p class="drawer-help">用於計算「本月應出勤工時」與達標率</p>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label">顯示選項</p>
+    <label class="switch-row">
+      <span>顯示週末</span>
+      <input id="optWeekend" type="checkbox" checked>
+    </label>
+    <label class="switch-row">
+      <span>月曆上顯示時數</span>
+      <input id="optShowHours" type="checkbox" checked>
+    </label>
+    <label class="switch-row">
+      <span>週一為每週第一天</span>
+      <input id="optMondayFirst" type="checkbox" checked>
+    </label>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label">資料</p>
+    <button id="exportCsv" class="drawer-btn" type="button">匯出 CSV（本月）</button>
+    <button id="exportJson" class="drawer-btn" type="button">匯出備份 JSON</button>
+    <button id="importJson" class="drawer-btn" type="button">匯入備份 JSON</button>
+    <input id="importFile" type="file" accept="application/json,.json" hidden>
+    <button id="clearAll" class="drawer-btn drawer-btn-danger" type="button">清除全部資料</button>
+  </div>
+
+  <div class="drawer-section drawer-about">
+    <p id="installHint" class="drawer-help"></p>
+    <p class="drawer-help">資料儲存在此裝置的瀏覽器中，離線可用。</p>
+  </div>
+</aside>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* =========================================================
+ * 工時月曆 PWA
+ * 主介面：月曆；雙擊日期 → 新增/編輯 工時描述 + 加班描述
+ * 儲存：localStorage（同步、離線可用），含版本號
+ * ========================================================= */
+(() => {
+  'use strict';
+
+  const STORE_KEY = 'worktime-calendar:v1';
+  const SETTINGS_KEY = 'worktime-calendar:settings:v1';
+
+  const DEFAULTS = {
+    stdHours: 8,
+    showWeekend: true,
+    showHours: true,
+    mondayFirst: true,
+  };
+
+  /* ---------------- 狀態 ---------------- */
+  let entries = {};              // { 'YYYY-MM-DD': {workDesc, workHours, otDesc, otHours, tags, updatedAt} }
+  let settings = { ...DEFAULTS };
+  let view = new Date();         // 目前顯示月份
+  let editingKey = null;         // 正在編輯的日期 key
+
+  /* ---------------- 工具 ---------------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const todayKey = () => keyOf(new Date());
+  const isSameMonth = (a, b) => a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth();
+  const num = (v) => { const n = parseFloat(v); return Number.isFinite(n) && n > 0 ? n : 0; };
+  const round1 = (n) => Math.round(n * 10) / 10;
+  const fmtH = (n) => round1(n).toString().replace(/\.0$/, '');
+
+  const WEEK_TC = ['日', '一', '二', '三', '四', '五', '六'];
+
+  function fmtDateLabel(d) {
+    const w = WEEK_TC[d.getDay()];
+    return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日（週${w}）`;
+  }
+
+  /* ---------------- 儲存 ---------------- */
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') entries = parsed.data || parsed;
+      }
+    } catch (e) { console.warn('讀取資料失敗', e); }
+
+    try {
+      const rs = localStorage.getItem(SETTINGS_KEY);
+      if (rs) settings = { ...DEFAULTS, ...JSON.parse(rs) };
+    } catch (e) { /* 用預設 */ }
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, updatedAt: Date.now(), data: entries }));
+    } catch (e) {
+      toast('儲存失敗，瀏覽器空間可能已滿');
+      console.error(e);
+    }
+  }
+
+  function saveSettings() {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) { /* noop */ }
+  }
+
+  /* ---------------- 畫面元素 ---------------- */
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    monthTitle: $('monthTitle'),
+    monthStats: $('monthStats'),
+    weekdayRow: $('weekdayRow'),
+    calendarGrid: $('calendarGrid'),
+    prevMonth: $('prevMonth'),
+    nextMonth: $('nextMonth'),
+    todayBtn: $('todayBtn'),
+    menuBtn: $('menuBtn'),
+
+    sheet: $('sheet'),
+    sheetBackdrop: $('sheetBackdrop'),
+    sheetDate: $('sheetDate'),
+    sheetTitle: $('sheetTitle'),
+    sheetClose: $('sheetClose'),
+    workDesc: $('workDesc'),
+    workHours: $('workHours'),
+    otDesc: $('otDesc'),
+    otHours: $('otHours'),
+    tagsInput: $('tagsInput'),
+    saveBtn: $('saveBtn'),
+    cancelBtn: $('cancelBtn'),
+    deleteBtn: $('deleteBtn'),
+
+    drawer: $('drawer'),
+    drawerBackdrop: $('drawerBackdrop'),
+    drawerClose: $('drawerClose'),
+    stdHours: $('stdHours'),
+    optWeekend: $('optWeekend'),
+    optShowHours: $('optShowHours'),
+    optMondayFirst: $('optMondayFirst'),
+    exportCsv: $('exportCsv'),
+    exportJson: $('exportJson'),
+    importJson: $('importJson'),
+    importFile: $('importFile'),
+    clearAll: $('clearAll'),
+    installHint: $('installHint'),
+
+    toast: $('toast'),
+  };
+
+  /* ---------------- Toast ---------------- */
+  let toastTimer = null;
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.hidden = false;
+    requestAnimationFrame(() => el.toast.classList.add('show'));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.toast.classList.remove('show');
+      setTimeout(() => { el.toast.hidden = true; }, 220);
+    }, 2000);
+  }
+
+  /* ---------------- 月曆渲染 ---------------- */
+  function entriesOfMonth(y, m) {
+    const prefix = `${y}-${pad(m + 1)}-`;
+    return Object.entries(entries)
+      .filter(([k]) => k.startsWith(prefix))
+      .map(([, v]) => v);
+  }
+
+  function renderStats() {
+    const y = view.getFullYear(), m = view.getMonth();
+    const list = entriesOfMonth(y, m);
+    const totalWork = list.reduce((s, e) => s + num(e.workHours), 0);
+    const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);
+    const days = list.filter((e) => num(e.workHours) > 0 || num(e.otHours) > 0 || e.workDesc || e.otDesc).length;
+
+    // 本月應出勤工時：週一至週五天數 × 標準工時
+    const dim = new Date(y, m + 1, 0).getDate();
+    let workdays = 0;
+    for (let d = 1; d <= dim; d++) {
+      const dow = new Date(y, m, d).getDay();
+      if (dow !== 0 && dow !== 6) workdays++;
+    }
+    const expected = workdays * num(settings.stdHours);
+    const rate = expected > 0 ? Math.round((totalWork / expected) * 100) : 0;
+
+    el.monthStats.innerHTML = `
+      <span class="stat-pill">工時 <b>${fmtH(totalWork)}</b> h</span>
+      <span class="stat-pill ot">加班 <b>${fmtH(totalOt)}</b> h</span>
+      <span class="stat-pill">記錄 <b>${days}</b> 天</span>
+      <span class="stat-pill">達標 <b>${rate}</b>%</span>
+    `;
+  }
+
+  function renderWeekdayRow() {
+    const order = settings.mondayFirst ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6];
+    el.weekdayRow.innerHTML = order
+      .map((i) => {
+        const cls = i === 6 ? 'wk-sat' : i === 0 ? 'wk-sun' : '';
+        return `<span class="${cls}">${WEEK_TC[i]}</span>`;
+      })
+      .join('');
+  }
+
+  function renderCalendar() {
+    const y = view.getFullYear(), m = view.getMonth();
+    el.monthTitle.textContent = `${y} 年 ${m + 1} 月`;
+    renderWeekdayRow();
+
+    // 月曆第一個格子
+    const first = new Date(y, m, 1);
+    let offset = settings.mondayFirst ? (first.getDay() + 6) % 7 : first.getDay();
+
+    const dim = new Date(y, m + 1, 0).getDate();
+    const prevDim = new Date(y, m, 0).getDate();
+    const cells = [];
+    const tKey = todayKey();
+
+    // 前置日期（上月）
+    for (let i = offset - 1; i >= 0; i--) {
+      cells.push({ blank: true, day: prevDim - i });
+    }
+    // 本月
+    for (let d = 1; d <= dim; d++) {
+      const date = new Date(y, m, d);
+      const k = keyOf(date);
+      const dow = date.getDay();
+      const e = entries[k];
+      cells.push({
+        key: k,
+        day: d,
+        dow,
+        isWeekend: dow === 0 || dow === 6,
+        isToday: k === tKey,
+        entry: e,
+      });
+    }
+    // 後置補齊至整週
+    const tail = (7 - (cells.length % 7)) % 7;
+    for (let i = 1; i <= tail; i++) cells.push({ blank: true, day: i });
+
+    el.calendarGrid.innerHTML = cells.map(cellHTML).join('');
+  }
+
+  function cellHTML(c) {
+    if (c.blank) {
+      return `<div class="day is-blank" aria-hidden="true"></div>`;
+    }
+    const e = c.entry || {};
+    const wh = num(e.workHours);
+    const oh = num(e.otHours);
+    const hasWork = wh > 0 || (e.workDesc && e.workDesc.trim());
+    const hasOt = oh > 0 || (e.otDesc && e.otDesc.trim());
+    const hasEntry = hasWork || hasOt;
+
+    const classes = ['day'];
+    if (c.isWeekend) classes.push('is-weekend');
+    if (c.isToday) classes.push('is-today');
+    if (hasEntry) classes.push('has-entry');
+
+    let hours = '';
+    if (settings.showHours && hasEntry) {
+      const parts = [];
+      if (wh > 0) parts.push(`${fmtH(wh)}h`);
+      if (oh > 0) parts.push(`<span class="ot-part">+${fmtH(oh)}h</span>`);
+      if (parts.length) hours = `<div class="day-hours">${parts.join(' ')}</div>`;
+    }
+
+    const descHtml = e.workDesc && e.workDesc.trim()
+      ? `<div class="day-desc">${escapeHtml(e.workDesc.trim())}</div>`
+      : e.otDesc && e.otDesc.trim()
+        ? `<div class="day-desc ot-text">${escapeHtml(e.otDesc.trim())}</div>`
+        : '';
+
+    let badges = '';
+    if (hasEntry) {
+      badges = `<div class="day-badge">
+        ${hasWork ? '<i class="badge-dot"></i>' : ''}
+        ${hasOt ? '<i class="badge-dot ot"></i>' : ''}
+      </div>`;
+    }
+
+    const label = `${fmtDateLabel(new Date(c.key + 'T00:00:00'))}${hasEntry ? '，已有記錄' : '，尚無記錄'}`;
+    return `<div class="${classes.join(' ')}" data-key="${c.key}" role="gridcell" tabindex="0" aria-label="${escapeAttr(label)}">
+      ${badges}
+      <div class="day-num">${c.day}</div>
+      ${hours}
+      ${descHtml}
+    </div>`;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (ch) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+    ));
+  }
+  const escapeAttr = escapeHtml;
+
+  function render() {
+    renderCalendar();
+    renderStats();
+  }
+
+  /* ---------------- 面板：開啟 / 關閉 ---------------- */
+  let lastFocused = null;
+
+  function openSheet(key) {
+    editingKey = key;
+    const d = new Date(key + 'T00:00:00');
+    const e = entries[key] || {};
+
+    el.sheetDate.textContent = fmtDateLabel(d);
+    el.sheetTitle.textContent = hasContent(e) ? '編輯記錄' : '新增記錄';
+    el.workDesc.value = e.workDesc || '';
+    el.workHours.value = e.workHours != null ? e.workHours : num(settings.stdHours);
+    el.otDesc.value = e.otDesc || '';
+    el.otHours.value = e.otHours != null ? e.otHours : 0;
+    el.tagsInput.value = (e.tags || []).join(', ');
+    el.deleteBtn.hidden = !hasContent(e);
+
+    lastFocused = document.activeElement;
+    showOverlay(el.sheetBackdrop, el.sheet);
+    setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
+  }
+
+  function hasContent(e) {
+    if (!e) return false;
+    return !!(String(e.workDesc || '').trim() || String(e.otDesc || '').trim() ||
+      num(e.workHours) > 0 || num(e.otHours) > 0);
+  }
+
+  function closeSheet() {
+    hideOverlay(el.sheetBackdrop, el.sheet);
+    editingKey = null;
+    if (lastFocused && lastFocused.focus) lastFocused.focus({ preventScroll: true });
+  }
+
+  function showOverlay(backdrop, panel) {
+    backdrop.hidden = false;
+    panel.hidden = false;
+    requestAnimationFrame(() => {
+      backdrop.classList.add('show');
+      panel.classList.add('show');
+    });
+  }
+
+  function hideOverlay(backdrop, panel, done) {
+    backdrop.classList.remove('show');
+    panel.classList.remove('show');
+    setTimeout(() => {
+      backdrop.hidden = true;
+      panel.hidden = true;
+      done && done();
+    }, 280);
+  }
+
+  /* ---------------- 儲存 / 刪除 ---------------- */
+  function saveEntry() {
+    if (!editingKey) return;
+    const workDesc = el.workDesc.value.trim();
+    const otDesc = el.otDesc.value.trim();
+    const workHours = num(el.workHours.value);
+    const otHours = num(el.otHours.value);
+    const tags = el.tagsInput.value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
+
+    const empty = !workDesc && !otDesc && workHours === 0 && otHours === 0 && tags.length === 0;
+    if (empty) {
+      delete entries[editingKey];
+    } else {
+      entries[editingKey] = { workDesc, workHours, otDesc, otHours, tags, updatedAt: Date.now() };
+    }
+
+    save();
+    closeSheet();
+    render();
+    toast(empty ? '已清空此日記錄' : '已儲存');
+  }
+
+  function deleteEntry() {
+    if (!editingKey) return;
+    delete entries[editingKey];
+    save();
+    closeSheet();
+    render();
+    toast('已刪除記錄');
+  }
+
+  /* ---------------- 事件綁定 ---------------- */
+  function bind() {
+    el.prevMonth.addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      render();
+    });
+    el.nextMonth.addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      render();
+    });
+    el.todayBtn.addEventListener('click', () => {
+      const t = new Date();
+      view = new Date(t.getFullYear(), t.getMonth(), 1);
+      render();
+      toast('已回到本月');
+    });
+
+    /* ---- 月曆：雙擊開啟；同時支援單擊（觸控裝置）---- */
+    let lastTapKey = null;
+    let lastTapTime = 0;
+    let singleTapTimer = null;
+
+    el.calendarGrid.addEventListener('click', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      const k = cell.dataset.key;
+
+      const now = Date.now();
+      if (lastTapKey === k && now - lastTapTime < 320) {
+        // 雙擊確認
+        clearTimeout(singleTapTimer);
+        lastTapKey = null;
+        lastTapTime = 0;
+        openSheet(k);
+        return;
+      }
+      lastTapKey = k;
+      lastTapTime = now;
+
+      // 觸控裝置：延遲後視為單擊 → 也開啟（行動端較直覺）
+      const isTouch = matchMedia('(hover: none)').matches;
+      if (isTouch) {
+        clearTimeout(singleTapTimer);
+        singleTapTimer = setTimeout(() => { openSheet(k); }, 200);
+      }
+    });
+
+    // 滑鼠雙擊（桌機原生 dblclick）
+    el.calendarGrid.addEventListener('dblclick', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      clearTimeout(singleTapTimer);
+      openSheet(cell.dataset.key);
+    });
+
+    // 鍵盤操作
+    el.calendarGrid.addEventListener('keydown', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        openSheet(cell.dataset.key);
+      }
+    });
+
+    /* ---- 面板 ---- */
+    el.saveBtn.addEventListener('click', saveEntry);
+    el.cancelBtn.addEventListener('click', closeSheet);
+    el.sheetClose.addEventListener('click', closeSheet);
+    el.deleteBtn.addEventListener('click', () => {
+      if (confirm('確定要刪除此日記錄嗎？')) deleteEntry();
+    });
+    el.sheetBackdrop.addEventListener('click', closeSheet);
+
+    // Ctrl/Cmd + Enter 快速儲存
+    el.sheet.addEventListener('keydown', (ev) => {
+      if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') { ev.preventDefault(); saveEntry(); }
+      if (ev.key === 'Escape') { ev.preventDefault(); closeSheet(); }
+    });
+
+    /* ---- 步進器（面板內 + 抽屜內）---- */
+    document.querySelectorAll('.step-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = $(btn.dataset.target);
+        if (!input) return;
+        const delta = parseFloat(btn.dataset.delta);
+        const cur = parseFloat(input.value) || 0;
+        let next = round1(cur + delta);
+        if (next < 0) next = 0;
+        if (next > 24) next = 24;
+        input.value = next;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+
+    /* ---- 抽屜 ---- */
+    el.menuBtn.addEventListener('click', () => {
+      el.stdHours.value = settings.stdHours;
+      el.optWeekend.checked = settings.showWeekend;
+      el.optShowHours.checked = settings.showHours;
+      el.optMondayFirst.checked = settings.mondayFirst;
+      showOverlay(el.drawerBackdrop, el.drawer);
+    });
+    const closeDrawer = () => hideOverlay(el.drawerBackdrop, el.drawer);
+    el.drawerClose.addEventListener('click', closeDrawer);
+    el.drawerBackdrop.addEventListener('click', closeDrawer);
+
+    el.stdHours.addEventListener('change', () => {
+      const v = num(el.stdHours.value);
+      settings.stdHours = v > 0 ? Math.min(v, 24) : 8;
+      el.stdHours.value = settings.stdHours;
+      saveSettings();
+      renderStats();
+    });
+
+    const toggleMap = [
+      [el.optWeekend, 'showWeekend'],
+      [el.optShowHours, 'showHours'],
+      [el.optMondayFirst, 'mondayFirst'],
+    ];
+    toggleMap.forEach(([input, name]) => {
+      input.addEventListener('change', () => {
+        settings[name] = input.checked;
+        saveSettings();
+        render();
+      });
+    });
+
+    /* ---- 匯出 CSV ---- */
+    el.exportCsv.addEventListener('click', () => {
+      const y = view.getFullYear(), m = view.getMonth();
+      const prefix = `${y}-${pad(m + 1)}-`;
+      const rows = [['日期', '星期', '工時', '工時描述', '加班時數', '加班描述', '標籤']];
+      Object.keys(entries).filter((k) => k.startsWith(prefix)).sort().forEach((k) => {
+        const e = entries[k];
+        const d = new Date(k + 'T00:00:00');
+        rows.push([
+          k, `週${WEEK_TC[d.getDay()]}`,
+          e.workHours || 0, e.workDesc || '',
+          e.otHours || 0, e.otDesc || '',
+          (e.tags || []).join(' / '),
+        ]);
+      });
+      if (rows.length === 1) { toast('本月尚無記錄可匯出'); return; }
+      const csv = '\uFEFF' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n');
+      download(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `工時月曆_${y}-${pad(m + 1)}.csv`);
+      toast('已匯出 CSV');
+    });
+
+    /* ---- 匯出 JSON ---- */
+    el.exportJson.addEventListener('click', () => {
+      const payload = { app: 'worktime-calendar', v: 1, exportedAt: new Date().toISOString(), settings, data: entries };
+      download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `工時月曆_備份_${todayKey()}.json`);
+      toast('已匯出備份');
+    });
+
+    /* ---- 匯入 JSON ---- */
+    el.importJson.addEventListener('click', () => el.importFile.click());
+    el.importFile.addEventListener('change', async () => {
+      const file = el.importFile.files && el.importFile.files[0];
+      if (!file) return;
+      try {
+        const parsed = JSON.parse(await file.text());
+        const data = parsed.data || parsed;
+        if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('格式錯誤');
+        const incoming = Object.keys(data).length;
+        if (!confirm(`將匯入 ${incoming} 筆記錄，同名日期會被覆蓋。確定繼續？`)) return;
+        entries = { ...entries, ...data };
+        if (parsed.settings) settings = { ...settings, ...parsed.settings };
+        save(); saveSettings();
+        closeDrawer();
+        render();
+        toast(`已匯入 ${incoming} 筆記錄`);
+      } catch (err) {
+        toast('匯入失敗：檔案格式不正確');
+        console.error(err);
+      } finally {
+        el.importFile.value = '';
+      }
+    });
+
+    /* ---- 清除全部 ---- */
+    el.clearAll.addEventListener('click', () => {
+      if (!confirm('確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。')) return;
+      entries = {};
+      save();
+      closeDrawer();
+      render();
+      toast('已清除全部資料');
+    });
+
+    /* ---- 全域快捷鍵 ---- */
+    document.addEventListener('keydown', (ev) => {
+      if (el.sheet.hidden && el.drawer.hidden) {
+        if (ev.key === 'ArrowLeft') el.prevMonth.click();
+        if (ev.key === 'ArrowRight') el.nextMonth.click();
+        if (ev.key.toLowerCase() === 't') el.todayBtn.click();
+      }
+    });
+
+    // 瀏覽器返回鍵關閉面板
+    window.addEventListener('popstate', () => {
+      if (!el.sheet.hidden) closeSheet();
+      if (!el.drawer.hidden) closeDrawer();
+    });
+  }
+
+  function csvCell(v) {
+    const s = String(v == null ? '' : v);
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function download(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  /* ---------------- PWA 安裝提示 ---------------- */
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (ev) => {
+    ev.preventDefault();
+    deferredPrompt = ev;
+    el.installHint.textContent = '此應用可安裝到主畫面：點右上角選單 → 安裝應用程式。';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    el.installHint.textContent = '已安裝到裝置，可離線使用。';
+  });
+
+  function setupInstallHint() {
+    const isStandalone = matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isStandalone) {
+      el.installHint.textContent = '已以獨立應用模式執行，離線可用。';
+    } else if (isIOS) {
+      el.installHint.textContent = 'iOS：點「分享」→「加入主畫面」即可安裝。';
+    } else if (!deferredPrompt) {
+      el.installHint.textContent = '可安裝為 App：瀏覽器選單 → 安裝／加到主畫面。';
+    }
+  }
+
+  /* ---------------- 啟動 ---------------- */
+  function init() {
+    load();
+    view = new Date();
+    view.setDate(1);
+    bind();
+    render();
+    setupInstallHint();
+
+    if (false && 'serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch((e) => console.warn('SW 註冊失敗', e));
+      });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+</script>
+</body>
+</html>

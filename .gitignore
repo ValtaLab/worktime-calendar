@@ -1,0 +1,20 @@
+# 忽略 macOS / Windows 產物
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 編輯器
+.vscode/
+.idea/
+*.swp
+
+# 日誌
+*.log
+npm-debug.log*
+
+# 依賴（本專案零依賴，僅避免誤提交）
+node_modules/
+
+# 環境變數
+.env
+.env.local
