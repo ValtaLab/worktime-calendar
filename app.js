@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.7.1';
-  const APP_BUILD = '20260916-0006';
+  const APP_VERSION = '1.8.0';
+  const APP_BUILD = '20260916-0043';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -18,6 +18,8 @@
     showWeekend: true,
     showHours: true,
     mondayFirst: true,
+    dayPay: 0,      // 日薪（1 工）
+    otPay: 0,       // 加班時薪
   };
 
   /* ---------------- 狀態 ---------------- */
@@ -36,6 +38,16 @@
 
   // 工數顯示：整數不帶小數，半工保留 .5
   const fmtUnits = (u) => round1(u).toString().replace(/\.0$/, '');
+
+  // 金額顯示：千分位 + 最多兩位小數（有需要才顯示小數）
+  const fmtMoney = (n) => {
+    const v = Math.round(n * 100) / 100;
+    const hasFrac = Math.abs(v % 1) > 0.0001;
+    return v.toLocaleString('zh-TW', {
+      minimumFractionDigits: hasFrac ? 2 : 0,
+      maximumFractionDigits: 2,
+    });
+  };
 
   // 工數僅提供 0.5 工（半日）與 1 工（全日）兩個選擇
   const WORK_CHOICES = [0.5, 1];
@@ -137,6 +149,7 @@
   const el = {
     monthTitle: $('monthTitle'),
     monthStats: $('monthStats'),
+    incomeBar: $('incomeBar'),
     weekdayRow: $('weekdayRow'),
     calendarGrid: $('calendarGrid'),
     prevMonth: $('prevMonth'),
@@ -165,6 +178,8 @@
     drawerBackdrop: $('drawerBackdrop'),
     drawerClose: $('drawerClose'),
     stdHours: $('stdHours'),
+    dayPay: $('dayPay'),
+    otPay: $('otPay'),
     optWeekend: $('optWeekend'),
     optShowHours: $('optShowHours'),
     optMondayFirst: $('optMondayFirst'),
@@ -207,6 +222,47 @@
     return Object.entries(entries)
       .filter(([k]) => k.startsWith(prefix))
       .map(([, v]) => v);
+  }
+
+  // 本月收入：工數 × 日薪 + 加班時數 × 加班時薪
+  // 未設定薪資（兩者皆為 0）時回傳 null，呼叫端據此隱藏區塊
+  function incomeOfMonth(y, m) {
+    const dayPay = num(settings.dayPay);
+    const otPay = num(settings.otPay);
+    if (dayPay <= 0 && otPay <= 0) return null;
+
+    const list = entriesOfMonth(y, m);
+    const totalWork = list.reduce((s, e) => s + num(e.workUnits), 0);
+    const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);
+    const workIncome = totalWork * dayPay;
+    const otIncome = totalOt * otPay;
+    return {
+      totalWork, totalOt, dayPay, otPay, workIncome, otIncome,
+      total: workIncome + otIncome,
+    };
+  }
+
+  function renderIncome() {
+    const y = view.getFullYear(), m = view.getMonth();
+    const inc = incomeOfMonth(y, m);
+    if (!inc) { el.incomeBar.hidden = true; el.incomeBar.innerHTML = ''; return; }
+
+    const parts = [];
+    if (inc.dayPay > 0) {
+      parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} 工 × $${fmtMoney(inc.dayPay)}</span>`);
+    }
+    if (inc.otPay > 0) {
+      parts.push(`<span class="income-part ot">${fmtH(inc.totalOt)} h × $${fmtMoney(inc.otPay)}</span>`);
+    }
+
+    el.incomeBar.innerHTML = `
+      <div class="income-label">
+        <span>本月收入總計</span>
+        ${parts.length ? `<span class="income-formula">${parts.join('<i>＋</i>')}</span>` : ''}
+      </div>
+      <p class="income-total"><span class="income-cur">$</span>${fmtMoney(inc.total)}</p>
+    `;
+    el.incomeBar.hidden = false;
   }
 
   function renderStats() {
@@ -355,6 +411,7 @@
   function render() {
     renderCalendar();
     renderStats();
+    renderIncome();
   }
 
   /* ---------------- 面板：開啟 / 關閉 ---------------- */
@@ -581,6 +638,8 @@
     /* ---- 抽屜 ---- */
     el.menuBtn.addEventListener('click', () => {
       el.stdHours.value = settings.stdHours;
+      el.dayPay.value = settings.dayPay > 0 ? settings.dayPay : '';
+      el.otPay.value = settings.otPay > 0 ? settings.otPay : '';
       el.optWeekend.checked = settings.showWeekend;
       el.optShowHours.checked = settings.showHours;
       el.optMondayFirst.checked = settings.mondayFirst;
@@ -598,6 +657,30 @@
       renderStats();
       // 面板開著時同步更新小時換算
       if (!el.sheet.hidden) updateWorkEquivalent();
+    });
+
+    // 薪資設定：日薪與加班時薪
+    // 用 input 事件即時反映（使用者邊打字邊看到收入變化），change 時寫入儲存
+    const payFields = [
+      [el.dayPay, 'dayPay'],
+      [el.otPay, 'otPay'],
+    ];
+    payFields.forEach(([input, name]) => {
+      const apply = () => {
+        const raw = input.value.trim();
+        // 空字串視為 0（未設定），避免顯示成 NaN
+        const v = raw === '' ? 0 : Math.max(0, num(raw));
+        settings[name] = v;
+        renderIncome();
+      };
+      input.addEventListener('input', apply);
+      input.addEventListener('change', () => {
+        apply();
+        // 正規化顯示：0 或空 → 清空；有值 → 原樣保留
+        input.value = settings[name] > 0 ? settings[name] : '';
+        saveSettings();
+        renderIncome();
+      });
     });
 
     const toggleMap = [

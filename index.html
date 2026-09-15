@@ -52,6 +52,8 @@
   <main class="calendar-wrap">
     <div class="weekday-row" id="weekdayRow"></div>
     <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="月曆"></div>
+    <!-- 收入總計：需在選單設定日薪與加班時薪後才顯示 -->
+    <div id="incomeBar" class="income-bar" hidden></div>
   </main>
 
   <footer class="hint-bar">
@@ -155,6 +157,27 @@
       <button type="button" class="step-btn" data-target="stdHours" data-delta="0.5">+</button>
     </div>
     <p class="drawer-help">用來換算「1 工」對應的實際小時數，也是達標率的計算基準</p>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label">薪資設定</p>
+    <div class="pay-field">
+      <label class="pay-label" for="dayPay">日薪（1 工）</label>
+      <div class="pay-input-wrap">
+        <span class="pay-prefix">$</span>
+        <input id="dayPay" class="pay-input" type="number" inputmode="decimal"
+               step="100" min="0" placeholder="0" value="">
+      </div>
+    </div>
+    <div class="pay-field">
+      <label class="pay-label" for="otPay">加班時薪</label>
+      <div class="pay-input-wrap">
+        <span class="pay-prefix">$</span>
+        <input id="otPay" class="pay-input" type="number" inputmode="decimal"
+               step="10" min="0" placeholder="0" value="">
+      </div>
+    </div>
+    <p class="drawer-help">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 加班時數 × 加班時薪）。留空或 0 則不顯示。</p>
   </div>
 
   <div class="drawer-section">
