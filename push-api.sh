@@ -50,8 +50,11 @@ cd "$(dirname "$0")"
 # ---- 收集要提交的檔案（有變更的 + 未追蹤的，排除雜項）----
 if [ ${#FILES[@]} -eq 0 ]; then
   if git rev-parse --git-dir >/dev/null 2>&1; then
+    # core.quotepath=false：輸出原始 UTF-8 檔名，避免中文檔名被轉義成
+    # "screenshots/01-\346\234\210..." 而導致 [ -f ] 誤判為「已刪除」。
     while IFS= read -r f; do [ -n "$f" ] && FILES+=("$f"); done < <(
-      { git diff --name-only HEAD 2>/dev/null; git ls-files --others --exclude-standard 2>/dev/null; } \
+      { git -c core.quotepath=false diff --name-only HEAD 2>/dev/null
+        git -c core.quotepath=false ls-files --others --exclude-standard 2>/dev/null; } \
         | sort -u \
         | grep -v -E '^(node_modules/|\.git/|.*\.tmp$|.*\.log$|\.DS_Store$)' || true
     )

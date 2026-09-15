@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.5.0';
-  const APP_BUILD = '20260915-1957';
+  const APP_VERSION = '1.6.0';
+  const APP_BUILD = '20260915-2317';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -312,8 +312,12 @@
     let unitsHtml = '';
     if (settings.showHours && hasEntry) {
       const rows = [];
-      if (hasWork) rows.push(`<div class="day-units">${fmtUnits(wu)}<span class="u">工</span></div>`);
-      if (hasOt) rows.push(`<div class="day-units ot-units">+${fmtH(oh)}<span class="u">h</span> 加班</div>`);
+      if (hasWork) {
+        rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">工</span></span></div>`);
+      }
+      if (hasOt) {
+        rows.push(`<div class="day-units ot-units"><span class="uv">+${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
+      }
       if (rows.length) unitsHtml = `<div class="day-units-wrap">${rows.join('')}</div>`;
     }
 
