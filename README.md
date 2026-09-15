@@ -94,6 +94,8 @@ worktime-calendar/
 ├── manifest.webmanifest       # PWA 資訊清單
 ├── bump-version.sh            # 升版工具：同步更新 version.json / sw.js / app.js
 ├── build-standalone.sh        # 打包單檔版（CSS/JS/圖示全部內嵌）
+├── push-api.sh                # 用 GitHub Contents API 提交推送
+├── screenshots/               # 介面截圖
 ├── icons/
 │   ├── icon-192.png
 │   ├── icon-512.png
@@ -132,9 +134,19 @@ bash bump-version.sh minor "這次改了什麼"
 # 2) 重新打包單檔版（可選）
 bash build-standalone.sh
 
-# 3) 推送，GitHub Actions 會自動部署
-git add -A && git commit -m "release: 1.6.0" && git push
+# 3) 提交推送（GitHub Actions 會自動部署）
+GITHUB_TOKEN=<你的 token> bash push-api.sh -m "release: 1.6.0"
 ```
+
+> **為什麼不是 `git push`？** 本專案的開發沙箱對 `github.com:443` 的 TLS 連線
+> 不穩定（會出現 `gnutls_handshake() failed`），改用 `api.github.com` 的 REST API
+> 則穩定可靠。`push-api.sh` 會自動偵測有變更的檔案、逐檔上傳 blob、
+> 組 tree、建 commit、更新 main 分支。
+>
+> ```bash
+> bash push-api.sh --dry-run   # 先看會提交什麼
+> bash push-api.sh --init      # 建立 repo 並啟用 Pages（首次用）
+> ```
 
 `bump-version.sh` 會**同步更新三個地方**，避免版本號不一致導致更新偵測失效：
 

@@ -165,23 +165,57 @@ if st != 200:
 parent = ref["object"]["sha"]
 print(f"▸ 目前 main：{parent[:8]}")
 
+# ---- 讀取遠端目前各檔案的 blob sha，用來略過沒變的檔案 ----
+st, commit = api("GET", f"/repos/{REPO}/git/commits/{parent}")
+remote_shas = {}
+if st == 200:
+    st2, tree = api("GET", f"/repos/{REPO}/git/trees/{commit['tree']['sha']}?recursive=1")
+    if st2 == 200:
+        remote_shas = {e["path"]: e["sha"] for e in tree.get("tree", [])
+                       if e["type"] == "blob"}
+
+def _git_blob_sha(data: bytes) -> str:
+    """算出 git blob 的 SHA-1，用來比對檔案是否有變"""
+    import hashlib
+    h = hashlib.sha1()
+    h.update(b"blob %d\0" % len(data))
+    h.update(data)
+    return h.hexdigest()
+
 # ---- 逐檔上傳 blob ----
 tree = []
+skipped = 0
 for f in FILES:
     p = pathlib.Path(f)
     if not p.is_file():
-        # 檔案不存在 → 視為刪除
-        tree.append({"path": f, "mode": "100644", "type": "blob", "sha": None})
-        print(f"  ✗ 刪除 {f}")
+        # 檔案不存在 → 視為刪除（遠端本來就沒有就略過）
+        if f in remote_shas:
+            tree.append({"path": f, "mode": "100644", "type": "blob", "sha": None})
+            print(f"  ✗ 刪除 {f}")
+        else:
+            print(f"  · 略過 {f}（遠端不存在）")
         continue
+
+    data = p.read_bytes()
+    if remote_shas.get(f) == _git_blob_sha(data):
+        skipped += 1
+        print(f"  · 略過 {f}（內容未變）")
+        continue
+
     st, blob = api("POST", f"/repos/{REPO}/git/blobs", {
-        "content": base64.b64encode(p.read_bytes()).decode(),
+        "content": base64.b64encode(data).decode(),
         "encoding": "base64",
     })
     if st not in (200, 201):
         sys.exit(f"✗ 上傳 blob 失敗：{f} → {st} {blob}")
     tree.append({"path": f, "mode": "100644", "type": "blob", "sha": blob["sha"]})
     print(f"  ✓ {f}")
+
+if not tree:
+    print("\n· 遠端已是最新，無需提交")
+    sys.exit(0)
+if skipped:
+    print(f"· 略過 {skipped} 個未變更的檔案")
 
 # ---- 組 tree ----
 st, t = api("POST", f"/repos/{REPO}/git/trees",
