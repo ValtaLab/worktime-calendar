@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.13.3';
-  const APP_BUILD = '20260917-0122';
+  const APP_VERSION = '1.14.0';
+  const APP_BUILD = '20260917-0203';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -406,7 +406,7 @@
         rows.push(`<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units ot-units"><span class="uv">+${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
+        rows.push(`<div class="day-units ot-units"><span class="uv">OT${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group ot-group">${rows.join('')}</div>`);
     }
@@ -416,20 +416,11 @@
         rows.push(`<div class="day-desc night-text">${escapeHtml(nightDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units night-units"><span class="uv">+${fmtH(nh)}<span class="u">h</span></span><span class="ut">半夜</span></div>`);
+        rows.push(`<div class="day-units night-units"><span class="uv">OT${fmtH(nh)}<span class="u">h</span></span><span class="ut">半夜</span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group night-group">${rows.join('')}</div>`);
     }
     const groupsHtml = groups.length ? `<div class="day-groups">${groups.join('')}</div>` : '';
-
-    let badges = '';
-    if (hasEntry) {
-      badges = `<div class="day-badge">
-        ${hasWork ? '<i class="badge-dot"></i>' : ''}
-        ${hasOt ? '<i class="badge-dot ot"></i>' : ''}
-        ${hasNight ? '<i class="badge-dot night"></i>' : ''}
-      </div>`;
-    }
 
     const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
     if (hasEntry) {
@@ -444,7 +435,6 @@
     // 兩者都是週末（.is-weekend），但配色不同（星期六藍、星期日橘），
     // 與表頭的 六／日 一致；單靠 .is-weekend 無法區分。
     return `<div class="${classes.join(' ')}" data-key="${c.key}" data-dow="${c.dow}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
-      ${badges}
       <div class="day-num">${c.day}</div>
       ${groupsHtml}
     </div>`;

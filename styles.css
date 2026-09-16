@@ -593,23 +593,6 @@ input, textarea { font-family: inherit; }
   font-size: 10.5px;
 }
 
-.day-badge {
-  position: absolute;
-  right: 5px; top: 5px;
-  display: flex;
-  gap: 3px;
-  width: max-content;
-  height: max-content;
-  pointer-events: none;
-}
-.badge-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--work);
-}
-.badge-dot.ot { background: var(--ot); }
-.badge-dot.night { background: var(--night); }
-
 /* ===================== 底部提示 ===================== */
 .hint-bar {
   display: flex;
@@ -710,6 +693,8 @@ input, textarea { font-family: inherit; }
 .dot-ot { background: var(--ot); }
 .dot-night { background: var(--night); }
 
+/* 輸入框字級一律 ≥16px：iOS Safari 在 font-size < 16px 的輸入框取得焦點時
+   會自動放大整個頁面（特寫輸入框），使用者已表示不需要該行為。 */
 textarea, .field input[type="text"] {
   width: 100%;
   padding: 11px 12px;
@@ -717,7 +702,7 @@ textarea, .field input[type="text"] {
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text);
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.5;
   resize: vertical;
   transition: border-color .15s ease, box-shadow .15s ease;
@@ -756,7 +741,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   background: transparent;
   color: var(--text);
   text-align: center;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   padding: 11px 0;
   -moz-appearance: textfield;
@@ -920,7 +905,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   border: none;
   background: transparent;
   color: var(--text);
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   text-align: right;
   padding: 10px 10px 10px 6px;
@@ -1115,7 +1100,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   .day {
     min-height: 72px;
-    padding: 3px 3px 4px;
+    padding: 3px 3px 6px;
     border: none;
     border-radius: 0;
     background: var(--surface);
@@ -1136,7 +1121,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   /* 週末＝數字變色（見檔案前段 .day.is-weekend .day-num），不用底色 */
   /* 不再用底色區分「有沒有填」與「今天」——手機版格子裡已經有
      三個彩色資料塊，外層再上色會和色塊互相干擾（藍底＋藍塊分不出層次）。
-     有填的日子改用左上角的徽章點標示，今天只留日期數字的圓形反白。 */
+     今天只留日期數字的圓形反白。 */
   .day.is-today { background: var(--surface); }
   .day.has-entry { background: var(--surface); }
   .day.is-weekend.has-entry { background: var(--surface); }
@@ -1165,8 +1150,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   /* 半夜加班描述用紫色，與工時（深灰）、加班（橘）三分 */
   .day-desc.night-text { color: var(--night); opacity: 1; }
 
-  /* 三組色塊之間的間距 */
-  .day-groups { gap: 2px; margin-top: 4px; }
+  /* 三組色塊之間的間距（三組並存時略放寬，避免視覺上黏成一塊） */
+  .day-groups { gap: 3px; margin-top: 5px; }
 
   /* 每組＝一個色塊，描述在上、數字在下。
      手機欄寬只有約 46px，上下排列讓描述能用到完整寬度（約 8 個中文字），
@@ -1174,7 +1159,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
      描述與數字共用同一個底色，誰對應誰一目了然。 */
   .day-group {
     gap: 0;
-    padding: 2px 3px;
+    padding: 3px 3px;
     border-radius: 3px;
     /* 手機版欄寬僅約 46px，色塊必須夠明顯才有辨識度。
        深淺以 var(--surface)（白）為底混色，色偏要一眼看出是哪一組；
@@ -1219,10 +1204,6 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     color: color-mix(in srgb, var(--night) 92%, var(--text));
   }
 
-  /* 徽章改為角落小點，不佔排版空間 */
-  .day-badge { right: 3px; top: 3px; gap: 2px; }
-  .badge-dot { width: 4px; height: 4px; }
-
   .month-title { font-size: 19px; }
   .brand h1 { font-size: 15px; }
   .field-row { flex-direction: column; gap: 14px; }
@@ -1259,12 +1240,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   .calendar-wrap { padding: 0 3px 14px; }
   .topbar-inner { padding: 12px 16px 8px; }
   .month-title-row { padding: 2px 16px 12px; }
-  /* 列高改由內容決定（auto）。下限 130px 是「記錄少」時的美觀基準，
-     但三組描述全滿的月份內容會超過 130px，把格子撐破 track 而溢出
-     到收入列（實測 700px 寬時有 7 個格子越界）。
-     故移除硬性下限，讓列高可被壓縮；內容過多時由 .day 的
-     overflow: hidden 裁切，不會影響版面。 */
-  .calendar-grid { grid-auto-rows: minmax(190px, 1fr); align-content: stretch; }
+  /* 列高下限 245px：保證「三組色塊（工時＋加班＋半夜）×各 2 行描述」
+     全部完整顯示（實測需要 238px）。1fr 在空間充足時仍會把列拉得更高；
+     空間不足時頁面出現捲軸（取捨：內容完整 > 不用捲動）。 */
+  .calendar-grid { grid-auto-rows: minmax(245px, 1fr); align-content: stretch; }
   .day { min-height: 0; padding: 9px 11px 10px; }
   .day-groups { flex: 0 1 auto; }
   .day-group { flex: 0 1 auto; min-height: 0; }
@@ -1302,16 +1281,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   .calendar-wrap { padding: 0 6px 20px; }
   .topbar-inner { padding: 12px 24px 8px; }
   .month-title-row { padding: 2px 24px 12px; }
-  /* 列高「理想值」276px 是為了容納最擠的格子（三組描述＋三個色塊）。
-     但桌機螢幕的實際可用高度，換算下來每列往往只有 84–142px──
-     若把它寫成 minmax(276px, 1fr) 的硬性下限，6 列共需 1656px，
-     網格就會撐破容器、最後兩列直接壓在收入列上面（實測 21 個格子
-     越界，收入列被蓋住無法點擊）。
-
-     因此這裡改用 minmax(0, 1fr)：讓列高完全由容器高度決定、
-     可以被真正壓縮，不會溢出。空間不足時由 .day 的 overflow: hidden
-     優雅裁切；空間充足時 1fr 自然會把列分到理想高度。 */
-  .calendar-grid { gap: 6px; grid-auto-rows: minmax(210px, 1fr); }
+  /* 列高下限 285px：保證三組色塊×各 2 行描述完整顯示（實測需要 283px）。
+     空間不足時頁面出現捲軸，而不是把第三個色塊裁掉。 */
+  .calendar-grid { gap: 6px; grid-auto-rows: minmax(285px, 1fr); }
   .weekday-row { gap: 6px; }
   .day-groups { flex: 0 1 auto; }
   .day-group { flex: 0 1 auto; min-height: 0; }
@@ -1375,10 +1347,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   .calendar-wrap { padding: 0 10px 24px; }
   .topbar-inner { padding: 12px 32px 8px; }
   .month-title-row { padding: 2px 32px 14px; }
-  /* 同 1000px 區塊的理由：改用 minmax(0, 1fr) 讓列高可被真正壓縮，
-     並移除 .day 的硬性 min-height，避免 grid item 撐破 track。
-     理想列高（約 302px）在空間充足時由 1fr 自然達到。 */
-  .calendar-grid { gap: 8px; grid-auto-rows: minmax(230px, 1fr); }
+  /* 列高下限 310px：與 1000px 斷點同理，保證三組色塊完整顯示
+     （實測 1440px 寬需要 310px）。 */
+  .calendar-grid { gap: 8px; grid-auto-rows: minmax(310px, 1fr); }
   .weekday-row { gap: 8px; }
   .day { min-height: 0; padding: 13px 16px 14px; gap: 5px; }
   .day-groups { flex: 0 1 auto; }
@@ -1438,8 +1409,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     flex: 0 1 auto;
   }
 
-  /* 格子高度 < 250px：描述限 1 行（2 行已放不下），但一定看得見 */
-  @container day (max-height: 250px) {
+  /* 列高下限已保證三組×2 行描述完整顯示（≥700 時 245px > 238px 需求）。
+     以下容器查詢只是保險：萬一未來列高被調低，仍不會讓描述消失。
+     正常情況（245px 以上）兩個查詢都不會觸發。 */
+
+  /* 格子高度 < 235px：描述限 1 行（2 行已放不下），但一定看得見 */
+  @container day (max-height: 235px) {
     .day-desc {
       display: block;
       -webkit-line-clamp: 1;
@@ -1452,15 +1427,15 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   /* 描述讓到 1 行後，色塊不該再被壓縮，並收緊組間距，
      確保三組都能完整放進格子。 */
-  @container day (max-height: 250px) {
+  @container day (max-height: 235px) {
     .day-units { flex: 0 0 auto; }
     .day-groups { flex: 0 1 auto; gap: 5px; padding-top: 0; margin-top: 7px; }
     .day-group { flex: 0 1 auto; min-height: 0; gap: 1px; }
   }
 
-  /* 格子高度 < 180px：極端窄高才啟用——縮小描述字級與色塊內距，
+  /* 格子高度 < 170px：極端窄高才啟用——縮小描述字級與色塊內距，
      仍**不隱藏描述**。 */
-  @container day (max-height: 180px) {
+  @container day (max-height: 170px) {
     .day-desc { font-size: 11px; }
     .day-num { padding-bottom: 3px; font-size: 14px; }
     .day-units { line-height: 1.06; }
