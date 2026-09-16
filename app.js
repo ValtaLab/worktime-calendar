@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.11.0';
-  const APP_BUILD = '20260916-1927';
+  const APP_VERSION = '1.12.0';
+  const APP_BUILD = '20260916-1825';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -21,6 +21,7 @@
     dayPay: 0,      // 日薪（1 工）
     otPay: 0,       // 加班時薪
     nightPay: 0,    // 半夜加班時薪
+    incomeVisible: false,   // 收入金額預設遮蔽，點一下才顯示
   };
 
   /* ---------------- 狀態 ---------------- */
@@ -268,12 +269,26 @@
       parts.push(`<span class="income-part night">${fmtH(inc.totalNight)} h × $${fmtMoney(inc.nightPay)}</span>`);
     }
 
+    // 金額預設遮蔽，點一下才顯示（避免在旁人面前直接暴露收入）。
+    // 遮蔽狀態存進 settings，重新渲染或換月都不會自己彈開。
+    const shown = settings.incomeVisible === true;
+    const amount = shown
+      ? `<span class="income-cur">$</span>${fmtMoney(inc.total)}`
+      : `<span class="income-mask" aria-hidden="true">••••••</span>`;
+
     el.incomeBar.innerHTML = `
       <div class="income-label">
         <span>本月收入總計</span>
         ${parts.length ? `<span class="income-formula">${parts.join('<i>＋</i>')}</span>` : ''}
       </div>
-      <p class="income-total"><span class="income-cur">$</span>${fmtMoney(inc.total)}</p>
+      <button type="button" class="income-total${shown ? '' : ' is-masked'}"
+              id="incomeToggle"
+              aria-expanded="${shown}"
+              aria-label="${shown ? '本月收入總計，點擊隱藏金額' : '本月收入總計已隱藏，點擊顯示金額'}"
+              title="${shown ? '點擊隱藏金額' : '點擊顯示金額'}">
+        ${amount}
+        <span class="income-eye" aria-hidden="true">${shown ? '隱藏' : '顯示'}</span>
+      </button>
     `;
     el.incomeBar.hidden = false;
   }
@@ -740,6 +755,15 @@
         saveSettings();
         render();
       });
+    });
+
+    /* ---- 收入金額：點一下切換顯示 / 遮蔽 ----
+       按鈕本身每次 renderIncome() 都會重建，所以用委派綁在容器上。 */
+    el.incomeBar.addEventListener('click', (ev) => {
+      if (!ev.target.closest('#incomeToggle')) return;
+      settings.incomeVisible = settings.incomeVisible !== true;
+      saveSettings();
+      renderIncome();
     });
 
     /* ---- 匯出 CSV ---- */

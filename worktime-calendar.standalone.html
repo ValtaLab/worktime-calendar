@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-build="standalone">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
+<meta name="theme-color" content="#2563eb">
+<meta name="description" content="工時月曆 — 快速記錄每日工時與加班，月曆一目了然">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="工時月曆">
+<link rel="apple-touch-icon" href="data:image/png;base64,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">
+<link rel="icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMAAAADACAYAAABS3GwHAAAHoUlEQVR4nO3dwW4cRRCA4Rlr38C+5AF4BA4EiQgcKbElhxVyJAflYEOMSMzjcICTI9kiHBCspcSWAuKAEi48SA7xPsNycDZZ27M7PTvd1VVd/yf1xUTUzFT11PTM7G790bdvK2UmuTcASdW5N2DWIHO5Uez+NOU826QYZIhJ0eOq2ZoQnQwDwWgUPkJM60SkNCU6AIWPZYhMhEGdrjwpfMSQdCKk6AAUPlJIMhFirwEofqQ2qSJOglgdgMKHpGjdIEYHoPiRS+9u0PdBGMWP3HpNgj4dgOKHFktPgpUeAQFNlqrJZSYAxQ+tOtdm1wdhFD+063Q51KUDUPywIrhWQxfBFD+sCeoEIR2A4odVrbUr+To0oE7bgzDO/rBu4aXQog5A8aMUcyfBsg/CgCLM6wCc/VGaxi5AB4BrTYtgzv4o1bUuwG1QuHb1EoizP0p3qcbpAHBtdg3A2R9evF8L0AHgGrdB4dq0A3D5A28mVVXVdAC4lvK7Qc3473ht4X//+OG50JbEV/K+xUAHgGtMALg2qFkAtyr5VnHJ+xZgQgeAayyCA5R8jEretxB0ALjGqxABSj5GJe9bCDoAXGMNEKDkY1TyvoWgA8A11gABSj5GJe9biPqTB2/NNsF/f1n8ngvk3Pza5jtF5iYARa+btYlQ39yxMwFeP6P4rfj0gY2JYGYRTPHbYiVfK3V1sRDSPKwcTFz2+tla9tppG+o7wCuK3zTt+VPdAbQfPIR5pbgT9P2leCCM0joz/yDssx0bdxtK9s+v7Z1aa52pXQOEHFSKX4eQPITkMwe1a4A2t3bOs28j48O4FTAJcm9j07C7BrC63Z4pzJnaSyBAgtlFsNXt9kxjzugAcI0OADEac8YiGHIU5owOADEac8YaAK7RASBGY87oAHDN7PcCWd1uzzTmjA4A15gAcI1FMMRozBkPwiBHYc7oABCjMWeD3BuwrJe/6fyEEWwx2wFgj8Za4y4QXDP7IAz2aKw1OgBcYw0AMRprjQ4A15gAcM3sInjzK74VTpvT3xc/m9FYa3QAuGZ2EWx1uz3TmDM6AFwzuwawut2eacwZHQCusQaAGI05owPANToAxGjMGR+JhByFOeMSCK5xCQQxGnNm9jPBsZyM1t5c/duXw/MbJcbNta+amf2VyBgxmgqievf3lPuWI65EzDa5a6pprFSTqlI52vT8/4/mFMTUaLT2JsV+5YgrFrNN7ppqGC47wOhkcUFMjU7inpFzxJWM2SZ3TTWNlfybIHs4/wgsiKmLf99/f3LElY/ZJndNXR/cBVIWK3fclDE11hoPwrTFyh03ZUyFtUYHUBYrd1xvHYAnwXDN3V2g7XvjTg9+tu+Nb8TYnxxxpWO2yV1TTcNlBwgtjK4FpDFurn21wu2DsO2txQnf3hrfSLFfOeKKxWyTu6YahrtLoNlxf05h3N+Kc9mjKa5EzDa5a6ppuH8Zbl5hlBg3175qxm1QiNGYM5eLYGCK7wWCGI05owPANdYAEKMxZ3QAuMYaAGI05owOANeYAHCNRTDEaMwZHQCusQiGGI05owPANfdrgOPT1WtfHfJwM/1bkzniPt0YXvvb7tkoZchLNNaa6w7QVISL/m45blPxL/q7F24/ENNWbMenq0m+pzNH3LYif7oxNJGzFMPlRyKPAs+0R6erUb+nM0fcw8Az/OHGUHXOUg13HeDorNtlxtFZnDNyjriHm8MuIavDzaHKnKUcrtcAABMArvEgTFms3HFTxtRYa3QAuOZuEbx7t9vDpt27cb43J0fcRy9GXUJWj16MVOYs5XDZAUKLsWvRaowbOgm6TpZSuOsA07HXUmR7kc78GuLutxT3fs8zv1TOUgyXD8KmY+9OczHu3UnzvaA54+4/HzUexv3nI1M5iz3cvwz3TUMxShyTHHG/a5gEkvnXWGsu1wDAlPsOADkac0YHgGv8SiTkKMwZl0AQozFnXALBNToAxGjMGWsAyFGYMzoAxGjMGWsAuEYHgBiNOaMDwDWzH4n8+c/V6vvb49ybgXd++mu19d9orDW1HSCkuEMOOtILyYPWk5X5X4pnEqAPtZ8Iq6uqeqz0rIFuHt8eZ6+l+Z8IAxxbqScXixOt48k6XcCyJ+vj7DW0aJjoAEwCmyzkTfUaYHYcGDiY+OBgXe91v9k1AJNAv4P1sak81Qefnyt8PBHmx7+5BarFD1/YKfpZpicA0NegvrgUYhLAo9rUGgCIjQkA18y+DQrEQAeAa9NPhLEQhjd1VdEB4JzZzwQDMcx+LxCXQfDi/XmfDgDXrq4BmA8o3aUapwPAtabvBmUtgFJdO99zGxSuzbsEogugNI2lTgeAa4sWwXQBlGJumbf9QAaTANYtvNHJbVC4FrIGYI7AqtbaDe0AXArBmqDS7nIXiE4AK4JrtetHIukE0K7TiXqZ5wB0AmjVuTaXfRDGJIA2S9Vkn9ugXA5Bi6XLuO8vxTMJkFuvq5EYD8KYBMild/nG+pG86YYwESAh2ho09qsQdAOkFrVkU/xMKt0AKSS585jyu0GZCIgh6S13iR/KZiJgGSLPmiRfh2YiIIToQ1aJDnDV7A4yGVBVGd8sGNR532poCs6kKJuq12j+B8PlbxtMJAzZAAAAAElFTkSuQmCC">
+<title>工時月曆</title>
+<style>
+/* ===================== 設計變數 ===================== */
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e4e8f0;
+  --text: #0f172a;
+  --text-2: #5a6782;
+  --text-3: #93a0b8;
+
+  --work: #2563eb;
+  --work-soft: #e5efff;
+  --ot: #f97316;
+  --ot-soft: #fff0e2;
+  /* 半夜加班：用紫色與「加班」的橘色明確區隔。
+     紫在日常語感裡偏「深夜 / 安靜」，且與藍（工時）、橘（加班）
+     在色相環上距離夠遠，三者放在同一格也分得開。 */
+  --night: #7c3aed;
+  --night-soft: #f1eafe;
+  --ok: #10b981;
+  --danger: #e11d48;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .04);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, .10);
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, .20);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --surface: #161b25;
+    --surface-2: #1c2230;
+    --border: #2a3345;
+    --text: #e8edf7;
+    --text-2: #a3b0c7;
+    --text-3: #6b7a94;
+
+    --work: #5b9bff;
+    --work-soft: #17253d;
+    --ot: #fb923c;
+    --ot-soft: #3a2415;
+    --night: #a78bfa;
+    --night-soft: #2b2145;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, .45);
+    --shadow-lg: 0 24px 60px rgba(0, 0, 0, .6);
+  }
+}
+
+/* ===================== 基礎 ===================== */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+    "Hiragino Sans TC", "Microsoft JhengHei", "Noto Sans TC", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+body { display: flex; flex-direction: column; }
+
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+/* ===================== 頂部 ===================== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 8px;
+}
+
+.brand { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  flex: 0 0 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--work), #7c3aed);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.brand h1 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -.2px;
+  white-space: nowrap;
+}
+
+.month-nav { display: flex; align-items: center; gap: 4px; }
+
+.nav-btn, .icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-2);
+  transition: transform .12s ease, background .15s ease, color .15s ease;
+}
+.nav-btn:active, .icon-btn:active { transform: scale(.93); }
+.nav-btn:hover, .icon-btn:hover { color: var(--text); background: var(--surface-2); }
+
+.today-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform .12s ease;
+}
+.today-btn:active { transform: scale(.95); }
+
+.month-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 16px 12px;
+  flex-wrap: wrap;
+}
+.month-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.6px;
+}
+.month-stats {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+  flex-wrap: wrap;
+}
+.stat-pill {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stat-pill b { color: var(--work); font-weight: 800; }
+.stat-pill.ot b { color: var(--ot); }
+.stat-pill.night b { color: var(--night); }
+
+/* ===================== 月曆 ===================== */
+.calendar-wrap {
+  padding: 0 10px 10px;
+  /* flex: 1 1 auto 讓月曆撐滿剩餘高度；但**不設 min-height: 0**，
+     否則當視窗高度不足時，這個 flex 子項會被壓到比內容小，
+     導致格子溢出覆蓋收入列。改為由內容決定下限，空間不足時
+     頁面自然可垂直滾動（見檔案末尾「高度不足時的降級策略」）。 */
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding: 0 0 6px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: .4px;
+  flex: 0 0 auto;
+}
+.weekday-row span.wk-sat { color: var(--work); opacity: .75; }
+.weekday-row span.wk-sun { color: var(--ot); opacity: .8; }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(78px, 1fr);
+  gap: 4px;
+  padding-bottom: 8px;
+  /* flex-shrink 必須 > 0：收入列出現時，網格要讓出高度，
+     否則 grid 會撐滿容器、把收入列擠到畫面外或與最後一列重疊。
+     min-height: 0 是 flex 子項可被壓縮的必要條件。 */
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: stretch;
+}
+
+/* ===================== 收入總計 ===================== */
+/*
+ * 位置：月曆網格下方、月曆容器（.calendar-wrap）之內。
+ * 因為 .calendar-grid 是 flex: 1 1 auto，會把容器剩餘高度全部吃掉；
+ * 收入列必須是 flex: 0 0 auto 才不會被壓扁，並搭配 grid 的 min-height: 0
+ * 讓網格「讓位」給收入列，而不是把收入列推出畫面。
+ * hidden 屬性在 flex 容器下仍會被 display: flex 覆蓋，故需明確寫 [hidden]。
+ */
+.income-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+  margin-top: 6px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--work) 24%, var(--border));
+  background: color-mix(in srgb, var(--work) 6%, var(--surface));
+}
+.income-bar[hidden] { display: none; }
+
+.income-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.income-label > span:first-child {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-2);
+  letter-spacing: .3px;
+}
+
+/* 計算式提示：工數 × 日薪 ＋ 時數 × 加班時薪 */
+.income-formula {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.income-formula i {
+  font-style: normal;
+  opacity: .65;
+}
+.income-part.ot { color: color-mix(in srgb, var(--ot) 80%, var(--text-2)); }
+.income-part.night { color: color-mix(in srgb, var(--night) 80%, var(--text-2)); }
+
+/* 金額按鈕：預設遮蔽，點一下才顯示 */
+.income-total {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.8px;
+  color: var(--work);
+  white-space: nowrap;
+  border-radius: 6px;
+  transition: opacity .15s;
+}
+.income-total:hover { opacity: .78; }
+.income-total:focus-visible {
+  outline: 2px solid var(--work);
+  outline-offset: 3px;
+}
+.income-cur { font-size: 15px; font-weight: 700; opacity: .8; }
+
+/* 遮蔽態：改用較輕的字重與字距，並降低對比，明顯區別於真數字 */
+.income-mask {
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: color-mix(in srgb, var(--work) 55%, var(--text-3));
+}
+
+/* 「顯示／隱藏」小標籤 */
+.income-eye {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  color: var(--text-3);
+  border: 1px solid color-mix(in srgb, var(--text-3) 40%, transparent);
+  border-radius: 999px;
+  padding: 1px 7px;
+  line-height: 1.5;
+  align-self: center;
+}
+
+.day {
+  position: relative;
+  min-height: 78px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 5px 6px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.day:active { transform: scale(.97); }
+
+.day.is-blank {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.day.is-weekend { background: var(--surface-2); }
+
+.day.is-today { border-color: var(--work); box-shadow: 0 0 0 2px color-mix(in srgb, var(--work) 24%, transparent); }
+
+.day.has-entry { border-color: color-mix(in srgb, var(--work) 38%, var(--border)); }
+
+.day.is-holiday .day-num { color: var(--ot); }
+
+.day-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.day.is-today .day-num {
+  color: #fff;
+  background: var(--work);
+  width: 21px; height: 21px;
+  border-radius: 50%;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* 面板區塊：工時 / 加班 */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.2px;
+}
+
+/* 工數選項 chips */
+.unit-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.unit-picker-2 .unit-chip-lg {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.unit-chip {
+  flex: 1 1 auto;
+  min-width: 60px;
+  height: 40px;
+  padding: 0 8px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform .12s ease, background .15s ease, color .15s ease, border-color .15s ease;
+}
+.unit-chip:active { transform: scale(.95); }
+.unit-chip:hover { border-color: color-mix(in srgb, var(--work) 45%, var(--border)); color: var(--text); }
+.unit-chip.is-active {
+  background: var(--work);
+  border-color: var(--work);
+  color: #fff;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--work) 35%, transparent);
+}
+
+/* 兩個大選項（0.5 工 / 1 工） */
+.unit-chip-lg {
+  height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 12px;
+}
+.unit-chip-lg .chip-main { font-size: 15.5px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15; }
+.unit-chip-lg .chip-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  opacity: .7;
+  letter-spacing: .3px;
+  line-height: 1.15;
+}
+.unit-chip-lg.is-active .chip-sub { opacity: .9; }
+
+/* 加班時數 stepper（0.5 小時遞進） */
+.stepper-ot { width: 100%; }
+.stepper-ot .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; }
+.stepper-night { width: 100%; }
+.stepper-night .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; color: var(--night); }
+.stepper-display {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+.stepper-display input {
+  width: 2.8em;
+  max-width: 60%;
+  text-align: right;
+  padding: 11px 0;
+}
+.stepper-unit {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  flex: 0 0 auto;
+}
+
+/* 加班的選中色改為橘色系 */
+#otUnitPicker .unit-chip.is-active {
+  background: var(--ot);
+  border-color: var(--ot);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ot) 35%, transparent);
+}
+#otUnitPicker .unit-chip:hover { border-color: color-mix(in srgb, var(--ot) 45%, var(--border)); }
+
+/* 加班 stepper 的加減號用橘色 */
+.stepper-ot .step-btn:active { background: color-mix(in srgb, var(--ot) 16%, transparent); }
+.stepper-ot .step-btn { color: var(--ot); }
+/* 半夜加班 stepper 的加減號用紫色 */
+.stepper-night .step-btn:active { background: color-mix(in srgb, var(--night) 16%, transparent); }
+
+.field-help {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+/* 兩組資料，每組「描述在上、時數在下」：
+   .day-groups ─┬─ .day-group      （工時描述 + 工數）
+                └─ .day-group.ot-group（加班描述 + 加班時數）
+   把每組包成一個 flex column，組內的描述與數字才會黏在一起；
+   整組再靠 margin-top: auto 對齊格子底部。 */
+.day-groups {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+.day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.day-desc {
+  font-size: 10.5px;
+  line-height: 1.32;
+  color: var(--text-2);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  min-width: 0;
+  /* 描述是彈性的：空間不足時優先讓位（壓縮或減少行數）。
+     絕不設 min-height——那會讓描述撐住高度、把色塊推出格子。 */
+  flex: 0 1 auto;
+}
+.day-desc.ot-text { color: var(--ot); opacity: .95; }
+.day-desc.night-text { color: var(--night); opacity: .95; }
+
+.day-units {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--work);
+  line-height: 1.25;
+  letter-spacing: -.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.day-units .u {
+  font-size: 9.5px;
+  font-weight: 700;
+  margin-left: 1px;
+  opacity: .8;
+}
+.day-units.ot-units {
+  color: var(--ot);
+  font-size: 10.5px;
+}
+.day-units.night-units {
+  color: var(--night);
+  font-size: 10.5px;
+}
+
+.day-badge {
+  position: absolute;
+  right: 5px; top: 5px;
+  display: flex;
+  gap: 3px;
+  width: max-content;
+  height: max-content;
+  pointer-events: none;
+}
+.badge-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--work);
+}
+.badge-dot.ot { background: var(--ot); }
+.badge-dot.night { background: var(--night); }
+
+/* ===================== 底部提示 ===================== */
+.hint-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px calc(12px + var(--safe-b));
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+}
+.hint-mark {
+  flex: 0 0 auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-3);
+  opacity: .7;
+}
+
+/* ===================== 面板 / 抽屜 ===================== */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 14, 26, .45);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity .22s ease;
+}
+.sheet-backdrop.show { opacity: 1; }
+
+.sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 100%;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(102%);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+  padding-bottom: var(--safe-b);
+}
+.sheet.show { transform: translateY(0); }
+
+.sheet-handle {
+  width: 40px; height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  margin: 9px auto 2px;
+  flex: 0 0 auto;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px 10px;
+  flex: 0 0 auto;
+}
+.sheet-date {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--work);
+  letter-spacing: .2px;
+}
+.sheet-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.3px; }
+
+.sheet-body {
+  padding: 2px 16px 6px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 0; min-width: 0; }
+.field-row { display: flex; gap: 12px; }
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 7px; }
+.dot-work { background: var(--work); }
+.dot-ot { background: var(--ot); }
+.dot-night { background: var(--night); }
+
+textarea, .field input[type="text"] {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+textarea:focus, .field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--work);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--work) 16%, transparent);
+  background: var(--surface);
+}
+textarea::placeholder, input::placeholder { color: var(--text-3); }
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.step-btn {
+  width: 40px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1;
+  transition: background .15s ease;
+}
+.step-btn:active { background: color-mix(in srgb, var(--work) 14%, transparent); }
+.stepper input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 11px 0;
+  -moz-appearance: textfield;
+}
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper input:focus { outline: none; }
+
+.sheet-foot {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex: 0 0 auto;
+}
+
+.btn {
+  flex: 1;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14.5px;
+  font-weight: 700;
+  transition: transform .12s ease, filter .15s ease;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--work); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-ghost { background: var(--surface-2); color: var(--text-2); border-color: var(--border); }
+.btn-danger { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); flex: 0 0 84px; }
+.btn-danger:hover { background: color-mix(in srgb, var(--danger) 20%, transparent); }
+
+/* ===================== 抽屜 ===================== */
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(340px, 88vw);
+  z-index: 100;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(102%);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px calc(20px + var(--safe-b));
+  gap: 18px;
+}
+.drawer.show { transform: translateX(0); }
+
+.drawer-head { display: flex; align-items: center; justify-content: space-between; }
+.drawer-head h3 { margin: 0; font-size: 17px; font-weight: 800; }
+
+.drawer-section { display: flex; flex-direction: column; gap: 9px; }
+.drawer-label {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+.switch-row input[type="checkbox"] {
+  appearance: none;
+  width: 44px; height: 26px;
+  border-radius: 999px;
+  background: var(--border);
+  position: relative;
+  transition: background .2s ease;
+  flex: 0 0 44px;
+  margin: 0;
+  cursor: pointer;
+}
+.switch-row input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s cubic-bezier(.22, 1, .36, 1);
+}
+.switch-row input[type="checkbox"]:checked { background: var(--work); }
+.switch-row input[type="checkbox"]:checked::after { transform: translateX(18px); }
+
+.drawer-btn {
+  height: 42px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 650;
+  transition: transform .12s ease, background .15s ease;
+  text-align: left;
+  padding: 0 14px;
+}
+.drawer-btn:active { transform: scale(.98); }
+.drawer-btn:hover { background: color-mix(in srgb, var(--work) 8%, var(--surface-2)); }
+.drawer-btn-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, var(--border)); }
+
+.drawer-help { margin: 0; font-size: 11.5px; line-height: 1.55; color: var(--text-3); }
+
+/* 薪資設定：日薪 / 加班時薪
+ * 沿用 .stepper 的視覺語言（同樣的邊框、圓角、surface-2 底色），
+ * 但改為「左側 $ 前綴 + 可輸入金額」的樣式，避免與工時 stepper 混淆。
+ * 用 :focus-within 讓整個外框亮起，點在小字上也能正確顯示焦點。 */
+.pay-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pay-label {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--text);
+  white-space: nowrap;
+}
+.pay-input-wrap {
+  display: flex;
+  align-items: stretch;
+  flex: 0 1 150px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.pay-input-wrap:focus-within {
+  border-color: var(--work);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--work) 16%, transparent);
+  background: var(--surface);
+}
+.pay-prefix {
+  display: grid;
+  place-items: center;
+  padding: 0 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  border-right: 1px solid var(--border);
+}
+.pay-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: right;
+  padding: 10px 10px 10px 6px;
+  -moz-appearance: textfield;
+}
+.pay-input::-webkit-outer-spin-button,
+.pay-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pay-input:focus { outline: none; }
+
+.drawer-about { border-top: 1px solid var(--border); padding-top: 14px; }
+
+/* ===================== 版本資訊 ===================== */
+.version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.version-num {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.2px;
+}
+.version-check {
+  flex: 0 0 auto;
+  height: 38px;
+  text-align: center;
+  padding: 0 14px;
+  color: var(--work);
+  font-weight: 700;
+}
+
+/* ===================== 更新提示橫幅 ===================== */
+.update-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + var(--safe-b));
+  transform: translate(-50%, 130%);
+  z-index: 150;
+  width: min(560px, calc(100vw - 24px));
+  transition: transform .32s cubic-bezier(.22, 1, .36, 1), opacity .3s ease;
+  opacity: 0;
+}
+.update-bar.show { transform: translate(-50%, 0); opacity: 1; }
+.update-bar[hidden] { display: none; }
+
+.update-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 11px 11px 14px;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.update-icon {
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  flex: 0 0 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--work), #7c3aed);
+  color: #fff;
+  animation: spin-once 2.6s ease-in-out infinite;
+}
+@keyframes spin-once {
+  0%, 70%, 100% { transform: rotate(0deg); }
+  80% { transform: rotate(180deg); }
+  90% { transform: rotate(360deg); }
+}
+
+.update-text { flex: 1 1 auto; min-width: 0; }
+.update-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.2px;
+}
+.update-desc {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--text-2);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.update-btn {
+  flex: 0 0 auto;
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--work);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
+  transition: transform .12s ease, filter .15s ease;
+  white-space: nowrap;
+}
+.update-btn:hover { filter: brightness(1.07); }
+.update-btn:active { transform: scale(.96); }
+.update-btn:disabled { opacity: .65; cursor: default; }
+
+.update-close {
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-3);
+  transition: background .15s ease, color .15s ease;
+}
+.update-close:hover { background: var(--surface-2); color: var(--text-2); }
+
+@media (max-width: 400px) {
+  .update-bar-inner { flex-wrap: wrap; }
+  .update-text { flex: 1 1 calc(100% - 90px); }
+  .update-btn { flex: 1 1 100%; order: 3; margin-top: 2px; }
+  .update-close { order: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .update-icon { animation: none; }
+}
+
+/* ===================== Toast ===================== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + var(--safe-b));
+  transform: translate(-50%, 16px);
+  z-index: 200;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .94);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: none;
+  max-width: 84vw;
+  text-align: center;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ===================== 響應式 ===================== */
+/*
+ * 手機版（<= 480px）：改用「網格線分隔」風格，而非一日一卡片。
+ * 卡片式的邊框（2px）、圓角、背景與 3px 間隙在 7 欄分攤下會吃掉約 20% 寬度，
+ * 拿掉後每格內容寬度可由 38px 提升至 46px，讓描述與工數字數更寬裕。
+ * 格線用 grid 的 1px gap + 容器底色透出，避免每格各畫 border 造成雙線。
+ */
+@media (max-width: 480px) {
+  .calendar-grid {
+    /* 列高以內容為基礎（auto），下限 64px。
+       不用 1fr：那會把只有少量記錄的月份硬拉成等高，在下方留下大片空區。
+       auto 讓有記錄的列自然長高、空白列維持 64px，網格收在內容結束處。
+
+       格線做法：容器鋪滿 --grid-line 底色，格子之間留 1px gap 讓底色透出，
+       形成連續的細格線。全域的 --border（#e4e8f0）在手機高解析度下
+       對比不足幾乎看不見，故另訂較深的 --grid-line。 */
+    --grid-line: color-mix(in srgb, var(--text) 22%, var(--surface));
+    grid-auto-rows: minmax(64px, auto);
+    gap: 1px;
+    align-content: start;
+    background: var(--grid-line);
+    padding: 1px 0;
+    /* 手機版列高由內容決定，網格不該再撐滿容器（那會在最後一列下方
+       留下一大片空白）。改為 flex: 0 0 auto 讓它自然收在內容結束處；
+       收入列再用 margin-top: auto 貼到容器底部，兩者之間就沒有空隙。 */
+    flex: 0 0 auto;
+  }
+  .weekday-row { gap: 1px; }
+  /* 表頭也加上分隔線，與日期格對齊 */
+  .weekday-row {
+    border-bottom: 1px solid var(--grid-line);
+  }
+
+  .day {
+    min-height: 72px;
+    padding: 3px 3px 4px;
+    border: none;
+    border-radius: 0;
+    background: var(--surface);
+    gap: 2px;
+    transition: background .12s ease;
+  }
+  .day:active { transform: none; background: var(--surface-2); }
+
+  /* 網格風格下，週末與今日改用底色區分，而非邊框 */
+  .day.is-weekend { background: var(--surface-2); }
+  .day.is-blank { background: var(--surface); }
+  .day.is-today {
+    background: color-mix(in srgb, var(--work) 10%, var(--surface));
+  }
+  .day.has-entry { background: color-mix(in srgb, var(--work) 5%, var(--surface)); }
+  .day.has-entry.is-weekend { background: color-mix(in srgb, var(--work) 8%, var(--surface-2)); }
+
+  /* 日期數字：縮小並靠左上，把中段空間留給描述 */
+  .day-num { font-size: 11px; line-height: 1; gap: 2px; }
+  .day.is-today .day-num {
+    width: 16px; height: 16px;
+    font-size: 10px;
+    background: var(--work);
+    color: #fff;
+  }
+
+  /* 描述：手機版欄寬只有約 46px，中文每行約 4 個字。
+     三個描述各佔一個 .day-desc，故每個限 2 行——
+     手機格子高由內容決定，三個描述都放 3 行的話一天會長到近 200px，
+     整個月的月曆就失去「一眼掃描」的意義，故手機版比其他斷點更嚴。 */
+  .day-desc {
+    -webkit-line-clamp: 2;
+    font-size: 9.5px;
+    line-height: 1.25;
+  }
+  /* 加班描述在手機版也維持橘色，與工時描述一眼可分 */
+  .day-desc.ot-text { color: var(--ot); opacity: 1; }
+  /* 半夜加班描述用紫色，與工時（深灰）、加班（橘）三分 */
+  .day-desc.night-text { color: var(--night); opacity: 1; }
+
+  /* 兩組之間的分隔：組本身只靠 gap 分開，不畫線。
+     三組時 gap 要縮到 2px，否則「3 描述 × 2 行」的格子會太高。 */
+  .day-groups { gap: 2px; margin-top: auto; }
+
+  /* 工數／加班：滿版底色塊，橫跨格子寬度並貼齊底部。
+     負 margin 抵銷格子的左右與底部 padding，讓色塊真正頂到格線，
+     視覺上形成連續的資料列，而非一顆顆獨立膠囊。
+     負 margin 改掛在「組內最後一個色塊」上：色塊是組的子元素，
+     若掛在外層 .day-groups 會連描述一起拉寬，很難對齊。
+     每組的描述與自己的數字黏在一起（gap: 1px），
+     組與組之間留 3px，維持「兩組資料」的辨識度。 */
+  .day-group { gap: 1px; }
+  .day-units {
+    font-size: 9.5px;
+    line-height: 1.6;
+    padding: 0 3px;
+    border-radius: 0;
+    /* 手機版色塊要夠明顯才有辨識度：15% 在白底上幾乎看不出來，
+       提高到 26%（工數）／30%（加班），維持淺色調但清楚可見。 */
+    background: color-mix(in srgb, var(--work) 26%, var(--surface));
+    color: color-mix(in srgb, var(--work) 88%, var(--text));
+    justify-content: center;
+    margin: 0 -3px;
+  }
+  /* 整組的最後一個色塊才往下多撐 4px，貼齊格子底部的格線 */
+  .day-group:last-child .day-units { margin-bottom: -4px; }
+  /* 只有一組時（沒有加班），單獨的色塊也要貼底 */
+  .day-groups > .day-group:only-child .day-units { margin-bottom: -4px; }
+  .day-units .u { font-size: 8px; }
+  .day-units .ut { display: none; }
+  .day-units.ot-units {
+    font-size: 9px;
+    background: color-mix(in srgb, var(--ot) 30%, var(--surface));
+    color: color-mix(in srgb, var(--ot) 92%, var(--text));
+  }
+  /* 半夜加班色塊：紫色系，與工數、加班塊併排時仍分得開 */
+  .day-units.night-units {
+    font-size: 9px;
+    background: color-mix(in srgb, var(--night) 30%, var(--surface));
+    color: color-mix(in srgb, var(--night) 92%, var(--text));
+  }
+
+  /* 徽章改為角落小點，不佔排版空間 */
+  .day-badge { right: 3px; top: 3px; gap: 2px; }
+  .badge-dot { width: 4px; height: 4px; }
+
+  .month-title { font-size: 19px; }
+  .brand h1 { font-size: 15px; }
+  .field-row { flex-direction: column; gap: 14px; }
+  .unit-chip { min-width: 52px; height: 38px; font-size: 12.5px; flex: 1 1 28%; }
+
+  /* 手機版收入列：改為「標籤在上、金額在下」的兩行堆疊。
+     手機寬度只有 360–430px，橫向排列會把 24px 的總額擠成換行，
+     看起來像排版壞掉；堆疊後金額可獨占整行，反而更醒目。
+     margin-top: auto 把收入列推到容器底部，吸收網格縮短後留下的空間，
+     避免最後一列與收入列之間出現大片空白。 */
+  .income-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin-top: auto;
+    padding: 9px 11px;
+    border-radius: 8px;
+  }
+  .income-label > span:first-child { font-size: 11.5px; }
+  .income-formula { font-size: 10.5px; gap: 3px; }
+  .income-total { font-size: 22px; justify-content: flex-start; }
+  .income-cur { font-size: 14px; }
+  .income-mask { font-size: 19px; }
+  .income-eye { font-size: 10px; padding: 1px 6px; }
+
+  /* 薪資欄位在手機上改為上下排，輸入框撐滿寬度才好按 */
+  .pay-field { flex-direction: column; align-items: stretch; gap: 5px; }
+  .pay-input-wrap { flex: 1 1 auto; }
+  .pay-input { padding: 9px 10px 9px 6px; }
+}
+
+@media (min-width: 700px) {
+  #app { padding: 0 14px; }
+  .calendar-wrap { padding: 0 14px 14px; }
+  /* 列高改由內容決定（auto）。下限 130px 是「記錄少」時的美觀基準，
+     但三組描述全滿的月份內容會超過 130px，把格子撐破 track 而溢出
+     到收入列（實測 700px 寬時有 7 個格子越界）。
+     故移除硬性下限，讓列高可被壓縮；內容過多時由 .day 的
+     overflow: hidden 裁切，不會影響版面。 */
+  .calendar-grid { grid-auto-rows: minmax(148px, 1fr); align-content: stretch; }
+  .day { min-height: 0; padding: 9px 11px 10px; }
+  .day-groups { flex: 0 1 auto; }
+  .day-group { flex: 0 1 auto; min-height: 0; }
+  /* 每個描述各自最多 2 行。不要給 min-height——那會讓只有一行短文的
+     加班描述也佔滿兩行高度，兩組之間出現莫名空隙。 */
+  .day-desc {
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    max-height: 2.8em;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .day-num { font-size: 15px; }
+  .day-units { font-size: 14px; line-height: 1.2; letter-spacing: -.3px; }
+  .day-units .u { font-size: 11px; }
+  .day-units.ot-units { font-size: 13px; }
+  .day-units.night-units { font-size: 13px; }
+  .day-groups { gap: 6px; margin-top: auto; padding-top: 3px; }
+  .day-group { gap: 2px; }
+  .field-group { padding: 14px; }
+  .weekday-row { font-size: 12px; }
+  /* 平板：收入列左右留白與月曆一致，總額放大一級 */
+  .income-bar { padding: 13px 17px; margin-top: 10px; }
+  .income-total { font-size: 26px; }
+  .income-mask { font-size: 23px; }
+  .income-eye { font-size: 11px; }
+}
+
+/* 大螢幕：格子變寬，工數／加班以醒目色塊呈現，用滿橫向空間 */
+@media (min-width: 1000px) {
+  #app { padding: 0 20px; }
+  .calendar-wrap { padding: 0 20px 20px; }
+  /* 列高「理想值」276px 是為了容納最擠的格子（三組描述＋三個色塊）。
+     但桌機螢幕的實際可用高度，換算下來每列往往只有 84–142px──
+     若把它寫成 minmax(276px, 1fr) 的硬性下限，6 列共需 1656px，
+     網格就會撐破容器、最後兩列直接壓在收入列上面（實測 21 個格子
+     越界，收入列被蓋住無法點擊）。
+
+     因此這裡改用 minmax(0, 1fr)：讓列高完全由容器高度決定、
+     可以被真正壓縮，不會溢出。空間不足時由 .day 的 overflow: hidden
+     優雅裁切；空間充足時 1fr 自然會把列分到理想高度。 */
+  .calendar-grid { gap: 6px; grid-auto-rows: minmax(176px, 1fr); }
+  .weekday-row { gap: 6px; }
+  .day-groups { flex: 0 1 auto; }
+  .day-group { flex: 0 1 auto; min-height: 0; }
+  .income-bar { margin-top: 12px; padding: 15px 21px; border-radius: 12px; }
+  .income-label > span:first-child { font-size: 13.5px; }
+  .income-formula { font-size: 12.5px; }
+  .income-total { font-size: 32px; }
+  .income-cur { font-size: 19px; }
+  .income-mask { font-size: 28px; letter-spacing: 3px; }
+  .income-eye { font-size: 12px; padding: 2px 9px; }
+  /* min-height: 0 而非 276px──列高已被 grid 壓到 136px 左右，
+     若這裡再要求 276px，格子會撐破 track、最後兩列壓在收入列上
+     （實測 14 個格子越界）。理想高度交由 grid 的 1fr 在空間夠時分配。 */
+  .day { min-height: 0; padding: 11px 14px 12px; border-radius: 12px; gap: 5px; }
+  .day-num { font-size: 15px; padding-bottom: 6px; border-bottom: 1px solid var(--border); flex: 0 0 auto; }
+  .day.is-today .day-num { width: 24px; height: 24px; padding-bottom: 0; border-bottom: none; }
+  /* 每個描述各自限高 2 行。三個描述都出現時才不會把色塊擠出格子。
+     描述不設 flex 值，讓所屬的 .day-group 決定高度。 */
+  .day-desc {
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--text);
+    max-height: 2.8em;
+    overflow: hidden;
+  }
+  /* 加班描述用橘色，與工時描述區隔（工時用預設的 --text） */
+  .day-desc.ot-text { color: var(--ot); }
+  /* 兩組之間的距離比組內大，視覺上自然分成「工時組 / 加班組」 */
+  .day-groups { gap: 9px; padding-top: 5px; margin-top: auto; }
+  .day-group { gap: 4px; }
+  .day-units {
+    font-size: 18px;
+    line-height: 1.15;
+    padding: 2px 9px;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--work) 11%, transparent);
+    justify-content: space-between;
+  }
+  .day-units .u { font-size: 12px; }
+  .day-units .uv { display: inline-flex; align-items: baseline; gap: 1px; }
+  .day-units .ut {
+    font-size: 11px;
+    font-weight: 800;
+    opacity: .7;
+    letter-spacing: .5px;
+  }
+  .day-units.ot-units {
+    font-size: 16px;
+    background: color-mix(in srgb, var(--ot) 13%, transparent);
+  }
+  .day-units.night-units {
+    font-size: 16px;
+    background: color-mix(in srgb, var(--night) 13%, transparent);
+  }
+}
+
+@media (min-width: 1400px) {
+  #app { padding: 0 28px; }
+  .calendar-wrap { padding: 0 28px 24px; }
+  /* 同 1000px 區塊的理由：改用 minmax(0, 1fr) 讓列高可被真正壓縮，
+     並移除 .day 的硬性 min-height，避免 grid item 撐破 track。
+     理想列高（約 302px）在空間充足時由 1fr 自然達到。 */
+  .calendar-grid { gap: 8px; grid-auto-rows: minmax(224px, 1fr); }
+  .weekday-row { gap: 8px; }
+  .day { min-height: 0; padding: 13px 16px 14px; gap: 5px; }
+  .day-groups { flex: 0 1 auto; }
+  .day-group { flex: 0 1 auto; min-height: 0; }
+  .day-num { font-size: 16px; padding-bottom: 7px; }
+  .day.is-today .day-num { width: 26px; height: 26px; }
+  .day-desc {
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    max-height: 2.8em;
+    font-size: 14.5px;
+    overflow: hidden;
+  }
+  .day-groups { gap: 11px; padding-top: 6px; }
+  .day-group { gap: 5px; }
+  .day-units { font-size: 19px; line-height: 1.15; padding: 3px 11px; }
+  .day-units .u { font-size: 13px; }
+  .day-units .ut { font-size: 12px; }
+  .day-units.ot-units { font-size: 17px; }
+  .day-units.night-units { font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+/* ===================== 高度不足時的降級策略 ===================== */
+/*
+ * 背景：月曆固定 6 列。若硬要把 6 列塞進視窗高度（#app 是
+ * min-height: 100dvh），桌機常見高度換算下來每列只剩 84–153px，
+ * 而「三組描述＋三個色塊」需要約 200px——物理上放不下。
+ *
+ * 取捨：**不為了「不滾動」而犧牲可讀性**。寧可讓月曆維持可讀的
+ * 最小高度、頁面可垂直滾動，也不要把描述壓成看不見的細線、或把
+ * 第三個色塊（半夜加班）推出格子外。
+ *
+ * 具體做法：
+ *  1. 列高下限設為 168px——足夠顯示「日期 + 三個完整色塊 + 1 行描述」。
+ *     空間不足時由頁面滾動吸收，而非壓縮內容。
+ *  2. 容器查詢依格子實際高度逐步降級描述行數，確保色塊永遠可見。
+ *  3. 描述是次要資訊：真的擠不下時隱藏，內容仍可雙擊格子查看。
+ */
+
+.day {
+  container-type: size;
+  container-name: day;
+}
+
+/* 格子高度 < 200px：描述限 1 行（完整 2 行已放不下） */
+@container day (max-height: 200px) {
+  .day-desc {
+    display: block;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    max-height: 1.4em;
+    overflow: hidden;
+    flex: 0 0 auto;
+  }
+}
+
+/* 格子高度 < 240px：描述限 1 行後，色塊不該再被壓縮——
+   數字被壓扁會看不清，而描述已讓到 1 行，空間應留給色塊。
+   同時收緊組間距，確保三組能完整放進約 216px 的格子。 */
+@container day (max-height: 240px) {
+  .day-units { flex: 0 0 auto; }
+  .day-groups { flex: 0 1 auto; gap: 6px; padding-top: 3px; }
+  .day-group { flex: 0 1 auto; min-height: 0; gap: 2px; }
+}
+
+/* 格子高度 < 165px：連 1 行描述都放不下，隱藏描述優先保住色塊 */
+@container day (max-height: 165px) {
+  .day-desc { display: none; }
+  .day-groups { gap: 4px; padding-top: 2px; }
+  .day-group { gap: 2px; }
+  .day-units { flex: 0 0 auto; }
+  .day-num { padding-bottom: 5px; }
+}
+
+/* 格子高度 < 130px：最小可用版本，僅日期 + 三個精簡色塊 */
+@container day (max-height: 130px) {
+  .day-groups { gap: 3px; padding-top: 1px; }
+  .day-units { line-height: 1.08; padding-top: 1px; padding-bottom: 1px; }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="17" rx="2.5"></rect>
+            <path d="M3 9.5h18M8 2.5v4M16 2.5v4"></path>
+          </svg>
+        </span>
+        <h1>工時月曆</h1>
+      </div>
+
+      <nav class="month-nav" aria-label="月份切換">
+        <button id="prevMonth" class="nav-btn" type="button" aria-label="上一個月">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button id="todayBtn" class="today-btn" type="button">今天</button>
+        <button id="nextMonth" class="nav-btn" type="button" aria-label="下一個月">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </nav>
+
+      <button id="menuBtn" class="icon-btn" type="button" aria-label="更多操作" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+      </button>
+    </div>
+
+    <div class="month-title-row">
+      <h2 id="monthTitle" class="month-title">—</h2>
+      <div id="monthStats" class="month-stats"></div>
+    </div>
+  </header>
+
+  <main class="calendar-wrap">
+    <div class="weekday-row" id="weekdayRow"></div>
+    <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="月曆"></div>
+    <!-- 收入總計：需在選單設定日薪與加班時薪後才顯示 -->
+    <div id="incomeBar" class="income-bar" hidden></div>
+  </main>
+
+  <footer class="hint-bar">
+    <span class="hint-mark" aria-hidden="true"></span>
+    <span>雙擊日期可新增工時 / 加班描述</span>
+  </footer>
+</div>
+
+<!-- ============ 編輯面板 ============ -->
+<div id="sheetBackdrop" class="sheet-backdrop" hidden></div>
+<section id="sheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+  <div class="sheet-handle" aria-hidden="true"></div>
+
+  <header class="sheet-head">
+    <div>
+      <p id="sheetDate" class="sheet-date">—</p>
+      <h3 id="sheetTitle" class="sheet-title">新增記錄</h3>
+    </div>
+    <button id="sheetClose" class="icon-btn" type="button" aria-label="關閉">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </header>
+
+  <div class="sheet-body">
+    <!-- 工時區塊 -->
+    <section class="field-group">
+      <h4 class="group-title"><span class="dot dot-work"></span>工時</h4>
+
+      <div class="field">
+        <label class="field-label" for="workDesc">描述</label>
+        <textarea id="workDesc" rows="3" placeholder="例：專案 A 開發、需求評審…"></textarea>
+      </div>
+
+      <div class="field">
+        <span class="field-label" id="workUnitsLabel">工數</span>
+        <div class="unit-picker unit-picker-2" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
+          <button type="button" class="unit-chip unit-chip-lg" data-value="0.5" role="radio" aria-checked="false">
+            <span class="chip-main">0.5 工</span>
+            <span class="chip-sub">半日</span>
+          </button>
+          <button type="button" class="unit-chip unit-chip-lg" data-value="1" role="radio" aria-checked="false">
+            <span class="chip-main">1 工</span>
+            <span class="chip-sub">全日</span>
+          </button>
+        </div>
+        <p class="field-help" id="workEquivalent">＝ 8 小時</p>
+      </div>
+    </section>
+
+    <!-- 加班區塊 -->
+    <section class="field-group">
+      <h4 class="group-title"><span class="dot dot-ot"></span>加班</h4>
+
+      <div class="field">
+        <label class="field-label" for="otDesc">描述</label>
+        <textarea id="otDesc" rows="2" placeholder="例：上線支援、客戶會議…"></textarea>
+      </div>
+
+      <div class="field">
+        <span class="field-label" id="otUnitsLabel">加班時數</span>
+        <div class="stepper stepper-ot">
+          <button type="button" class="step-btn" data-target="otHours" data-delta="-0.5" aria-label="減少半小時">−</button>
+          <div class="stepper-display">
+            <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
+            <span class="stepper-unit">小時</span>
+          </div>
+          <button type="button" class="step-btn" data-target="otHours" data-delta="0.5" aria-label="增加半小時">+</button>
+        </div>
+        <p class="field-help" id="otEquivalent">每次調整 0.5 小時</p>
+      </div>
+    </section>
+
+    <!-- 半夜加班區塊 -->
+    <section class="field-group">
+      <h4 class="group-title"><span class="dot dot-night"></span>半夜加班</h4>
+
+      <div class="field">
+        <label class="field-label" for="nightDesc">描述</label>
+        <textarea id="nightDesc" rows="2" placeholder="例：大夜班、凌晨搶修…"></textarea>
+      </div>
+
+      <div class="field">
+        <span class="field-label" id="nightUnitsLabel">半夜加班時數</span>
+        <div class="stepper stepper-night">
+          <button type="button" class="step-btn" data-target="nightHours" data-delta="-0.5" aria-label="減少半小時">−</button>
+          <div class="stepper-display">
+            <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
+            <span class="stepper-unit">小時</span>
+          </div>
+          <button type="button" class="step-btn" data-target="nightHours" data-delta="0.5" aria-label="增加半小時">+</button>
+        </div>
+        <p class="field-help" id="nightEquivalent">每次調整 0.5 小時</p>
+      </div>
+    </section>
+
+    <div class="field">
+      <label class="field-label" for="tagsInput">標籤（選填）</label>
+      <input id="tagsInput" type="text" placeholder="以逗號分隔，例：出差, 遠端">
+    </div>
+  </div>
+
+  <footer class="sheet-foot">
+    <button id="deleteBtn" class="btn btn-danger" type="button" hidden>刪除</button>
+    <button id="cancelBtn" class="btn btn-ghost" type="button">取消</button>
+    <button id="saveBtn" class="btn btn-primary" type="button">儲存</button>
+  </footer>
+</section>
+
+<!-- ============ 側邊選單 ============ -->
+<div id="drawerBackdrop" class="sheet-backdrop" hidden></div>
+<aside id="drawer" class="drawer" hidden aria-label="選單">
+  <header class="drawer-head">
+    <h3>工時月曆</h3>
+    <button id="drawerClose" class="icon-btn" type="button" aria-label="關閉">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </header>
+
+  <div class="drawer-section">
+    <p class="drawer-label">1 工 = 幾小時</p>
+    <div class="stepper stepper-wide">
+      <button type="button" class="step-btn" data-target="stdHours" data-delta="-0.5">−</button>
+      <input id="stdHours" type="number" inputmode="decimal" step="0.5" min="0.5" max="24" value="8">
+      <button type="button" class="step-btn" data-target="stdHours" data-delta="0.5">+</button>
+    </div>
+    <p class="drawer-help">用來換算「1 工」對應的實際小時數</p>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label">薪資設定</p>
+    <div class="pay-field">
+      <label class="pay-label" for="dayPay">日薪（1 工）</label>
+      <div class="pay-input-wrap">
+        <span class="pay-prefix">$</span>
+        <input id="dayPay" class="pay-input" type="number" inputmode="decimal"
+               step="100" min="0" placeholder="0" value="">
+      </div>
+    </div>
+    <div class="pay-field">
+      <label class="pay-label" for="otPay">加班時薪</label>
+      <div class="pay-input-wrap">
+        <span class="pay-prefix">$</span>
+        <input id="otPay" class="pay-input" type="number" inputmode="decimal"
+               step="10" min="0" placeholder="0" value="">
+      </div>
+    </div>
+    <div class="pay-field">
+      <label class="pay-label" for="nightPay">半夜加班時薪</label>
+      <div class="pay-input-wrap">
+        <span class="pay-prefix">$</span>
+        <input id="nightPay" class="pay-input" type="number" inputmode="decimal"
+               step="10" min="0" placeholder="0" value="">
+      </div>
+    </div>
+    <p class="drawer-help">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。</p>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label">顯示選項</p>
+    <label class="switch-row">
+      <span>顯示週末</span>
+      <input id="optWeekend" type="checkbox" checked>
+    </label>
+    <label class="switch-row">
+      <span>月曆上顯示工數</span>
+      <input id="optShowHours" type="checkbox" checked>
+    </label>
+    <label class="switch-row">
+      <span>週一為每週第一天</span>
+      <input id="optMondayFirst" type="checkbox" checked>
+    </label>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label">資料</p>
+    <button id="exportCsv" class="drawer-btn" type="button">匯出 CSV（本月）</button>
+    <button id="exportJson" class="drawer-btn" type="button">匯出備份 JSON</button>
+    <button id="importJson" class="drawer-btn" type="button">匯入備份 JSON</button>
+    <input id="importFile" type="file" accept="application/json,.json" hidden>
+    <button id="clearAll" class="drawer-btn drawer-btn-danger" type="button">清除全部資料</button>
+  </div>
+
+  <div class="drawer-section drawer-about">
+    <p id="installHint" class="drawer-help"></p>
+    <p class="drawer-help">資料儲存在此裝置的瀏覽器中，離線可用。</p>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label">版本</p>
+    <div class="version-row">
+      <div>
+        <p class="version-num" id="verCurrent">—</p>
+        <p class="drawer-help" id="verBuild"></p>
+      </div>
+      <button id="checkUpdateBtn" class="drawer-btn version-check" type="button">檢查更新</button>
+    </div>
+    <p class="drawer-help" id="verStatus"></p>
+  </div>
+</aside>
+
+<!-- ============ 更新提示橫幅 ============ -->
+<div id="updateBar" class="update-bar" role="status" aria-live="polite" hidden>
+  <div class="update-bar-inner">
+    <span class="update-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-2.6-6.4"></path>
+        <path d="M21 3v6h-6"></path>
+      </svg>
+    </span>
+    <div class="update-text">
+      <p class="update-title">有新版本可用</p>
+      <p class="update-desc" id="updateDesc">更新後即可使用最新功能</p>
+    </div>
+    <button id="updateNowBtn" class="update-btn" type="button">立即更新</button>
+    <button id="updateLaterBtn" class="update-close" type="button" aria-label="稍後再說">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+/* =========================================================
+ * 工時月曆 PWA
+ * 主介面：月曆；雙擊日期 → 新增/編輯 工時描述 + 加班描述
+ * 儲存：localStorage（同步、離線可用），含版本號
+ * ========================================================= */
+(() => {
+  'use strict';
+
+  // 由 bump-version.sh 自動維護
+  const APP_VERSION = '1.12.0';
+  const APP_BUILD = '20260916-1825';
+
+  const STORE_KEY = 'worktime-calendar:v1';
+  const SETTINGS_KEY = 'worktime-calendar:settings:v1';
+
+  const DEFAULTS = {
+    stdHours: 8,
+    showWeekend: true,
+    showHours: true,
+    mondayFirst: true,
+    dayPay: 0,      // 日薪（1 工）
+    otPay: 0,       // 加班時薪
+    nightPay: 0,    // 半夜加班時薪
+    incomeVisible: false,   // 收入金額預設遮蔽，點一下才顯示
+  };
+
+  /* ---------------- 狀態 ---------------- */
+  let entries = {};              // { 'YYYY-MM-DD': {workDesc, workUnits, otDesc, otHours, nightDesc, nightHours, tags, updatedAt} }
+  let settings = { ...DEFAULTS };
+  let view = new Date();         // 目前顯示月份
+  let editingKey = null;         // 正在編輯的日期 key
+
+  /* ---------------- 工具 ---------------- */
+  const pad = (n) => String(n).padStart(2, '0');
+  const keyOf = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const todayKey = () => keyOf(new Date());
+  const num = (v) => { const n = parseFloat(v); return Number.isFinite(n) && n > 0 ? n : 0; };
+  const round1 = (n) => Math.round(n * 10) / 10;
+  const fmtH = (n) => round1(n).toString().replace(/\.0$/, '');
+
+  // 工數顯示：整數不帶小數，半工保留 .5
+  const fmtUnits = (u) => round1(u).toString().replace(/\.0$/, '');
+
+  // 金額顯示：千分位 + 最多兩位小數（有需要才顯示小數）
+  const fmtMoney = (n) => {
+    const v = Math.round(n * 100) / 100;
+    const hasFrac = Math.abs(v % 1) > 0.0001;
+    return v.toLocaleString('zh-TW', {
+      minimumFractionDigits: hasFrac ? 2 : 0,
+      maximumFractionDigits: 2,
+    });
+  };
+
+  // 工數僅提供 0.5 工（半日）與 1 工（全日）兩個選擇
+  const WORK_CHOICES = [0.5, 1];
+
+  const WEEK_TC = ['日', '一', '二', '三', '四', '五', '六'];
+
+  function fmtDateLabel(d) {
+    const w = WEEK_TC[d.getDay()];
+    return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日（週${w}）`;
+  }
+
+  /* ---------------- 儲存 ---------------- */
+  function load() {
+    // 先讀設定，讓遷移能用到正確的「1 工 = N 小時」基準
+    try {
+      const rs = localStorage.getItem(SETTINGS_KEY);
+      if (rs) settings = { ...DEFAULTS, ...JSON.parse(rs) };
+    } catch (e) { /* 用預設 */ }
+
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          const result = migrate(parsed.data || parsed);
+          entries = result.data;
+          if (result.converted > 0) save();   // 遷移後立即寫回，避免每次載入重複轉換
+        }
+      }
+    } catch (e) { console.warn('讀取資料失敗', e); }
+  }
+
+  /**
+   * 資料遷移，兼容兩代舊格式：
+   *   v1：workHours / otHours（小時）
+   *   v2：workUnits / otUnits（皆為「工」）
+   * 目前格式：workUnits（工，僅 0.5 或 1）＋ otHours（小時）
+   * 「工」與「小時」的換算基準為設定的標準工時，預設 8 小時 = 1 工。
+   * 回傳 { data, converted }，由呼叫方決定是否寫回儲存。
+   */
+  function migrate(data) {
+    if (!data || typeof data !== 'object') return { data: {}, converted: 0 };
+    const base = num(settings.stdHours) || num(DEFAULTS.stdHours) || 8;
+    const out = {};
+    let converted = 0;
+
+    for (const [k, e] of Object.entries(data)) {
+      if (!e || typeof e !== 'object') continue;
+      const next = { ...e };
+
+      // 工數：v1 的 workHours（小時）→ 工
+      if (next.workUnits == null && next.workHours != null) {
+        next.workUnits = round1(num(next.workHours) / base);
+        converted++;
+      }
+      // 加班：v2 的 otUnits（工）→ 小時；v1 的 otHours（小時）沿用
+      if (next.otHours == null && next.otUnits != null) {
+        next.otHours = round1(num(next.otUnits) * base);
+        converted++;
+      }
+      delete next.workHours;
+      delete next.otUnits;
+
+      // 工數僅保留兩個選項，超出範圍者夾到最近值
+      if (next.workUnits != null && next.workUnits !== 0) {
+        const v = num(next.workUnits);
+        if (v > 0) {
+          const nearest = WORK_CHOICES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+          if (nearest !== v) { next.workUnits = nearest; converted++; }
+        } else {
+          next.workUnits = 0;
+        }
+      }
+
+      out[k] = next;
+    }
+
+    if (converted) {
+      console.info(`[工時月曆] 已遷移 ${converted} 個欄位（1 工 = ${base} 小時）`);
+    }
+    return { data: out, converted };
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, updatedAt: Date.now(), data: entries }));
+    } catch (e) {
+      toast('儲存失敗，瀏覽器空間可能已滿');
+      console.error(e);
+    }
+  }
+
+  function saveSettings() {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) { /* noop */ }
+  }
+
+  /* ---------------- 畫面元素 ---------------- */
+  const $ = (id) => document.getElementById(id);
+  const el = {
+    monthTitle: $('monthTitle'),
+    monthStats: $('monthStats'),
+    incomeBar: $('incomeBar'),
+    weekdayRow: $('weekdayRow'),
+    calendarGrid: $('calendarGrid'),
+    prevMonth: $('prevMonth'),
+    nextMonth: $('nextMonth'),
+    todayBtn: $('todayBtn'),
+    menuBtn: $('menuBtn'),
+
+    sheet: $('sheet'),
+    sheetBackdrop: $('sheetBackdrop'),
+    sheetDate: $('sheetDate'),
+    sheetTitle: $('sheetTitle'),
+    sheetClose: $('sheetClose'),
+    workDesc: $('workDesc'),
+    otDesc: $('otDesc'),
+    nightDesc: $('nightDesc'),
+    tagsInput: $('tagsInput'),
+    saveBtn: $('saveBtn'),
+    cancelBtn: $('cancelBtn'),
+    deleteBtn: $('deleteBtn'),
+
+    // 工數（0.5 工 / 1 工）、加班時數與半夜加班時數（皆 0.5 小時遞進）
+    workUnitPicker: $('workUnitPicker'),
+    workEquivalent: $('workEquivalent'),
+    otHours: $('otHours'),
+    nightHours: $('nightHours'),
+
+    drawer: $('drawer'),
+    drawerBackdrop: $('drawerBackdrop'),
+    drawerClose: $('drawerClose'),
+    stdHours: $('stdHours'),
+    dayPay: $('dayPay'),
+    otPay: $('otPay'),
+    nightPay: $('nightPay'),
+    optWeekend: $('optWeekend'),
+    optShowHours: $('optShowHours'),
+    optMondayFirst: $('optMondayFirst'),
+    exportCsv: $('exportCsv'),
+    exportJson: $('exportJson'),
+    importJson: $('importJson'),
+    importFile: $('importFile'),
+    clearAll: $('clearAll'),
+    installHint: $('installHint'),
+
+    // 版本與更新
+    verCurrent: $('verCurrent'),
+    verBuild: $('verBuild'),
+    verStatus: $('verStatus'),
+    checkUpdateBtn: $('checkUpdateBtn'),
+    updateBar: $('updateBar'),
+    updateDesc: $('updateDesc'),
+    updateNowBtn: $('updateNowBtn'),
+    updateLaterBtn: $('updateLaterBtn'),
+
+    toast: $('toast'),
+  };
+
+  /* ---------------- Toast ---------------- */
+  let toastTimer = null;
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.hidden = false;
+    requestAnimationFrame(() => el.toast.classList.add('show'));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.toast.classList.remove('show');
+      setTimeout(() => { el.toast.hidden = true; }, 220);
+    }, 2000);
+  }
+
+  /* ---------------- 月曆渲染 ---------------- */
+  function entriesOfMonth(y, m) {
+    const prefix = `${y}-${pad(m + 1)}-`;
+    return Object.entries(entries)
+      .filter(([k]) => k.startsWith(prefix))
+      .map(([, v]) => v);
+  }
+
+  // 本月收入：工數 × 日薪 + 加班時數 × 加班時薪 + 半夜加班時數 × 半夜加班時薪
+  // 三個費率都未設定（皆為 0）時回傳 null，呼叫端據此隱藏整個區塊
+  function incomeOfMonth(y, m) {
+    const dayPay = num(settings.dayPay);
+    const otPay = num(settings.otPay);
+    const nightPay = num(settings.nightPay);
+    if (dayPay <= 0 && otPay <= 0 && nightPay <= 0) return null;
+
+    const list = entriesOfMonth(y, m);
+    const totalWork = list.reduce((s, e) => s + num(e.workUnits), 0);
+    const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);
+    const totalNight = list.reduce((s, e) => s + num(e.nightHours), 0);
+    const workIncome = totalWork * dayPay;
+    const otIncome = totalOt * otPay;
+    const nightIncome = totalNight * nightPay;
+    return {
+      totalWork, totalOt, totalNight, dayPay, otPay, nightPay,
+      workIncome, otIncome, nightIncome,
+      total: workIncome + otIncome + nightIncome,
+    };
+  }
+
+  function renderIncome() {
+    const y = view.getFullYear(), m = view.getMonth();
+    const inc = incomeOfMonth(y, m);
+    if (!inc) { el.incomeBar.hidden = true; el.incomeBar.innerHTML = ''; return; }
+
+    // 只有設定了費率的項目才出現在計算式裡，
+    // 避免使用者只設日薪時還看到「0 h × $0」這種沒意義的片段。
+    const parts = [];
+    if (inc.dayPay > 0) {
+      parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} 工 × $${fmtMoney(inc.dayPay)}</span>`);
+    }
+    if (inc.otPay > 0) {
+      parts.push(`<span class="income-part ot">${fmtH(inc.totalOt)} h × $${fmtMoney(inc.otPay)}</span>`);
+    }
+    if (inc.nightPay > 0) {
+      parts.push(`<span class="income-part night">${fmtH(inc.totalNight)} h × $${fmtMoney(inc.nightPay)}</span>`);
+    }
+
+    // 金額預設遮蔽，點一下才顯示（避免在旁人面前直接暴露收入）。
+    // 遮蔽狀態存進 settings，重新渲染或換月都不會自己彈開。
+    const shown = settings.incomeVisible === true;
+    const amount = shown
+      ? `<span class="income-cur">$</span>${fmtMoney(inc.total)}`
+      : `<span class="income-mask" aria-hidden="true">••••••</span>`;
+
+    el.incomeBar.innerHTML = `
+      <div class="income-label">
+        <span>本月收入總計</span>
+        ${parts.length ? `<span class="income-formula">${parts.join('<i>＋</i>')}</span>` : ''}
+      </div>
+      <button type="button" class="income-total${shown ? '' : ' is-masked'}"
+              id="incomeToggle"
+              aria-expanded="${shown}"
+              aria-label="${shown ? '本月收入總計，點擊隱藏金額' : '本月收入總計已隱藏，點擊顯示金額'}"
+              title="${shown ? '點擊隱藏金額' : '點擊顯示金額'}">
+        ${amount}
+        <span class="income-eye" aria-hidden="true">${shown ? '隱藏' : '顯示'}</span>
+      </button>
+    `;
+    el.incomeBar.hidden = false;
+  }
+
+  function renderStats() {
+    const y = view.getFullYear(), m = view.getMonth();
+    const list = entriesOfMonth(y, m);
+    const totalWork = list.reduce((s, e) => s + num(e.workUnits), 0);        // 工
+    const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);            // 小時
+    const totalNight = list.reduce((s, e) => s + num(e.nightHours), 0);      // 小時
+    const days = list.filter((e) => num(e.workUnits) > 0 || num(e.otHours) > 0 ||
+      num(e.nightHours) > 0 || e.workDesc || e.otDesc || e.nightDesc).length;
+
+    el.monthStats.innerHTML = `
+      <span class="stat-pill">工時 <b>${fmtUnits(totalWork)}</b> 工</span>
+      <span class="stat-pill ot">加班 <b>${fmtH(totalOt)}</b> h</span>
+      ${totalNight > 0 ? `<span class="stat-pill night">半夜 <b>${fmtH(totalNight)}</b> h</span>` : ''}
+      <span class="stat-pill">記錄 <b>${days}</b> 天</span>
+    `;
+  }
+
+  function renderWeekdayRow() {
+    const order = settings.mondayFirst ? [1, 2, 3, 4, 5, 6, 0] : [0, 1, 2, 3, 4, 5, 6];
+    el.weekdayRow.innerHTML = order
+      .map((i) => {
+        const cls = i === 6 ? 'wk-sat' : i === 0 ? 'wk-sun' : '';
+        return `<span class="${cls}">${WEEK_TC[i]}</span>`;
+      })
+      .join('');
+  }
+
+  function renderCalendar() {
+    const y = view.getFullYear(), m = view.getMonth();
+    el.monthTitle.textContent = `${y} 年 ${m + 1} 月`;
+    renderWeekdayRow();
+
+    // 月曆第一個格子
+    const first = new Date(y, m, 1);
+    let offset = settings.mondayFirst ? (first.getDay() + 6) % 7 : first.getDay();
+
+    const dim = new Date(y, m + 1, 0).getDate();
+    const prevDim = new Date(y, m, 0).getDate();
+    const cells = [];
+    const tKey = todayKey();
+
+    // 前置日期（上月）
+    for (let i = offset - 1; i >= 0; i--) {
+      cells.push({ blank: true, day: prevDim - i });
+    }
+    // 本月
+    for (let d = 1; d <= dim; d++) {
+      const date = new Date(y, m, d);
+      const k = keyOf(date);
+      const dow = date.getDay();
+      const e = entries[k];
+      cells.push({
+        key: k,
+        day: d,
+        dow,
+        isWeekend: dow === 0 || dow === 6,
+        isToday: k === tKey,
+        entry: e,
+      });
+    }
+    // 後置補齊至整週
+    const tail = (7 - (cells.length % 7)) % 7;
+    for (let i = 1; i <= tail; i++) cells.push({ blank: true, day: i });
+
+    el.calendarGrid.innerHTML = cells.map(cellHTML).join('');
+  }
+
+  function cellHTML(c) {
+    if (c.blank) {
+      return `<div class="day is-blank" aria-hidden="true"></div>`;
+    }
+    const e = c.entry || {};
+    const wu = num(e.workUnits);
+    const oh = num(e.otHours);
+    const nh = num(e.nightHours);
+    const hasWork = wu > 0 || (e.workDesc && e.workDesc.trim());
+    const hasOt = oh > 0 || (e.otDesc && e.otDesc.trim());
+    const hasNight = nh > 0 || (e.nightDesc && e.nightDesc.trim());
+    const hasEntry = hasWork || hasOt || hasNight;
+
+    const classes = ['day'];
+    if (c.isWeekend) classes.push('is-weekend');
+    if (c.isToday) classes.push('is-today');
+    if (hasEntry) classes.push('has-entry');
+
+    // 三組資料，各自「描述在上、時數在下」：
+    //   第一組：工時描述 + 工數
+    //   第二組：加班描述 + 加班時數
+    //   第三組：半夜加班描述 + 半夜加班時數
+    // 以前的排版是「所有描述先排完，才排所有時數」，
+    // 多項都有時描述與對應的數字被拆散，不好對照。分組後語意清楚得多。
+    const workDesc = (e.workDesc || '').trim();
+    const otDesc = (e.otDesc || '').trim();
+    const nightDesc = (e.nightDesc || '').trim();
+    const showUnits = settings.showHours;
+
+    const groups = [];
+    if (hasWork) {
+      const rows = [];
+      if (workDesc) {
+        rows.push(`<div class="day-desc">${escapeHtml(workDesc)}</div>`);
+      }
+      if (showUnits) {
+        rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">工</span></span></div>`);
+      }
+      if (rows.length) groups.push(`<div class="day-group">${rows.join('')}</div>`);
+    }
+    if (hasOt) {
+      const rows = [];
+      if (otDesc) {
+        rows.push(`<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`);
+      }
+      if (showUnits) {
+        rows.push(`<div class="day-units ot-units"><span class="uv">+${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
+      }
+      if (rows.length) groups.push(`<div class="day-group ot-group">${rows.join('')}</div>`);
+    }
+    if (hasNight) {
+      const rows = [];
+      if (nightDesc) {
+        rows.push(`<div class="day-desc night-text">${escapeHtml(nightDesc)}</div>`);
+      }
+      if (showUnits) {
+        rows.push(`<div class="day-units night-units"><span class="uv">+${fmtH(nh)}<span class="u">h</span></span><span class="ut">半夜</span></div>`);
+      }
+      if (rows.length) groups.push(`<div class="day-group night-group">${rows.join('')}</div>`);
+    }
+    const groupsHtml = groups.length ? `<div class="day-groups">${groups.join('')}</div>` : '';
+
+    let badges = '';
+    if (hasEntry) {
+      badges = `<div class="day-badge">
+        ${hasWork ? '<i class="badge-dot"></i>' : ''}
+        ${hasOt ? '<i class="badge-dot ot"></i>' : ''}
+        ${hasNight ? '<i class="badge-dot night"></i>' : ''}
+      </div>`;
+    }
+
+    const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
+    if (hasEntry) {
+      if (hasWork) labelParts.push(`工時 ${fmtUnits(wu)} 工`);
+      if (hasOt) labelParts.push(`加班 ${fmtH(oh)} 小時`);
+      if (hasNight) labelParts.push(`半夜加班 ${fmtH(nh)} 小時`);
+    } else {
+      labelParts.push('尚無記錄');
+    }
+
+    return `<div class="${classes.join(' ')}" data-key="${c.key}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
+      ${badges}
+      <div class="day-num">${c.day}</div>
+      ${groupsHtml}
+    </div>`;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (ch) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+    ));
+  }
+  const escapeAttr = escapeHtml;
+
+  function render() {
+    renderCalendar();
+    renderStats();
+    renderIncome();
+  }
+
+  /* ---------------- 面板：開啟 / 關閉 ---------------- */
+  let lastFocused = null;
+
+  function openSheet(key) {
+    editingKey = key;
+    const d = new Date(key + 'T00:00:00');
+    const e = entries[key] || {};
+
+    el.sheetDate.textContent = fmtDateLabel(d);
+    el.sheetTitle.textContent = hasContent(e) ? '編輯記錄' : '新增記錄';
+    el.workDesc.value = e.workDesc || '';
+    el.otDesc.value = e.otDesc || '';
+    el.nightDesc.value = e.nightDesc || '';
+    el.tagsInput.value = (e.tags || []).join(', ');
+
+    setWorkUnits(e.workUnits != null && num(e.workUnits) > 0 ? num(e.workUnits) : 1);
+    el.otHours.value = e.otHours != null ? num(e.otHours) : 0;
+    el.nightHours.value = e.nightHours != null ? num(e.nightHours) : 0;
+
+    el.deleteBtn.hidden = !hasContent(e);
+
+    lastFocused = document.activeElement;
+    showOverlay(el.sheetBackdrop, el.sheet);
+    setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
+  }
+
+  /** 設定工數（僅 0.5 工 / 1 工 兩個選項）並更新換算提示 */
+  function setWorkUnits(value) {
+    const v = num(value);
+    // 夾到最接近的合法選項
+    const chosen = WORK_CHOICES.includes(v)
+      ? v
+      : WORK_CHOICES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+
+    el.workUnitPicker.querySelectorAll('.unit-chip').forEach((chip) => {
+      const on = parseFloat(chip.dataset.value) === chosen;
+      chip.classList.toggle('is-active', on);
+      chip.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+
+    updateWorkEquivalent();
+  }
+
+  function getWorkUnits() {
+    const active = el.workUnitPicker.querySelector('.unit-chip.is-active');
+    return active ? round1(num(active.dataset.value)) : 0;
+  }
+
+  function getOtHours() {
+    return round1(num(el.otHours.value));
+  }
+
+  function getNightHours() {
+    return round1(num(el.nightHours.value));
+  }
+
+  /** 工數 → 小時換算提示 */
+  function updateWorkEquivalent() {
+    const hours = round1(getWorkUnits() * (num(settings.stdHours) || 8));
+    el.workEquivalent.textContent = `＝ ${fmtH(hours)} 小時`;
+  }
+
+  function hasContent(e) {
+    if (!e) return false;
+    return !!(String(e.workDesc || '').trim() || String(e.otDesc || '').trim() ||
+      String(e.nightDesc || '').trim() ||
+      num(e.workUnits) > 0 || num(e.otHours) > 0 || num(e.nightHours) > 0);
+  }
+
+  function closeSheet() {
+    hideOverlay(el.sheetBackdrop, el.sheet);
+    editingKey = null;
+    if (lastFocused && lastFocused.focus) lastFocused.focus({ preventScroll: true });
+  }
+
+  function showOverlay(backdrop, panel) {
+    backdrop.hidden = false;
+    panel.hidden = false;
+    requestAnimationFrame(() => {
+      backdrop.classList.add('show');
+      panel.classList.add('show');
+    });
+  }
+
+  function hideOverlay(backdrop, panel, done) {
+    backdrop.classList.remove('show');
+    panel.classList.remove('show');
+    setTimeout(() => {
+      backdrop.hidden = true;
+      panel.hidden = true;
+      done && done();
+    }, 280);
+  }
+
+  /* ---------------- 儲存 / 刪除 ---------------- */
+  function saveEntry() {
+    if (!editingKey) return;
+    const workDesc = el.workDesc.value.trim();
+    const otDesc = el.otDesc.value.trim();
+    const nightDesc = el.nightDesc.value.trim();
+    const workUnits = getWorkUnits();
+    const otHours = getOtHours();
+    const nightHours = getNightHours();
+    const tags = el.tagsInput.value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
+
+    const empty = !workDesc && !otDesc && !nightDesc && workUnits === 0 &&
+      otHours === 0 && nightHours === 0 && tags.length === 0;
+    if (empty) {
+      delete entries[editingKey];
+    } else {
+      entries[editingKey] = {
+        workDesc, workUnits, otDesc, otHours, nightDesc, nightHours, tags,
+        updatedAt: Date.now(),
+      };
+    }
+
+    save();
+    closeSheet();
+    render();
+    toast(empty ? '已清空此日記錄' : '已儲存');
+  }
+
+  function deleteEntry() {
+    if (!editingKey) return;
+    delete entries[editingKey];
+    save();
+    closeSheet();
+    render();
+    toast('已刪除記錄');
+  }
+
+  /* ---------------- 事件綁定 ---------------- */
+  function bind() {
+    el.prevMonth.addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      render();
+    });
+    el.nextMonth.addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      render();
+    });
+    el.todayBtn.addEventListener('click', () => {
+      const t = new Date();
+      view = new Date(t.getFullYear(), t.getMonth(), 1);
+      render();
+      toast('已回到本月');
+    });
+
+    /* ---- 月曆：雙擊開啟；同時支援單擊（觸控裝置）---- */
+    let lastTapKey = null;
+    let lastTapTime = 0;
+    let singleTapTimer = null;
+
+    el.calendarGrid.addEventListener('click', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      const k = cell.dataset.key;
+
+      const now = Date.now();
+      if (lastTapKey === k && now - lastTapTime < 320) {
+        // 雙擊確認
+        clearTimeout(singleTapTimer);
+        lastTapKey = null;
+        lastTapTime = 0;
+        openSheet(k);
+        return;
+      }
+      lastTapKey = k;
+      lastTapTime = now;
+
+      // 觸控裝置：延遲後視為單擊 → 也開啟（行動端較直覺）
+      const isTouch = matchMedia('(hover: none)').matches;
+      if (isTouch) {
+        clearTimeout(singleTapTimer);
+        singleTapTimer = setTimeout(() => { openSheet(k); }, 200);
+      }
+    });
+
+    // 滑鼠雙擊（桌機原生 dblclick）
+    el.calendarGrid.addEventListener('dblclick', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      clearTimeout(singleTapTimer);
+      openSheet(cell.dataset.key);
+    });
+
+    // 鍵盤操作
+    el.calendarGrid.addEventListener('keydown', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        openSheet(cell.dataset.key);
+      }
+    });
+
+    /* ---- 面板 ---- */
+    el.saveBtn.addEventListener('click', saveEntry);
+    el.cancelBtn.addEventListener('click', closeSheet);
+    el.sheetClose.addEventListener('click', closeSheet);
+    el.deleteBtn.addEventListener('click', () => {
+      if (confirm('確定要刪除此日記錄嗎？')) deleteEntry();
+    });
+    el.sheetBackdrop.addEventListener('click', closeSheet);
+
+    // Ctrl/Cmd + Enter 快速儲存
+    el.sheet.addEventListener('keydown', (ev) => {
+      if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') { ev.preventDefault(); saveEntry(); }
+      if (ev.key === 'Escape') { ev.preventDefault(); closeSheet(); }
+    });
+
+    /* ---- 工數選項（僅 0.5 工 / 1 工）---- */
+    el.workUnitPicker.addEventListener('click', (ev) => {
+      const chip = ev.target.closest('.unit-chip');
+      if (!chip) return;
+      setWorkUnits(parseFloat(chip.dataset.value));
+    });
+
+    /* ---- 步進器（加班時數 + 抽屜設定）---- */
+    document.querySelectorAll('.step-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = $(btn.dataset.target);
+        if (!input) return;
+        const delta = parseFloat(btn.dataset.delta);
+        const cur = parseFloat(input.value) || 0;
+        let next = round1(cur + delta);
+        const max = parseFloat(input.max) || 24;
+        if (next < 0) next = 0;
+        if (next > max) next = max;
+        input.value = next;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+
+    /* ---- 抽屜 ---- */
+    el.menuBtn.addEventListener('click', () => {
+      el.stdHours.value = settings.stdHours;
+      el.dayPay.value = settings.dayPay > 0 ? settings.dayPay : '';
+      el.otPay.value = settings.otPay > 0 ? settings.otPay : '';
+      el.nightPay.value = settings.nightPay > 0 ? settings.nightPay : '';
+      el.optWeekend.checked = settings.showWeekend;
+      el.optShowHours.checked = settings.showHours;
+      el.optMondayFirst.checked = settings.mondayFirst;
+      showOverlay(el.drawerBackdrop, el.drawer);
+    });
+    const closeDrawer = () => hideOverlay(el.drawerBackdrop, el.drawer);
+    el.drawerClose.addEventListener('click', closeDrawer);
+    el.drawerBackdrop.addEventListener('click', closeDrawer);
+
+    el.stdHours.addEventListener('change', () => {
+      const v = num(el.stdHours.value);
+      settings.stdHours = v > 0 ? Math.min(v, 24) : 8;
+      el.stdHours.value = settings.stdHours;
+      saveSettings();
+      renderStats();
+      // 面板開著時同步更新小時換算
+      if (!el.sheet.hidden) updateWorkEquivalent();
+    });
+
+    // 薪資設定：日薪、加班時薪、半夜加班時薪
+    // 用 input 事件即時反映（使用者邊打字邊看到收入變化），change 時寫入儲存
+    const payFields = [
+      [el.dayPay, 'dayPay'],
+      [el.otPay, 'otPay'],
+      [el.nightPay, 'nightPay'],
+    ];
+    payFields.forEach(([input, name]) => {
+      const apply = () => {
+        const raw = input.value.trim();
+        // 空字串視為 0（未設定），避免顯示成 NaN
+        const v = raw === '' ? 0 : Math.max(0, num(raw));
+        settings[name] = v;
+        renderIncome();
+      };
+      input.addEventListener('input', apply);
+      input.addEventListener('change', () => {
+        apply();
+        // 正規化顯示：0 或空 → 清空；有值 → 原樣保留
+        input.value = settings[name] > 0 ? settings[name] : '';
+        saveSettings();
+        renderIncome();
+      });
+    });
+
+    const toggleMap = [
+      [el.optWeekend, 'showWeekend'],
+      [el.optShowHours, 'showHours'],
+      [el.optMondayFirst, 'mondayFirst'],
+    ];
+    toggleMap.forEach(([input, name]) => {
+      input.addEventListener('change', () => {
+        settings[name] = input.checked;
+        saveSettings();
+        render();
+      });
+    });
+
+    /* ---- 收入金額：點一下切換顯示 / 遮蔽 ----
+       按鈕本身每次 renderIncome() 都會重建，所以用委派綁在容器上。 */
+    el.incomeBar.addEventListener('click', (ev) => {
+      if (!ev.target.closest('#incomeToggle')) return;
+      settings.incomeVisible = settings.incomeVisible !== true;
+      saveSettings();
+      renderIncome();
+    });
+
+    /* ---- 匯出 CSV ---- */
+    el.exportCsv.addEventListener('click', () => {
+      const y = view.getFullYear(), m = view.getMonth();
+      const prefix = `${y}-${pad(m + 1)}-`;
+      const rows = [['日期', '星期', '工數(工)', '工時描述', '加班(小時)', '加班描述',
+        '半夜加班(小時)', '半夜加班描述', '標籤']];
+      Object.keys(entries).filter((k) => k.startsWith(prefix)).sort().forEach((k) => {
+        const e = entries[k];
+        const d = new Date(k + 'T00:00:00');
+        rows.push([
+          k, `週${WEEK_TC[d.getDay()]}`,
+          num(e.workUnits), e.workDesc || '',
+          num(e.otHours), e.otDesc || '',
+          num(e.nightHours), e.nightDesc || '',
+          (e.tags || []).join(' / '),
+        ]);
+      });
+      if (rows.length === 1) { toast('本月尚無記錄可匯出'); return; }
+      const csv = '\uFEFF' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n');
+      download(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `工時月曆_${y}-${pad(m + 1)}.csv`);
+      toast('已匯出 CSV');
+    });
+
+    /* ---- 匯出 JSON ---- */
+    el.exportJson.addEventListener('click', () => {
+      const payload = { app: 'worktime-calendar', v: 1, exportedAt: new Date().toISOString(), settings, data: entries };
+      download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `工時月曆_備份_${todayKey()}.json`);
+      toast('已匯出備份');
+    });
+
+    /* ---- 匯入 JSON ---- */
+    el.importJson.addEventListener('click', () => el.importFile.click());
+    el.importFile.addEventListener('change', async () => {
+      const file = el.importFile.files && el.importFile.files[0];
+      if (!file) return;
+      try {
+        const parsed = JSON.parse(await file.text());
+        const data = parsed.data || parsed;
+        if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('格式錯誤');
+        const incoming = Object.keys(data).length;
+        if (!confirm(`將匯入 ${incoming} 筆記錄，同名日期會被覆蓋。確定繼續？`)) return;
+        // 舊版小時制備份也會自動轉換為「工」
+        entries = { ...entries, ...migrate(data).data };
+        if (parsed.settings) settings = { ...settings, ...parsed.settings };
+        save(); saveSettings();
+        closeDrawer();
+        render();
+        toast(`已匯入 ${incoming} 筆記錄`);
+      } catch (err) {
+        toast('匯入失敗：檔案格式不正確');
+        console.error(err);
+      } finally {
+        el.importFile.value = '';
+      }
+    });
+
+    /* ---- 清除全部 ---- */
+    el.clearAll.addEventListener('click', () => {
+      if (!confirm('確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。')) return;
+      entries = {};
+      save();
+      closeDrawer();
+      render();
+      toast('已清除全部資料');
+    });
+
+    /* ---- 全域快捷鍵 ---- */
+    document.addEventListener('keydown', (ev) => {
+      if (el.sheet.hidden && el.drawer.hidden) {
+        if (ev.key === 'ArrowLeft') el.prevMonth.click();
+        if (ev.key === 'ArrowRight') el.nextMonth.click();
+        if (ev.key.toLowerCase() === 't') el.todayBtn.click();
+      }
+    });
+
+    // 瀏覽器返回鍵關閉面板
+    window.addEventListener('popstate', () => {
+      if (!el.sheet.hidden) closeSheet();
+      if (!el.drawer.hidden) closeDrawer();
+    });
+  }
+
+  function csvCell(v) {
+    const s = String(v == null ? '' : v);
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function download(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  /* ---------------- PWA 安裝提示 ---------------- */
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (ev) => {
+    ev.preventDefault();
+    deferredPrompt = ev;
+    el.installHint.textContent = '此應用可安裝到主畫面：點右上角選單 → 安裝應用程式。';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    el.installHint.textContent = '已安裝到裝置，可離線使用。';
+  });
+
+  function setupInstallHint() {
+    const isStandalone = matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isStandalone) {
+      el.installHint.textContent = '已以獨立應用模式執行，離線可用。';
+    } else if (isIOS) {
+      el.installHint.textContent = 'iOS：點「分享」→「加入主畫面」即可安裝。';
+    } else if (!deferredPrompt) {
+      el.installHint.textContent = '可安裝為 App：瀏覽器選單 → 安裝／加到主畫面。';
+    }
+  }
+
+  /* =========================================================
+   * 版本檢測與更新
+   * ========================================================= */
+  const version = {
+    remote: null,      // 遠端最新版本資訊
+    waiting: null,     // 等待接管的新版 Service Worker
+    updating: false,   // 是否正在更新
+    dismissed: null,   // 使用者選擇「稍後」的版本號
+  };
+
+  /** 版本號比對：a 是否比 b 新 */
+  function isNewer(a, b) {
+    if (!a || !b) return false;
+    const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
+    const pb = String(b).split('.').map((n) => parseInt(n, 10) || 0);
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+      const x = pa[i] || 0, y = pb[i] || 0;
+      if (x > y) return true;
+      if (x < y) return false;
+    }
+    return false;
+  }
+
+  function formatBuild(b) {
+    // 20260915-1848 → 2026/09/15 18:48
+    const m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})$/.exec(b || '');
+    return m ? `${m[1]}/${m[2]}/${m[3]} ${m[4]}:${m[5]}` : (b || '');
+  }
+
+  function renderVersionInfo() {
+    el.verCurrent.textContent = `v${APP_VERSION}`;
+    el.verBuild.textContent = APP_BUILD ? `建置於 ${formatBuild(APP_BUILD)}` : '';
+  }
+
+  /** 向伺服器查詢最新版本（繞過所有快取） */
+  async function fetchRemoteVersion() {
+    // 單檔模式（file://）無法連網，直接跳過，避免瀏覽器拋出無謂錯誤
+    if (location.protocol === 'file:') return null;
+    try {
+      const res = await fetch(`./version.json?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.version ? data : null;
+    } catch (e) {
+      console.info('[版本] 查詢失敗（可能離線）', e);
+      return null;
+    }
+  }
+
+  /** 檢查更新 → 'update' | 'latest' | 'error' */
+  async function checkForUpdate({ silent = false } = {}) {
+    if (version.updating) return 'error';
+    if (!silent) el.verStatus.textContent = '檢查中…';
+
+    // 1) 已有 waiting 的新版 SW → 這是新版鐵證，直接提示
+    if (version.waiting) {
+      showUpdateBar(null, true);
+      if (!silent) el.verStatus.textContent = '發現新版本，可立即更新';
+      return 'update';
+    }
+
+    // 2) 比對 version.json
+    const remote = await fetchRemoteVersion();
+    if (!remote) {
+      if (!silent) {
+        el.verStatus.textContent = (location.protocol === 'file:')
+          ? '單檔版不支援線上檢查更新'
+          : '目前離線，無法檢查更新';
+      }
+      return 'error';
+    }
+    version.remote = remote;
+
+    if (isNewer(remote.version, APP_VERSION)) {
+      showUpdateBar(remote);
+      if (!silent) el.verStatus.textContent = `發現新版本 v${remote.version}`;
+      return 'update';
+    }
+
+    if (!silent) {
+      el.verStatus.textContent = '已是最新版本';
+      toast('已是最新版本');
+    }
+    return 'latest';
+  }
+
+  /**
+   * 顯示更新提示橫幅
+   * @param {object}  remote   遠端版本資訊（可省略）
+   * @param {boolean} trusted  true = 已確認有新版本（例如 SW 進入 waiting），不再做版本比較
+   */
+  function showUpdateBar(remote, trusted) {
+    // 有遠端版本資訊就用它；沒有也照樣提示
+    const info = remote || version.remote || null;
+    const ver = info && info.version;
+
+    if (!trusted) {
+      // 只有在「非可信來源」時才做版本比較，避免誤報；
+      // 但若連版本號都拿不到，寧可提示也不要靜默失敗
+      if (ver && !isNewer(ver, APP_VERSION)) return;
+
+      // 使用者已選「稍後」→ 同一版本不再重複提示
+      if (ver && version.dismissed === ver) return;
+    } else if (ver && version.dismissed === ver) {
+      return;
+    }
+
+    el.updateDesc.textContent = (ver && isNewer(ver, APP_VERSION))
+      ? (info.notes ? `v${ver}：${info.notes}` : `更新至 v${ver}`)
+      : '已下載新版本，點此套用';
+
+    el.updateBar.hidden = false;
+    // 強制一次重排，確保 transition 由 transform 起始值開始
+    void el.updateBar.offsetHeight;
+    el.updateBar.classList.add('show');
+    el.updateBar.setAttribute('aria-hidden', 'false');
+  }
+
+  function hideUpdateBar() {
+    el.updateBar.classList.remove('show');
+    el.updateBar.setAttribute('aria-hidden', 'true');
+    setTimeout(() => { el.updateBar.hidden = true; }, 300);
+  }
+
+  /** 一鍵更新 */
+  async function performUpdate() {
+    if (version.updating) return;
+    version.updating = true;
+
+    const btn = el.updateNowBtn;
+    const originalText = btn.textContent;
+    btn.textContent = '更新中…';
+    btn.disabled = true;
+
+    try {
+      // A) 已有 waiting 的 SW → 請它立即接管，controllerchange 會帶動重載
+      if (version.waiting) {
+        version.waiting.postMessage({ type: 'SKIP_WAITING' });
+        setTimeout(() => hardReload(), 3000);   // 保險：3 秒後仍未重載就手動刷新
+        return;
+      }
+
+      // B) 僅偵測到版本差異 → 主動更新註冊，促使瀏覽器抓新檔
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          await reg.update();
+          await new Promise((r) => setTimeout(r, 800));
+          if (reg.waiting) {
+            version.waiting = reg.waiting;
+            version.waiting.postMessage({ type: 'SKIP_WAITING' });
+            setTimeout(() => hardReload(), 3000);
+            return;
+          }
+        }
+      }
+
+      // C) 沒有 SW（單檔模式）→ 清快取後重載
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      hardReload();
+    } catch (e) {
+      console.warn('[更新] 失敗', e);
+      version.updating = false;
+      btn.textContent = originalText;
+      btn.disabled = false;
+      toast('更新失敗，請稍後再試');
+    }
+  }
+
+  /** 強制重新載入（加上參數避開瀏覽器快取） */
+  function hardReload() {
+    const url = new URL(location.href);
+    url.searchParams.set('_v', Date.now().toString(36));
+    location.replace(url.toString());
+  }
+
+  /**
+   * SW 偵測到新版本 → 補抓一次遠端版本資訊（讓文案顯示正確版本號），再提示
+   * 注意：SW 進入 waiting 已是新版本的鐵證，即使版本檔因舊 SW 快取而過期，
+   *       仍必須提示使用者（trusted = true）。
+   */
+  async function announceWaitingSW(sw) {
+    version.waiting = sw;
+    if (!version.remote) {
+      const remote = await fetchRemoteVersion();
+      // 只在真的拿到「比目前新」的版本號時才採用，避免覆蓋成過期資料
+      if (remote && isNewer(remote.version, APP_VERSION)) version.remote = remote;
+    }
+    showUpdateBar(null, true);
+  }
+
+  /** 註冊 Service Worker 並掛上更新偵測 */
+  function setupServiceWorker() {
+    if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      /** 檢查註冊狀態，若有 waiting 中的新 SW 就提示 */
+      function detectWaiting(reg) {
+        if (!reg || !reg.waiting) return false;
+        if (!navigator.serviceWorker.controller) return false;
+        if (version.waiting === reg.waiting) return true;   // 已處理過
+        announceWaitingSW(reg.waiting);
+        return true;
+      }
+
+      // 上次沒更新就關掉分頁 → 這裡補提示
+      detectWaiting(reg);
+
+      // 新 SW 安裝完成 → 提示
+      reg.addEventListener('updatefound', () => {
+        const incoming = reg.installing;
+        if (!incoming) return;
+        incoming.addEventListener('statechange', () => {
+          if (incoming.state === 'installed') detectWaiting(reg);
+        });
+      });
+
+      // 保險：輪詢 waiting（updatefound / statechange 有時機競態，會漏事件）
+      const poll = setInterval(() => {
+        if (detectWaiting(reg)) clearInterval(poll);
+      }, 1000);
+      // 60 秒後停止輪詢，避免長期佔用
+      setTimeout(() => clearInterval(poll), 60000);
+
+      // 回到前景時檢查
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          reg.update().catch(() => {});
+          setTimeout(() => detectWaiting(reg), 1500);
+        }
+      });
+
+      // 定期檢查（30 分鐘）
+      setInterval(() => {
+        reg.update().catch(() => {});
+        setTimeout(() => detectWaiting(reg), 1500);
+      }, 30 * 60 * 1000);
+
+      // 啟動時比對一次版本檔
+      setTimeout(() => checkForUpdate({ silent: true }), 1500);
+
+    }).catch((e) => console.warn('[SW] 註冊失敗', e));
+
+    // 新 SW 接管 → 重載為新版
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      hardReload();
+    });
+  }
+
+  function bindVersionUI() {
+    el.updateNowBtn.addEventListener('click', performUpdate);
+
+    el.updateLaterBtn.addEventListener('click', () => {
+      const v = version.remote && version.remote.version;
+      if (v) version.dismissed = v;
+      hideUpdateBar();
+      el.verStatus.textContent = '已稍後提醒，可隨時在選單檢查更新';
+    });
+
+    el.checkUpdateBtn.addEventListener('click', async () => {
+      const r = await checkForUpdate();
+      if (r === 'latest') el.verStatus.textContent = '已是最新版本';
+      if (r === 'update') el.verStatus.textContent = '發現新版本，請點上方提示更新';
+    });
+  }
+
+  /* ---------------- 啟動 ---------------- */
+  function init() {
+    load();
+    view = new Date();
+    view.setDate(1);
+    bind();
+    render();
+    setupInstallHint();
+    renderVersionInfo();
+    bindVersionUI();
+
+    if (window.addEventListener) {
+      window.addEventListener('load', setupServiceWorker);
+    } else {
+      setupServiceWorker();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+
+</script>
+</body>
+</html>
