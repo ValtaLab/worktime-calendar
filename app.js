@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.12.0';
-  const APP_BUILD = '20260916-1825';
+  const APP_VERSION = '1.12.1';
+  const APP_BUILD = '20260916-1904';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';

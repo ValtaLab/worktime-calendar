@@ -1204,7 +1204,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
      到收入列（實測 700px 寬時有 7 個格子越界）。
      故移除硬性下限，讓列高可被壓縮；內容過多時由 .day 的
      overflow: hidden 裁切，不會影響版面。 */
-  .calendar-grid { grid-auto-rows: minmax(148px, 1fr); align-content: stretch; }
+  .calendar-grid { grid-auto-rows: minmax(190px, 1fr); align-content: stretch; }
   .day { min-height: 0; padding: 9px 11px 10px; }
   .day-groups { flex: 0 1 auto; }
   .day-group { flex: 0 1 auto; min-height: 0; }
@@ -1248,7 +1248,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
      因此這裡改用 minmax(0, 1fr)：讓列高完全由容器高度決定、
      可以被真正壓縮，不會溢出。空間不足時由 .day 的 overflow: hidden
      優雅裁切；空間充足時 1fr 自然會把列分到理想高度。 */
-  .calendar-grid { gap: 6px; grid-auto-rows: minmax(176px, 1fr); }
+  .calendar-grid { gap: 6px; grid-auto-rows: minmax(210px, 1fr); }
   .weekday-row { gap: 6px; }
   .day-groups { flex: 0 1 auto; }
   .day-group { flex: 0 1 auto; min-height: 0; }
@@ -1314,7 +1314,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   /* 同 1000px 區塊的理由：改用 minmax(0, 1fr) 讓列高可被真正壓縮，
      並移除 .day 的硬性 min-height，避免 grid item 撐破 track。
      理想列高（約 302px）在空間充足時由 1fr 自然達到。 */
-  .calendar-grid { gap: 8px; grid-auto-rows: minmax(224px, 1fr); }
+  .calendar-grid { gap: 8px; grid-auto-rows: minmax(230px, 1fr); }
   .weekday-row { gap: 8px; }
   .day { min-height: 0; padding: 13px 16px 14px; gap: 5px; }
   .day-groups { flex: 0 1 auto; }
@@ -1346,56 +1346,60 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 /*
  * 背景：月曆固定 6 列。若硬要把 6 列塞進視窗高度（#app 是
  * min-height: 100dvh），桌機常見高度換算下來每列只剩 84–153px，
- * 而「三組描述＋三個色塊」需要約 200px——物理上放不下。
+ * 而「三組描述＋三個色塊」需要約 210px——物理上放不下。
  *
- * 取捨：**不為了「不滾動」而犧牲可讀性**。寧可讓月曆維持可讀的
- * 最小高度、頁面可垂直滾動，也不要把描述壓成看不見的細線、或把
- * 第三個色塊（半夜加班）推出格子外。
+ * 取捨原則（依重要性排序）：
+ *   1. **描述一定要看得見**——「今天做了什麼」是這個 App 的核心資訊。
+ *   2. 三個色塊（工數 / 加班 / 半夜）的數字要完整。
+ *   3. 「不用滾動」是次要的，可以讓頁面滾動來換取可讀性。
  *
- * 具體做法：
- *  1. 列高下限設為 168px——足夠顯示「日期 + 三個完整色塊 + 1 行描述」。
- *     空間不足時由頁面滾動吸收，而非壓縮內容。
- *  2. 容器查詢依格子實際高度逐步降級描述行數，確保色塊永遠可見。
- *  3. 描述是次要資訊：真的擠不下時隱藏，內容仍可雙擊格子查看。
+ * 因此列高下限設為 210px（足夠「日期 + 三組各 1 行描述 + 三個色塊」），
+ * 空間不足時由頁面垂直滾動吸收，而不是壓縮或隱藏內容。
+ * 容器查詢只用來決定描述要顯示 2 行還是 1 行——永遠不會完全隱藏。
+ *
+ * ⚠️ 只套用在 min-width: 700px 以上。手機版（≤480px）走的是另一套
+ *    設計：列高 minmax(64px, auto) 由內容決定，每個描述固定 2 行，
+ *    格子自然長高。若讓容器查詢在這裡生效，會把「內容決定高度」
+ *    的格子誤判為「高度不足」而強制降級，反而擠掉第三個色塊。
  */
 
-.day {
-  container-type: size;
-  container-name: day;
-}
-
-/* 格子高度 < 200px：描述限 1 行（完整 2 行已放不下） */
-@container day (max-height: 200px) {
-  .day-desc {
-    display: block;
-    -webkit-line-clamp: 1;
-    -webkit-box-orient: vertical;
-    max-height: 1.4em;
-    overflow: hidden;
-    flex: 0 0 auto;
+@media (min-width: 700px) {
+  .day {
+    container-type: size;
+    container-name: day;
   }
-}
 
-/* 格子高度 < 240px：描述限 1 行後，色塊不該再被壓縮——
-   數字被壓扁會看不清，而描述已讓到 1 行，空間應留給色塊。
-   同時收緊組間距，確保三組能完整放進約 216px 的格子。 */
-@container day (max-height: 240px) {
-  .day-units { flex: 0 0 auto; }
-  .day-groups { flex: 0 1 auto; gap: 6px; padding-top: 3px; }
-  .day-group { flex: 0 1 auto; min-height: 0; gap: 2px; }
-}
+  /* 預設：描述最多 2 行 */
+  .day-desc {
+    flex: 0 1 auto;
+  }
 
-/* 格子高度 < 165px：連 1 行描述都放不下，隱藏描述優先保住色塊 */
-@container day (max-height: 165px) {
-  .day-desc { display: none; }
-  .day-groups { gap: 4px; padding-top: 2px; }
-  .day-group { gap: 2px; }
-  .day-units { flex: 0 0 auto; }
-  .day-num { padding-bottom: 5px; }
-}
+  /* 格子高度 < 250px：描述限 1 行（2 行已放不下），但一定看得見 */
+  @container day (max-height: 250px) {
+    .day-desc {
+      display: block;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      max-height: 1.4em;
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+  }
 
-/* 格子高度 < 130px：最小可用版本，僅日期 + 三個精簡色塊 */
-@container day (max-height: 130px) {
-  .day-groups { gap: 3px; padding-top: 1px; }
-  .day-units { line-height: 1.08; padding-top: 1px; padding-bottom: 1px; }
+  /* 描述讓到 1 行後，色塊不該再被壓縮，並收緊組間距，
+     確保三組都能完整放進格子。 */
+  @container day (max-height: 250px) {
+    .day-units { flex: 0 0 auto; }
+    .day-groups { flex: 0 1 auto; gap: 5px; padding-top: 2px; }
+    .day-group { flex: 0 1 auto; min-height: 0; gap: 1px; }
+  }
+
+  /* 格子高度 < 180px：極端窄高才啟用——縮小描述字級與色塊內距，
+     仍**不隱藏描述**。 */
+  @container day (max-height: 180px) {
+    .day-desc { font-size: 11px; }
+    .day-num { padding-bottom: 3px; font-size: 14px; }
+    .day-units { line-height: 1.06; padding-top: 1px; padding-bottom: 1px; }
+    .day-groups { gap: 3px; padding-top: 1px; }
+  }
 }
