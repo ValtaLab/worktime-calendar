@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.8.0';
-  const APP_BUILD = '20260916-0043';
+  const APP_VERSION = '1.8.1';
+  const APP_BUILD = '20260916-0808';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -272,21 +272,10 @@
     const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);          // 小時
     const days = list.filter((e) => num(e.workUnits) > 0 || num(e.otHours) > 0 || e.workDesc || e.otDesc).length;
 
-    // 本月應出勤工數：週一至週五天數 × 1 工
-    const dim = new Date(y, m + 1, 0).getDate();
-    let workdays = 0;
-    for (let d = 1; d <= dim; d++) {
-      const dow = new Date(y, m, d).getDay();
-      if (dow !== 0 && dow !== 6) workdays++;
-    }
-    const expected = workdays;   // 每個工作日 = 1 工
-    const rate = expected > 0 ? Math.round((totalWork / expected) * 100) : 0;
-
     el.monthStats.innerHTML = `
       <span class="stat-pill">工時 <b>${fmtUnits(totalWork)}</b> 工</span>
       <span class="stat-pill ot">加班 <b>${fmtH(totalOt)}</b> h</span>
       <span class="stat-pill">記錄 <b>${days}</b> 天</span>
-      <span class="stat-pill">達標 <b>${rate}</b>%</span>
     `;
   }
 
