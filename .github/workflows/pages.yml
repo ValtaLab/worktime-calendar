@@ -24,6 +24,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Build standalone bundle
+        run: bash build-standalone.sh
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
