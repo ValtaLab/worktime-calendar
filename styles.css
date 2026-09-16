@@ -195,7 +195,10 @@ input, textarea { font-family: inherit; }
 
 .weekday-row {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* minmax(0, 1fr) 而非 1fr：1fr 等價於 minmax(auto, 1fr)，
+     理論上某欄若有不可斷行的超寬內容，會把該欄撐得比其它欄寬。
+     minmax(0, 1fr) 把下限鎖死為 0，七欄「數學上保證」永遠等寬。 */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
   padding: 0 0 6px;
   text-align: center;
@@ -210,7 +213,9 @@ input, textarea { font-family: inherit; }
 
 .calendar-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* 同 .weekday-row：minmax(0, 1fr) 保證七欄絕對等寬，
+     不受任何格子內容的 min-content 寬度影響。 */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   grid-auto-rows: minmax(78px, 1fr);
   gap: 4px;
   padding-bottom: 8px;
@@ -349,7 +354,10 @@ input, textarea { font-family: inherit; }
 
 /* 桌機版（卡片風格）：週末沿用淡底，但「六」與「日」用不同色的日期數字，
    讓相鄰兩欄不會因為同底色而看起來黏成一塊比其它欄更寬的區域。 */
-.day.is-weekend { background: var(--surface-2); }
+/* 週末標示：只用日期數字變色（六＝藍、日＝橘），與表頭一致。
+   **所有斷點都不用底色**——淡灰底曾讓相鄰的六、日兩欄在視覺上
+   黏成一塊「看起來比其它欄寬」的區域（幾何寬度其實相同）。
+   手機網格風格與桌機卡片風格一律適用此規則。 */
 .day.is-weekend .day-num { color: var(--work); }
 .day.is-weekend[data-dow="0"] .day-num { color: var(--ot); }
 
@@ -1125,6 +1133,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
      與表頭的 六／日 配色一致，不佔任何額外視覺寬度。 */
   .day.is-weekend { background: var(--surface); }
   .day.is-blank { background: var(--surface); }
+  /* 週末＝數字變色（見檔案前段 .day.is-weekend .day-num），不用底色 */
   /* 不再用底色區分「有沒有填」與「今天」——手機版格子裡已經有
      三個彩色資料塊，外層再上色會和色塊互相干擾（藍底＋藍塊分不出層次）。
      有填的日子改用左上角的徽章點標示，今天只留日期數字的圓形反白。 */
