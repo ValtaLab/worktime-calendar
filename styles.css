@@ -1,1 +1,1273 @@
-@@STYLES_CSS@@
+/* ===================== 設計變數 ===================== */
+:root {
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e4e8f0;
+  --text: #0f172a;
+  --text-2: #5a6782;
+  --text-3: #93a0b8;
+
+  --work: #2563eb;
+  --work-soft: #e5efff;
+  --ot: #f97316;
+  --ot-soft: #fff0e2;
+  /* 半夜加班：用紫色與「加班」的橘色明確區隔。
+     紫在日常語感裡偏「深夜 / 安靜」，且與藍（工時）、橘（加班）
+     在色相環上距離夠遠，三者放在同一格也分得開。 */
+  --night: #7c3aed;
+  --night-soft: #f1eafe;
+  --ok: #10b981;
+  --danger: #e11d48;
+
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, .06), 0 1px 3px rgba(15, 23, 42, .04);
+  --shadow-md: 0 8px 24px rgba(15, 23, 42, .10);
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, .20);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117;
+    --surface: #161b25;
+    --surface-2: #1c2230;
+    --border: #2a3345;
+    --text: #e8edf7;
+    --text-2: #a3b0c7;
+    --text-3: #6b7a94;
+
+    --work: #5b9bff;
+    --work-soft: #17253d;
+    --ot: #fb923c;
+    --ot-soft: #3a2415;
+    --night: #a78bfa;
+    --night-soft: #2b2145;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, .45);
+    --shadow-lg: 0 24px 60px rgba(0, 0, 0, .6);
+  }
+}
+
+/* ===================== 基礎 ===================== */
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+    "Hiragino Sans TC", "Microsoft JhengHei", "Noto Sans TC", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+body { display: flex; flex-direction: column; }
+
+button { font-family: inherit; cursor: pointer; }
+input, textarea { font-family: inherit; }
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+/* ===================== 頂部 ===================== */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border-bottom: 1px solid var(--border);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.topbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 8px;
+}
+
+.brand { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 34px; height: 34px;
+  flex: 0 0 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--work), #7c3aed);
+  color: #fff;
+  box-shadow: var(--shadow-sm);
+}
+.brand h1 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -.2px;
+  white-space: nowrap;
+}
+
+.month-nav { display: flex; align-items: center; gap: 4px; }
+
+.nav-btn, .icon-btn {
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text-2);
+  transition: transform .12s ease, background .15s ease, color .15s ease;
+}
+.nav-btn:active, .icon-btn:active { transform: scale(.93); }
+.nav-btn:hover, .icon-btn:hover { color: var(--text); background: var(--surface-2); }
+
+.today-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  transition: transform .12s ease;
+}
+.today-btn:active { transform: scale(.95); }
+
+.month-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 2px 16px 12px;
+  flex-wrap: wrap;
+}
+.month-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -.6px;
+}
+.month-stats {
+  display: flex;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-2);
+  flex-wrap: wrap;
+}
+.stat-pill {
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stat-pill b { color: var(--work); font-weight: 800; }
+.stat-pill.ot b { color: var(--ot); }
+.stat-pill.night b { color: var(--night); }
+
+/* ===================== 月曆 ===================== */
+.calendar-wrap {
+  padding: 0 10px 10px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.weekday-row {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  padding: 0 0 6px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-3);
+  letter-spacing: .4px;
+  flex: 0 0 auto;
+}
+.weekday-row span.wk-sat { color: var(--work); opacity: .75; }
+.weekday-row span.wk-sun { color: var(--ot); opacity: .8; }
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(78px, 1fr);
+  gap: 4px;
+  padding-bottom: 8px;
+  /* flex-shrink 必須 > 0：收入列出現時，網格要讓出高度，
+     否則 grid 會撐滿容器、把收入列擠到畫面外或與最後一列重疊。
+     min-height: 0 是 flex 子項可被壓縮的必要條件。 */
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: stretch;
+}
+
+/* ===================== 收入總計 ===================== */
+/*
+ * 位置：月曆網格下方、月曆容器（.calendar-wrap）之內。
+ * 因為 .calendar-grid 是 flex: 1 1 auto，會把容器剩餘高度全部吃掉；
+ * 收入列必須是 flex: 0 0 auto 才不會被壓扁，並搭配 grid 的 min-height: 0
+ * 讓網格「讓位」給收入列，而不是把收入列推出畫面。
+ * hidden 屬性在 flex 容器下仍會被 display: flex 覆蓋，故需明確寫 [hidden]。
+ */
+.income-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 0 0 auto;
+  margin-top: 6px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--work) 24%, var(--border));
+  background: color-mix(in srgb, var(--work) 6%, var(--surface));
+}
+.income-bar[hidden] { display: none; }
+
+.income-label {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.income-label > span:first-child {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-2);
+  letter-spacing: .3px;
+}
+
+/* 計算式提示：工數 × 日薪 ＋ 時數 × 加班時薪 */
+.income-formula {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+.income-formula i {
+  font-style: normal;
+  opacity: .65;
+}
+.income-part.ot { color: color-mix(in srgb, var(--ot) 80%, var(--text-2)); }
+.income-part.night { color: color-mix(in srgb, var(--night) 80%, var(--text-2)); }
+
+.income-total {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.8px;
+  color: var(--work);
+  white-space: nowrap;
+}
+.income-cur { font-size: 15px; font-weight: 700; opacity: .8; }
+
+.day {
+  position: relative;
+  min-height: 78px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  padding: 5px 6px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: transform .12s ease, box-shadow .15s ease, border-color .15s ease;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.day:active { transform: scale(.97); }
+
+.day.is-blank {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.day.is-weekend { background: var(--surface-2); }
+
+.day.is-today { border-color: var(--work); box-shadow: 0 0 0 2px color-mix(in srgb, var(--work) 24%, transparent); }
+
+.day.has-entry { border-color: color-mix(in srgb, var(--work) 38%, var(--border)); }
+
+.day.is-holiday .day-num { color: var(--ot); }
+
+.day-num {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.day.is-today .day-num {
+  color: #fff;
+  background: var(--work);
+  width: 21px; height: 21px;
+  border-radius: 50%;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* 面板區塊：工時 / 加班 */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.2px;
+}
+
+/* 工數選項 chips */
+.unit-picker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.unit-picker-2 .unit-chip-lg {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.unit-chip {
+  flex: 1 1 auto;
+  min-width: 60px;
+  height: 40px;
+  padding: 0 8px;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 700;
+  transition: transform .12s ease, background .15s ease, color .15s ease, border-color .15s ease;
+}
+.unit-chip:active { transform: scale(.95); }
+.unit-chip:hover { border-color: color-mix(in srgb, var(--work) 45%, var(--border)); color: var(--text); }
+.unit-chip.is-active {
+  background: var(--work);
+  border-color: var(--work);
+  color: #fff;
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--work) 35%, transparent);
+}
+
+/* 兩個大選項（0.5 工 / 1 工） */
+.unit-chip-lg {
+  height: 58px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 12px;
+}
+.unit-chip-lg .chip-main { font-size: 15.5px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15; }
+.unit-chip-lg .chip-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  opacity: .7;
+  letter-spacing: .3px;
+  line-height: 1.15;
+}
+.unit-chip-lg.is-active .chip-sub { opacity: .9; }
+
+/* 加班時數 stepper（0.5 小時遞進） */
+.stepper-ot { width: 100%; }
+.stepper-ot .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; }
+.stepper-night { width: 100%; }
+.stepper-night .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; color: var(--night); }
+.stepper-display {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 0;
+}
+.stepper-display input {
+  width: 2.8em;
+  max-width: 60%;
+  text-align: right;
+  padding: 11px 0;
+}
+.stepper-unit {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-2);
+  flex: 0 0 auto;
+}
+
+/* 加班的選中色改為橘色系 */
+#otUnitPicker .unit-chip.is-active {
+  background: var(--ot);
+  border-color: var(--ot);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--ot) 35%, transparent);
+}
+#otUnitPicker .unit-chip:hover { border-color: color-mix(in srgb, var(--ot) 45%, var(--border)); }
+
+/* 加班 stepper 的加減號用橘色 */
+.stepper-ot .step-btn:active { background: color-mix(in srgb, var(--ot) 16%, transparent); }
+.stepper-ot .step-btn { color: var(--ot); }
+/* 半夜加班 stepper 的加減號用紫色 */
+.stepper-night .step-btn:active { background: color-mix(in srgb, var(--night) 16%, transparent); }
+
+.field-help {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-3);
+  font-weight: 600;
+}
+
+/* 兩組資料，每組「描述在上、時數在下」：
+   .day-groups ─┬─ .day-group      （工時描述 + 工數）
+                └─ .day-group.ot-group（加班描述 + 加班時數）
+   把每組包成一個 flex column，組內的描述與數字才會黏在一起；
+   整組再靠 margin-top: auto 對齊格子底部。 */
+.day-groups {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+.day-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.day-desc {
+  font-size: 10.5px;
+  line-height: 1.32;
+  color: var(--text-2);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+  min-width: 0;
+}
+.day-desc.ot-text { color: var(--ot); opacity: .95; }
+.day-desc.night-text { color: var(--night); opacity: .95; }
+
+.day-units {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--work);
+  line-height: 1.25;
+  letter-spacing: -.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.day-units .u {
+  font-size: 9.5px;
+  font-weight: 700;
+  margin-left: 1px;
+  opacity: .8;
+}
+.day-units.ot-units {
+  color: var(--ot);
+  font-size: 10.5px;
+}
+.day-units.night-units {
+  color: var(--night);
+  font-size: 10.5px;
+}
+
+.day-badge {
+  position: absolute;
+  right: 5px; top: 5px;
+  display: flex;
+  gap: 3px;
+  width: max-content;
+  height: max-content;
+  pointer-events: none;
+}
+.badge-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--work);
+}
+.badge-dot.ot { background: var(--ot); }
+.badge-dot.night { background: var(--night); }
+
+/* ===================== 底部提示 ===================== */
+.hint-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 16px calc(12px + var(--safe-b));
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+}
+.hint-icon { font-size: 13px; }
+
+/* ===================== 面板 / 抽屜 ===================== */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(9, 14, 26, .45);
+  backdrop-filter: blur(2px);
+  z-index: 90;
+  opacity: 0;
+  transition: opacity .22s ease;
+}
+.sheet-backdrop.show { opacity: 1; }
+
+.sheet {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 100%;
+  max-height: 92dvh;
+  display: flex;
+  flex-direction: column;
+  transform: translateY(102%);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+  padding-bottom: var(--safe-b);
+}
+.sheet.show { transform: translateY(0); }
+
+.sheet-handle {
+  width: 40px; height: 4px;
+  border-radius: 999px;
+  background: var(--border);
+  margin: 9px auto 2px;
+  flex: 0 0 auto;
+}
+
+.sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px 10px;
+  flex: 0 0 auto;
+}
+.sheet-date {
+  margin: 0 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--work);
+  letter-spacing: .2px;
+}
+.sheet-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.3px; }
+
+.sheet-body {
+  padding: 2px 16px 6px;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 0; min-width: 0; }
+.field-row { display: flex; gap: 12px; }
+
+.field-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-2);
+}
+.dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 7px; }
+.dot-work { background: var(--work); }
+.dot-ot { background: var(--ot); }
+.dot-night { background: var(--night); }
+
+textarea, .field input[type="text"] {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+textarea:focus, .field input[type="text"]:focus {
+  outline: none;
+  border-color: var(--work);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--work) 16%, transparent);
+  background: var(--surface);
+}
+textarea::placeholder, input::placeholder { color: var(--text-3); }
+
+.stepper {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.step-btn {
+  width: 40px;
+  border: none;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1;
+  transition: background .15s ease;
+}
+.step-btn:active { background: color-mix(in srgb, var(--work) 14%, transparent); }
+.stepper input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 11px 0;
+  -moz-appearance: textfield;
+}
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.stepper input:focus { outline: none; }
+
+.sheet-foot {
+  display: flex;
+  gap: 10px;
+  padding: 12px 16px 14px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex: 0 0 auto;
+}
+
+.btn {
+  flex: 1;
+  height: 46px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 14.5px;
+  font-weight: 700;
+  transition: transform .12s ease, filter .15s ease;
+}
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--work); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-ghost { background: var(--surface-2); color: var(--text-2); border-color: var(--border); }
+.btn-danger { background: color-mix(in srgb, var(--danger) 12%, transparent); color: var(--danger); flex: 0 0 84px; }
+.btn-danger:hover { background: color-mix(in srgb, var(--danger) 20%, transparent); }
+
+/* ===================== 抽屜 ===================== */
+.drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: min(340px, 88vw);
+  z-index: 100;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  transform: translateX(102%);
+  transition: transform .28s cubic-bezier(.22, 1, .36, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: calc(14px + env(safe-area-inset-top, 0px)) 16px calc(20px + var(--safe-b));
+  gap: 18px;
+}
+.drawer.show { transform: translateX(0); }
+
+.drawer-head { display: flex; align-items: center; justify-content: space-between; }
+.drawer-head h3 { margin: 0; font-size: 17px; font-weight: 800; }
+
+.drawer-section { display: flex; flex-direction: column; gap: 9px; }
+.drawer-label {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .8px;
+}
+
+.switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+.switch-row input[type="checkbox"] {
+  appearance: none;
+  width: 44px; height: 26px;
+  border-radius: 999px;
+  background: var(--border);
+  position: relative;
+  transition: background .2s ease;
+  flex: 0 0 44px;
+  margin: 0;
+  cursor: pointer;
+}
+.switch-row input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: transform .2s cubic-bezier(.22, 1, .36, 1);
+}
+.switch-row input[type="checkbox"]:checked { background: var(--work); }
+.switch-row input[type="checkbox"]:checked::after { transform: translateX(18px); }
+
+.drawer-btn {
+  height: 42px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 650;
+  transition: transform .12s ease, background .15s ease;
+  text-align: left;
+  padding: 0 14px;
+}
+.drawer-btn:active { transform: scale(.98); }
+.drawer-btn:hover { background: color-mix(in srgb, var(--work) 8%, var(--surface-2)); }
+.drawer-btn-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, var(--border)); }
+
+.drawer-help { margin: 0; font-size: 11.5px; line-height: 1.55; color: var(--text-3); }
+
+/* 薪資設定：日薪 / 加班時薪
+ * 沿用 .stepper 的視覺語言（同樣的邊框、圓角、surface-2 底色），
+ * 但改為「左側 $ 前綴 + 可輸入金額」的樣式，避免與工時 stepper 混淆。
+ * 用 :focus-within 讓整個外框亮起，點在小字上也能正確顯示焦點。 */
+.pay-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.pay-label {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--text);
+  white-space: nowrap;
+}
+.pay-input-wrap {
+  display: flex;
+  align-items: stretch;
+  flex: 0 1 150px;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.pay-input-wrap:focus-within {
+  border-color: var(--work);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--work) 16%, transparent);
+  background: var(--surface);
+}
+.pay-prefix {
+  display: grid;
+  place-items: center;
+  padding: 0 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-3);
+  background: color-mix(in srgb, var(--text) 5%, transparent);
+  border-right: 1px solid var(--border);
+}
+.pay-input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  text-align: right;
+  padding: 10px 10px 10px 6px;
+  -moz-appearance: textfield;
+}
+.pay-input::-webkit-outer-spin-button,
+.pay-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.pay-input:focus { outline: none; }
+
+.drawer-about { border-top: 1px solid var(--border); padding-top: 14px; }
+
+/* ===================== 版本資訊 ===================== */
+.version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.version-num {
+  margin: 0 0 2px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.2px;
+}
+.version-check {
+  flex: 0 0 auto;
+  height: 38px;
+  text-align: center;
+  padding: 0 14px;
+  color: var(--work);
+  font-weight: 700;
+}
+
+/* ===================== 更新提示橫幅 ===================== */
+.update-bar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(16px + var(--safe-b));
+  transform: translate(-50%, 130%);
+  z-index: 150;
+  width: min(560px, calc(100vw - 24px));
+  transition: transform .32s cubic-bezier(.22, 1, .36, 1), opacity .3s ease;
+  opacity: 0;
+}
+.update-bar.show { transform: translate(-50%, 0); opacity: 1; }
+.update-bar[hidden] { display: none; }
+
+.update-bar-inner {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 11px 11px 14px;
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+}
+
+.update-icon {
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  flex: 0 0 36px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, var(--work), #7c3aed);
+  color: #fff;
+  animation: spin-once 2.6s ease-in-out infinite;
+}
+@keyframes spin-once {
+  0%, 70%, 100% { transform: rotate(0deg); }
+  80% { transform: rotate(180deg); }
+  90% { transform: rotate(360deg); }
+}
+
+.update-text { flex: 1 1 auto; min-width: 0; }
+.update-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -.2px;
+}
+.update-desc {
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--text-2);
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.update-btn {
+  flex: 0 0 auto;
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--work);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 800;
+  box-shadow: var(--shadow-sm);
+  transition: transform .12s ease, filter .15s ease;
+  white-space: nowrap;
+}
+.update-btn:hover { filter: brightness(1.07); }
+.update-btn:active { transform: scale(.96); }
+.update-btn:disabled { opacity: .65; cursor: default; }
+
+.update-close {
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  width: 32px; height: 32px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-3);
+  transition: background .15s ease, color .15s ease;
+}
+.update-close:hover { background: var(--surface-2); color: var(--text-2); }
+
+@media (max-width: 400px) {
+  .update-bar-inner { flex-wrap: wrap; }
+  .update-text { flex: 1 1 calc(100% - 90px); }
+  .update-btn { flex: 1 1 100%; order: 3; margin-top: 2px; }
+  .update-close { order: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .update-icon { animation: none; }
+}
+
+/* ===================== Toast ===================== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + var(--safe-b));
+  transform: translate(-50%, 16px);
+  z-index: 200;
+  padding: 11px 18px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, .94);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: none;
+  max-width: 84vw;
+  text-align: center;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ===================== 響應式 ===================== */
+/*
+ * 手機版（<= 480px）：改用「網格線分隔」風格，而非一日一卡片。
+ * 卡片式的邊框（2px）、圓角、背景與 3px 間隙在 7 欄分攤下會吃掉約 20% 寬度，
+ * 拿掉後每格內容寬度可由 38px 提升至 46px，讓描述與工數字數更寬裕。
+ * 格線用 grid 的 1px gap + 容器底色透出，避免每格各畫 border 造成雙線。
+ */
+@media (max-width: 480px) {
+  .calendar-grid {
+    /* 列高以內容為基礎（auto），下限 64px。
+       不用 1fr：那會把只有少量記錄的月份硬拉成等高，在下方留下大片空區。
+       auto 讓有記錄的列自然長高、空白列維持 64px，網格收在內容結束處。
+
+       格線做法：容器鋪滿 --grid-line 底色，格子之間留 1px gap 讓底色透出，
+       形成連續的細格線。全域的 --border（#e4e8f0）在手機高解析度下
+       對比不足幾乎看不見，故另訂較深的 --grid-line。 */
+    --grid-line: color-mix(in srgb, var(--text) 22%, var(--surface));
+    grid-auto-rows: minmax(64px, auto);
+    gap: 1px;
+    align-content: start;
+    background: var(--grid-line);
+    padding: 1px 0;
+    /* 手機版列高由內容決定，網格不該再撐滿容器（那會在最後一列下方
+       留下一大片空白）。改為 flex: 0 0 auto 讓它自然收在內容結束處；
+       收入列再用 margin-top: auto 貼到容器底部，兩者之間就沒有空隙。 */
+    flex: 0 0 auto;
+  }
+  .weekday-row { gap: 1px; }
+  /* 表頭也加上分隔線，與日期格對齊 */
+  .weekday-row {
+    border-bottom: 1px solid var(--grid-line);
+  }
+
+  .day {
+    min-height: 72px;
+    padding: 3px 3px 4px;
+    border: none;
+    border-radius: 0;
+    background: var(--surface);
+    gap: 2px;
+    transition: background .12s ease;
+  }
+  .day:active { transform: none; background: var(--surface-2); }
+
+  /* 網格風格下，週末與今日改用底色區分，而非邊框 */
+  .day.is-weekend { background: var(--surface-2); }
+  .day.is-blank { background: var(--surface); }
+  .day.is-today {
+    background: color-mix(in srgb, var(--work) 10%, var(--surface));
+  }
+  .day.has-entry { background: color-mix(in srgb, var(--work) 5%, var(--surface)); }
+  .day.has-entry.is-weekend { background: color-mix(in srgb, var(--work) 8%, var(--surface-2)); }
+
+  /* 日期數字：縮小並靠左上，把中段空間留給描述 */
+  .day-num { font-size: 11px; line-height: 1; gap: 2px; }
+  .day.is-today .day-num {
+    width: 16px; height: 16px;
+    font-size: 10px;
+    background: var(--work);
+    color: #fff;
+  }
+
+  /* 描述：手機版欄寬只有約 46px，中文每行約 4 個字。
+     三個描述各佔一個 .day-desc，故每個限 2 行——
+     手機格子高由內容決定，三個描述都放 3 行的話一天會長到近 200px，
+     整個月的月曆就失去「一眼掃描」的意義，故手機版比其他斷點更嚴。 */
+  .day-desc {
+    -webkit-line-clamp: 2;
+    font-size: 9.5px;
+    line-height: 1.25;
+  }
+  /* 加班描述在手機版也維持橘色，與工時描述一眼可分 */
+  .day-desc.ot-text { color: var(--ot); opacity: 1; }
+  /* 半夜加班描述用紫色，與工時（深灰）、加班（橘）三分 */
+  .day-desc.night-text { color: var(--night); opacity: 1; }
+
+  /* 兩組之間的分隔：組本身只靠 gap 分開，不畫線。
+     三組時 gap 要縮到 2px，否則「3 描述 × 2 行」的格子會太高。 */
+  .day-groups { gap: 2px; margin-top: auto; }
+
+  /* 工數／加班：滿版底色塊，橫跨格子寬度並貼齊底部。
+     負 margin 抵銷格子的左右與底部 padding，讓色塊真正頂到格線，
+     視覺上形成連續的資料列，而非一顆顆獨立膠囊。
+     負 margin 改掛在「組內最後一個色塊」上：色塊是組的子元素，
+     若掛在外層 .day-groups 會連描述一起拉寬，很難對齊。
+     每組的描述與自己的數字黏在一起（gap: 1px），
+     組與組之間留 3px，維持「兩組資料」的辨識度。 */
+  .day-group { gap: 1px; }
+  .day-units {
+    font-size: 9.5px;
+    line-height: 1.6;
+    padding: 0 3px;
+    border-radius: 0;
+    /* 手機版色塊要夠明顯才有辨識度：15% 在白底上幾乎看不出來，
+       提高到 26%（工數）／30%（加班），維持淺色調但清楚可見。 */
+    background: color-mix(in srgb, var(--work) 26%, var(--surface));
+    color: color-mix(in srgb, var(--work) 88%, var(--text));
+    justify-content: center;
+    margin: 0 -3px;
+  }
+  /* 整組的最後一個色塊才往下多撐 4px，貼齊格子底部的格線 */
+  .day-group:last-child .day-units { margin-bottom: -4px; }
+  /* 只有一組時（沒有加班），單獨的色塊也要貼底 */
+  .day-groups > .day-group:only-child .day-units { margin-bottom: -4px; }
+  .day-units .u { font-size: 8px; }
+  .day-units .ut { display: none; }
+  .day-units.ot-units {
+    font-size: 9px;
+    background: color-mix(in srgb, var(--ot) 30%, var(--surface));
+    color: color-mix(in srgb, var(--ot) 92%, var(--text));
+  }
+  /* 半夜加班色塊：紫色系，與工數、加班塊併排時仍分得開 */
+  .day-units.night-units {
+    font-size: 9px;
+    background: color-mix(in srgb, var(--night) 30%, var(--surface));
+    color: color-mix(in srgb, var(--night) 92%, var(--text));
+  }
+
+  /* 徽章改為角落小點，不佔排版空間 */
+  .day-badge { right: 3px; top: 3px; gap: 2px; }
+  .badge-dot { width: 4px; height: 4px; }
+
+  .month-title { font-size: 19px; }
+  .brand h1 { font-size: 15px; }
+  .field-row { flex-direction: column; gap: 14px; }
+  .unit-chip { min-width: 52px; height: 38px; font-size: 12.5px; flex: 1 1 28%; }
+
+  /* 手機版收入列：改為「標籤在上、金額在下」的兩行堆疊。
+     手機寬度只有 360–430px，橫向排列會把 24px 的總額擠成換行，
+     看起來像排版壞掉；堆疊後金額可獨占整行，反而更醒目。
+     margin-top: auto 把收入列推到容器底部，吸收網格縮短後留下的空間，
+     避免最後一列與收入列之間出現大片空白。 */
+  .income-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+    margin-top: auto;
+    padding: 9px 11px;
+    border-radius: 8px;
+  }
+  .income-label > span:first-child { font-size: 11.5px; }
+  .income-formula { font-size: 10.5px; gap: 3px; }
+  .income-total { font-size: 22px; justify-content: flex-start; }
+  .income-cur { font-size: 14px; }
+
+  /* 薪資欄位在手機上改為上下排，輸入框撐滿寬度才好按 */
+  .pay-field { flex-direction: column; align-items: stretch; gap: 5px; }
+  .pay-input-wrap { flex: 1 1 auto; }
+  .pay-input { padding: 9px 10px 9px 6px; }
+}
+
+@media (min-width: 700px) {
+  #app { padding: 0 14px; }
+  .calendar-wrap { padding: 0 14px 14px; }
+  /* 列高改由內容決定（auto），下限 130px 足以容納
+     兩個描述 + 兩個色塊；記錄少的月份不會被硬撐高。 */
+  .calendar-grid { grid-auto-rows: minmax(130px, auto); align-content: start; }
+  .day { min-height: 130px; padding: 9px 11px 10px; }
+  /* 每個描述各自最多 2 行。不要給 min-height——那會讓只有一行短文的
+     加班描述也佔滿兩行高度，兩組之間出現莫名空隙。 */
+  .day-desc {
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    max-height: 2.8em;
+    overflow: hidden;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  .day-num { font-size: 15px; }
+  .day-units { font-size: 14px; line-height: 1.2; letter-spacing: -.3px; }
+  .day-units .u { font-size: 11px; }
+  .day-units.ot-units { font-size: 13px; }
+  .day-units.night-units { font-size: 13px; }
+  .day-groups { gap: 6px; margin-top: auto; padding-top: 3px; }
+  .day-group { gap: 2px; }
+  .field-group { padding: 14px; }
+  .weekday-row { font-size: 12px; }
+  /* 平板：收入列左右留白與月曆一致，總額放大一級 */
+  .income-bar { padding: 13px 17px; margin-top: 10px; }
+  .income-total { font-size: 26px; }
+}
+
+/* 大螢幕：格子變寬，工數／加班以醒目色塊呈現，用滿橫向空間 */
+@media (min-width: 1000px) {
+  #app { padding: 0 20px; }
+  .calendar-wrap { padding: 0 20px 20px; }
+  /* 列高下限要能容納「最擠」的格子：三行工時描述 + 三行加班描述
+     + 三行半夜描述 + 三個色塊 + 兩段組間距。
+     之前只按「兩組（工時＋加班）」估 200px，加入半夜加班這第三組後，
+     多了一個描述（最多 2 行）、一個色塊與一段組間距，實測需要約 270px，
+     故取 276px 留一點餘裕。 */
+  .calendar-grid { gap: 6px; grid-auto-rows: minmax(276px, 1fr); }
+  .weekday-row { gap: 6px; }
+  .income-bar { margin-top: 12px; padding: 15px 21px; border-radius: 12px; }
+  .income-label > span:first-child { font-size: 13.5px; }
+  .income-formula { font-size: 12.5px; }
+  .income-total { font-size: 32px; }
+  .income-cur { font-size: 19px; }
+  .day { min-height: 276px; padding: 11px 14px 12px; border-radius: 12px; gap: 5px; }
+  .day-num { font-size: 15px; padding-bottom: 6px; border-bottom: 1px solid var(--border); flex: 0 0 auto; }
+  .day.is-today .day-num { width: 24px; height: 24px; padding-bottom: 0; border-bottom: none; }
+  /* 每個描述各自限高 2 行。三個描述都出現時才不會把色塊擠出格子。
+     描述不設 flex 值，讓所屬的 .day-group 決定高度。 */
+  .day-desc {
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    font-size: 13.5px;
+    line-height: 1.4;
+    color: var(--text);
+    max-height: 2.8em;
+    overflow: hidden;
+  }
+  /* 加班描述用橘色，與工時描述區隔（工時用預設的 --text） */
+  .day-desc.ot-text { color: var(--ot); }
+  /* 兩組之間的距離比組內大，視覺上自然分成「工時組 / 加班組」 */
+  .day-groups { gap: 9px; padding-top: 5px; margin-top: auto; }
+  .day-group { gap: 4px; }
+  .day-units {
+    font-size: 18px;
+    line-height: 1.15;
+    padding: 2px 9px;
+    border-radius: 7px;
+    background: color-mix(in srgb, var(--work) 11%, transparent);
+    justify-content: space-between;
+  }
+  .day-units .u { font-size: 12px; }
+  .day-units .uv { display: inline-flex; align-items: baseline; gap: 1px; }
+  .day-units .ut {
+    font-size: 11px;
+    font-weight: 800;
+    opacity: .7;
+    letter-spacing: .5px;
+  }
+  .day-units.ot-units {
+    font-size: 16px;
+    background: color-mix(in srgb, var(--ot) 13%, transparent);
+  }
+  .day-units.night-units {
+    font-size: 16px;
+    background: color-mix(in srgb, var(--night) 13%, transparent);
+  }
+}
+
+@media (min-width: 1400px) {
+  #app { padding: 0 28px; }
+  .calendar-wrap { padding: 0 28px 24px; }
+  /* 同 1000px 區塊的理由：列高要容納三個描述 + 三個色塊。
+     三組資料後每組之間都有間距，最擠的格子（描述各佔 2 行）
+     實測需要約 302px，故取 308px 留一點餘裕。 */
+  .calendar-grid { gap: 8px; grid-auto-rows: minmax(308px, 1fr); }
+  .weekday-row { gap: 8px; }
+  .day { min-height: 308px; padding: 13px 16px 14px; gap: 5px; }
+  .day-num { font-size: 16px; padding-bottom: 7px; }
+  .day.is-today .day-num { width: 26px; height: 26px; }
+  .day-desc {
+    display: block;
+    -webkit-line-clamp: unset;
+    -webkit-box-orient: unset;
+    max-height: 2.8em;
+    font-size: 14.5px;
+    overflow: hidden;
+  }
+  .day-groups { gap: 11px; padding-top: 6px; }
+  .day-group { gap: 5px; }
+  .day-units { font-size: 19px; line-height: 1.15; padding: 3px 11px; }
+  .day-units .u { font-size: 13px; }
+  .day-units .ut { font-size: 12px; }
+  .day-units.ot-units { font-size: 17px; }
+  .day-units.night-units { font-size: 17px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
