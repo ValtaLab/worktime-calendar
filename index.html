@@ -114,15 +114,15 @@
 
       <div class="field">
         <span class="field-label" id="otUnitsLabel">加班時數</span>
-        <div class="stepper stepper-ot">
-          <button type="button" class="step-btn" data-target="otHours" data-delta="-0.5" aria-label="減少半小時">−</button>
-          <div class="stepper-display">
-            <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
-            <span class="stepper-unit">小時</span>
-          </div>
-          <button type="button" class="step-btn" data-target="otHours" data-delta="0.5" aria-label="增加半小時">+</button>
+        <!-- iOS 風格滾輪：上下滑動、吸附置中即為選中值。
+             隱藏的 number input 仍是資料來源（開面板寫值、儲存讀值）。 -->
+        <div class="wheel-picker wheel-ot" id="otHoursWheel" data-input="otHours" role="spinbutton"
+             tabindex="0" aria-label="加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+          <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
+          <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
         </div>
-        <p class="field-help" id="otEquivalent">每次調整 0.5 小時</p>
+        <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
+        <p class="field-help">上下滑動選擇，每次 0.5 小時</p>
       </div>
     </section>
 
@@ -137,15 +137,13 @@
 
       <div class="field">
         <span class="field-label" id="nightUnitsLabel">半夜加班時數</span>
-        <div class="stepper stepper-night">
-          <button type="button" class="step-btn" data-target="nightHours" data-delta="-0.5" aria-label="減少半小時">−</button>
-          <div class="stepper-display">
-            <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
-            <span class="stepper-unit">小時</span>
-          </div>
-          <button type="button" class="step-btn" data-target="nightHours" data-delta="0.5" aria-label="增加半小時">+</button>
+        <div class="wheel-picker wheel-night" id="nightHoursWheel" data-input="nightHours" role="spinbutton"
+             tabindex="0" aria-label="半夜加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+          <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
+          <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
         </div>
-        <p class="field-help" id="nightEquivalent">每次調整 0.5 小時</p>
+        <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
+        <p class="field-help">上下滑動選擇，每次 0.5 小時</p>
       </div>
     </section>
 

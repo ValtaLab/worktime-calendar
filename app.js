@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.14.0';
-  const APP_BUILD = '20260917-0203';
+  const APP_VERSION = '1.15.0';
+  const APP_BUILD = '20260917-0235';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -172,11 +172,13 @@
     cancelBtn: $('cancelBtn'),
     deleteBtn: $('deleteBtn'),
 
-    // 工數（0.5 工 / 1 工）、加班時數與半夜加班時數（皆 0.5 小時遞進）
+    // 工數（0.5 工 / 1 工）、加班時數與半夜加班時數（滾輪選擇，input 為資料來源）
     workUnitPicker: $('workUnitPicker'),
     workEquivalent: $('workEquivalent'),
     otHours: $('otHours'),
     nightHours: $('nightHours'),
+    otHoursWheel: $('otHoursWheel'),
+    nightHoursWheel: $('nightHoursWheel'),
 
     drawer: $('drawer'),
     drawerBackdrop: $('drawerBackdrop'),
@@ -476,6 +478,12 @@
 
     lastFocused = document.activeElement;
     showOverlay(el.sheetBackdrop, el.sheet);
+    // 面板顯示後再同步滾輪位置（hidden 時 scrollTop 無效）。
+    // 兩層 rAF 確保 layout 已完成，定位用 instant 不做動畫。
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      syncWheel(el.otHoursWheel);
+      syncWheel(el.nightHoursWheel);
+    }));
     setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
   }
 
@@ -545,6 +553,99 @@
       panel.hidden = true;
       done && done();
     }, 280);
+  }
+
+  /* ---------------- 滾輪選擇器 ----------------
+     加班／半夜時數共用：0–24、每次 0.5（共 49 格）。
+     選項高度由 CSS 變數 --wheel-item-h 統一，JS 依 scrollTop 換算索引。 */
+  const WHEEL_STEP = 0.5;
+  const WHEEL_MAX = 24;
+  const WHEEL_ITEM_H_FALLBACK = 36;
+
+  function wheelItemH(wheel) {
+    const v = parseFloat(getComputedStyle(wheel).getPropertyValue('--wheel-item-h'));
+    return v > 0 ? v : WHEEL_ITEM_H_FALLBACK;
+  }
+
+  function wheelCount() {
+    return Math.round(WHEEL_MAX / WHEEL_STEP); // 48 → 索引 0..48
+  }
+
+  function fmtWheelNum(v) {
+    return v % 1 === 0 ? String(v) : v.toFixed(1); // 3 → "3"、2.5 → "2.5"
+  }
+
+  /** 依索引套用選中狀態：更新隱藏 input、aria 與選中格樣式 */
+  function applyWheelIdx(wheel, idx) {
+    const items = wheel._items;
+    const maxIdx = items.length - 1;
+    idx = Math.max(0, Math.min(maxIdx, idx));
+    if (idx === wheel._idx) return;
+    wheel._idx = idx;
+
+    const v = round1(idx * WHEEL_STEP);
+    const input = $(wheel.dataset.input);
+    if (input) input.value = fmtWheelNum(v);
+    wheel.setAttribute('aria-valuenow', String(v));
+    wheel.setAttribute('aria-valuetext', `${fmtWheelNum(v)} 小時`);
+    items.forEach((it, i) => it.toggleAttribute('data-active', i === idx));
+  }
+
+  /** 捲動使第 idx 格置中；smooth=true 時帶動畫 */
+  function scrollWheelTo(wheel, idx, smooth) {
+    const maxIdx = wheel._items.length - 1;
+    idx = Math.max(0, Math.min(maxIdx, idx));
+    wheel._scroll.scrollTo({
+      top: idx * wheelItemH(wheel),
+      behavior: smooth ? 'smooth' : 'auto',
+    });
+    applyWheelIdx(wheel, idx);
+  }
+
+  /** 依隱藏 input 目前的值，讓滾輪定位到對應格（開面板時用） */
+  function syncWheel(wheel) {
+    const input = $(wheel.dataset.input);
+    const v = num(input ? input.value : 0);
+    const idx = Math.round(v / WHEEL_STEP);
+    wheel._idx = -1; // 強制 applyWheelIdx 重套（值可能沒變但位置要歸位）
+    scrollWheelTo(wheel, idx, false);
+  }
+
+  function initWheel(wheel) {
+    const scroll = wheel.querySelector('.wheel-scroll');
+    wheel._scroll = scroll;
+    wheel._items = [];
+    wheel._idx = -1;
+
+    for (let i = 0; i <= wheelCount(); i++) {
+      const v = round1(i * WHEEL_STEP);
+      const it = document.createElement('div');
+      it.className = 'wheel-item';
+      it.dataset.value = String(v);
+      it.textContent = fmtWheelNum(v);
+      it.addEventListener('click', () => scrollWheelTo(wheel, i, true));
+      scroll.appendChild(it);
+      wheel._items.push(it);
+    }
+
+    // 捲動中即時換算置中格（rAF 節流）
+    let raf = 0;
+    scroll.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        applyWheelIdx(wheel, Math.round(scroll.scrollTop / wheelItemH(wheel)));
+      });
+    }, { passive: true });
+
+    // 鍵盤：上下 = ±0.5 小時，Home/End = 首尾
+    wheel.addEventListener('keydown', (ev) => {
+      const cur = wheel._idx < 0 ? 0 : wheel._idx;
+      if (ev.key === 'ArrowUp') { ev.preventDefault(); scrollWheelTo(wheel, cur - 1, true); }
+      else if (ev.key === 'ArrowDown') { ev.preventDefault(); scrollWheelTo(wheel, cur + 1, true); }
+      else if (ev.key === 'Home') { ev.preventDefault(); scrollWheelTo(wheel, 0, true); }
+      else if (ev.key === 'End') { ev.preventDefault(); scrollWheelTo(wheel, wheel._items.length - 1, true); }
+    });
   }
 
   /* ---------------- 儲存 / 刪除 ---------------- */
@@ -671,7 +772,13 @@
       setWorkUnits(parseFloat(chip.dataset.value));
     });
 
-    /* ---- 步進器（加班時數 + 抽屜設定）---- */
+    /* ---- 滾輪選擇器（加班時數 / 半夜加班時數）----
+       iOS 風格：上下滑動、scroll-snap 吸附置中，置中那格就是選中值。
+       隱藏的 number input 仍是資料來源（openSheet 寫值、saveEntry 讀值），
+       滾輪只負責顯示與輸入，兩者即時同步。 */
+    document.querySelectorAll('.wheel-picker').forEach(initWheel);
+
+    /* ---- 步進器（抽屜的每日工時；加班／半夜已改用滾輪）---- */
     document.querySelectorAll('.step-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const input = $(btn.dataset.target);

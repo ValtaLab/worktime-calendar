@@ -473,30 +473,88 @@ input, textarea { font-family: inherit; }
 }
 .unit-chip-lg.is-active .chip-sub { opacity: .9; }
 
-/* 加班時數 stepper（0.5 小時遞進） */
-.stepper-ot { width: 100%; }
-.stepper-ot .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; }
-.stepper-night { width: 100%; }
-.stepper-night .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; color: var(--night); }
-.stepper-display {
-  flex: 1 1 auto;
+/* ---- 加班／半夜時數滾輪（iOS 風格，上下滑動選擇）----
+   結構：.wheel-picker（外框，relative）
+        ├─ .wheel-scroll（可捲動選項列，scroll-snap 吸附置中）
+        ├─ .wheel-item × 49（0–24，每次 0.5，置中即選中）
+        └─ .wheel-band（中央選中帶＋右側「小時」單位，pointer-events:none）
+   選項高度以 --wheel-item-h 統一，JS 依 scrollTop / 項目高 換算索引；
+   上下 padding = (列數-1)/2 × 項目高，讓第一格與最後一格也能置中。 */
+.wheel-picker {
+  --wheel-item-h: 36px;
+  --wheel-rows: 5;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.wheel-scroll {
+  position: relative;
+  z-index: 2;
+  height: calc(var(--wheel-item-h) * var(--wheel-rows));
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain; /* 滾到盡頭不帶動面板滾動 */
+  scrollbar-width: none;        /* 隱藏捲軸：滾輪本身即軌道 */
+  padding: calc(var(--wheel-item-h) * (var(--wheel-rows) - 1) / 2) 0;
+}
+.wheel-scroll::-webkit-scrollbar { display: none; }
+.wheel-item {
+  height: var(--wheel-item-h);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  min-width: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  scroll-snap-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color .12s ease;
 }
-.stepper-display input {
-  width: 2.8em;
-  max-width: 60%;
-  text-align: right;
-  padding: 11px 0;
+.wheel-item[data-active] { color: var(--text); font-weight: 800; }
+/* 圖層順序：色帶(z1) < 選項(z2) < 上下淡出(z3)。
+   色帶若畫在選項之上，會把置中的選中值蓋住（不透明底色）。 */
+.wheel-band {
+  position: absolute;
+  left: 10px; right: 10px; top: 50%;
+  height: var(--wheel-item-h);
+  transform: translateY(-50%);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ot) 9%, var(--surface));
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 14px;
+  pointer-events: none;
+  z-index: 1;
 }
-.stepper-unit {
-  font-size: 13px;
+.wheel-night .wheel-band { background: color-mix(in srgb, var(--night) 9%, var(--surface)); }
+.wheel-unit {
+  font-size: 12px;
   font-weight: 700;
-  color: var(--text-2);
-  flex: 0 0 auto;
+  color: var(--text-3);
+}
+/* 上下邊緣淡出：讓選項列有「漸遠」的深度感（蓋在選項之上） */
+.wheel-picker::before,
+.wheel-picker::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: calc(var(--wheel-item-h) * 1.5);
+  pointer-events: none;
+  z-index: 3;
+}
+.wheel-picker::before { top: 0; background: linear-gradient(to bottom, var(--surface-2) 12%, transparent); }
+.wheel-picker::after { bottom: 0; background: linear-gradient(to top, var(--surface-2) 12%, transparent); }
+.wheel-picker:focus-visible {
+  outline: none;
+  border-color: var(--work);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--work) 16%, transparent);
 }
 
 /* 加班的選中色改為橘色系 */
@@ -506,12 +564,6 @@ input, textarea { font-family: inherit; }
   box-shadow: 0 2px 10px color-mix(in srgb, var(--ot) 35%, transparent);
 }
 #otUnitPicker .unit-chip:hover { border-color: color-mix(in srgb, var(--ot) 45%, var(--border)); }
-
-/* 加班 stepper 的加減號用橘色 */
-.stepper-ot .step-btn:active { background: color-mix(in srgb, var(--ot) 16%, transparent); }
-.stepper-ot .step-btn { color: var(--ot); }
-/* 半夜加班 stepper 的加減號用紫色 */
-.stepper-night .step-btn:active { background: color-mix(in srgb, var(--night) 16%, transparent); }
 
 .field-help {
   margin: 0;
@@ -1560,15 +1612,15 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
       <div class="field">
         <span class="field-label" id="otUnitsLabel">加班時數</span>
-        <div class="stepper stepper-ot">
-          <button type="button" class="step-btn" data-target="otHours" data-delta="-0.5" aria-label="減少半小時">−</button>
-          <div class="stepper-display">
-            <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
-            <span class="stepper-unit">小時</span>
-          </div>
-          <button type="button" class="step-btn" data-target="otHours" data-delta="0.5" aria-label="增加半小時">+</button>
+        <!-- iOS 風格滾輪：上下滑動、吸附置中即為選中值。
+             隱藏的 number input 仍是資料來源（開面板寫值、儲存讀值）。 -->
+        <div class="wheel-picker wheel-ot" id="otHoursWheel" data-input="otHours" role="spinbutton"
+             tabindex="0" aria-label="加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+          <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
+          <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
         </div>
-        <p class="field-help" id="otEquivalent">每次調整 0.5 小時</p>
+        <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
+        <p class="field-help">上下滑動選擇，每次 0.5 小時</p>
       </div>
     </section>
 
@@ -1583,15 +1635,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
       <div class="field">
         <span class="field-label" id="nightUnitsLabel">半夜加班時數</span>
-        <div class="stepper stepper-night">
-          <button type="button" class="step-btn" data-target="nightHours" data-delta="-0.5" aria-label="減少半小時">−</button>
-          <div class="stepper-display">
-            <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0">
-            <span class="stepper-unit">小時</span>
-          </div>
-          <button type="button" class="step-btn" data-target="nightHours" data-delta="0.5" aria-label="增加半小時">+</button>
+        <div class="wheel-picker wheel-night" id="nightHoursWheel" data-input="nightHours" role="spinbutton"
+             tabindex="0" aria-label="半夜加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+          <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
+          <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
         </div>
-        <p class="field-help" id="nightEquivalent">每次調整 0.5 小時</p>
+        <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
+        <p class="field-help">上下滑動選擇，每次 0.5 小時</p>
       </div>
     </section>
 
@@ -1732,8 +1782,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.14.0';
-  const APP_BUILD = '20260917-0203';
+  const APP_VERSION = '1.15.0';
+  const APP_BUILD = '20260917-0235';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1897,11 +1947,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     cancelBtn: $('cancelBtn'),
     deleteBtn: $('deleteBtn'),
 
-    // 工數（0.5 工 / 1 工）、加班時數與半夜加班時數（皆 0.5 小時遞進）
+    // 工數（0.5 工 / 1 工）、加班時數與半夜加班時數（滾輪選擇，input 為資料來源）
     workUnitPicker: $('workUnitPicker'),
     workEquivalent: $('workEquivalent'),
     otHours: $('otHours'),
     nightHours: $('nightHours'),
+    otHoursWheel: $('otHoursWheel'),
+    nightHoursWheel: $('nightHoursWheel'),
 
     drawer: $('drawer'),
     drawerBackdrop: $('drawerBackdrop'),
@@ -2201,6 +2253,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     lastFocused = document.activeElement;
     showOverlay(el.sheetBackdrop, el.sheet);
+    // 面板顯示後再同步滾輪位置（hidden 時 scrollTop 無效）。
+    // 兩層 rAF 確保 layout 已完成，定位用 instant 不做動畫。
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      syncWheel(el.otHoursWheel);
+      syncWheel(el.nightHoursWheel);
+    }));
     setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
   }
 
@@ -2270,6 +2328,99 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       panel.hidden = true;
       done && done();
     }, 280);
+  }
+
+  /* ---------------- 滾輪選擇器 ----------------
+     加班／半夜時數共用：0–24、每次 0.5（共 49 格）。
+     選項高度由 CSS 變數 --wheel-item-h 統一，JS 依 scrollTop 換算索引。 */
+  const WHEEL_STEP = 0.5;
+  const WHEEL_MAX = 24;
+  const WHEEL_ITEM_H_FALLBACK = 36;
+
+  function wheelItemH(wheel) {
+    const v = parseFloat(getComputedStyle(wheel).getPropertyValue('--wheel-item-h'));
+    return v > 0 ? v : WHEEL_ITEM_H_FALLBACK;
+  }
+
+  function wheelCount() {
+    return Math.round(WHEEL_MAX / WHEEL_STEP); // 48 → 索引 0..48
+  }
+
+  function fmtWheelNum(v) {
+    return v % 1 === 0 ? String(v) : v.toFixed(1); // 3 → "3"、2.5 → "2.5"
+  }
+
+  /** 依索引套用選中狀態：更新隱藏 input、aria 與選中格樣式 */
+  function applyWheelIdx(wheel, idx) {
+    const items = wheel._items;
+    const maxIdx = items.length - 1;
+    idx = Math.max(0, Math.min(maxIdx, idx));
+    if (idx === wheel._idx) return;
+    wheel._idx = idx;
+
+    const v = round1(idx * WHEEL_STEP);
+    const input = $(wheel.dataset.input);
+    if (input) input.value = fmtWheelNum(v);
+    wheel.setAttribute('aria-valuenow', String(v));
+    wheel.setAttribute('aria-valuetext', `${fmtWheelNum(v)} 小時`);
+    items.forEach((it, i) => it.toggleAttribute('data-active', i === idx));
+  }
+
+  /** 捲動使第 idx 格置中；smooth=true 時帶動畫 */
+  function scrollWheelTo(wheel, idx, smooth) {
+    const maxIdx = wheel._items.length - 1;
+    idx = Math.max(0, Math.min(maxIdx, idx));
+    wheel._scroll.scrollTo({
+      top: idx * wheelItemH(wheel),
+      behavior: smooth ? 'smooth' : 'auto',
+    });
+    applyWheelIdx(wheel, idx);
+  }
+
+  /** 依隱藏 input 目前的值，讓滾輪定位到對應格（開面板時用） */
+  function syncWheel(wheel) {
+    const input = $(wheel.dataset.input);
+    const v = num(input ? input.value : 0);
+    const idx = Math.round(v / WHEEL_STEP);
+    wheel._idx = -1; // 強制 applyWheelIdx 重套（值可能沒變但位置要歸位）
+    scrollWheelTo(wheel, idx, false);
+  }
+
+  function initWheel(wheel) {
+    const scroll = wheel.querySelector('.wheel-scroll');
+    wheel._scroll = scroll;
+    wheel._items = [];
+    wheel._idx = -1;
+
+    for (let i = 0; i <= wheelCount(); i++) {
+      const v = round1(i * WHEEL_STEP);
+      const it = document.createElement('div');
+      it.className = 'wheel-item';
+      it.dataset.value = String(v);
+      it.textContent = fmtWheelNum(v);
+      it.addEventListener('click', () => scrollWheelTo(wheel, i, true));
+      scroll.appendChild(it);
+      wheel._items.push(it);
+    }
+
+    // 捲動中即時換算置中格（rAF 節流）
+    let raf = 0;
+    scroll.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        applyWheelIdx(wheel, Math.round(scroll.scrollTop / wheelItemH(wheel)));
+      });
+    }, { passive: true });
+
+    // 鍵盤：上下 = ±0.5 小時，Home/End = 首尾
+    wheel.addEventListener('keydown', (ev) => {
+      const cur = wheel._idx < 0 ? 0 : wheel._idx;
+      if (ev.key === 'ArrowUp') { ev.preventDefault(); scrollWheelTo(wheel, cur - 1, true); }
+      else if (ev.key === 'ArrowDown') { ev.preventDefault(); scrollWheelTo(wheel, cur + 1, true); }
+      else if (ev.key === 'Home') { ev.preventDefault(); scrollWheelTo(wheel, 0, true); }
+      else if (ev.key === 'End') { ev.preventDefault(); scrollWheelTo(wheel, wheel._items.length - 1, true); }
+    });
   }
 
   /* ---------------- 儲存 / 刪除 ---------------- */
@@ -2396,7 +2547,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       setWorkUnits(parseFloat(chip.dataset.value));
     });
 
-    /* ---- 步進器（加班時數 + 抽屜設定）---- */
+    /* ---- 滾輪選擇器（加班時數 / 半夜加班時數）----
+       iOS 風格：上下滑動、scroll-snap 吸附置中，置中那格就是選中值。
+       隱藏的 number input 仍是資料來源（openSheet 寫值、saveEntry 讀值），
+       滾輪只負責顯示與輸入，兩者即時同步。 */
+    document.querySelectorAll('.wheel-picker').forEach(initWheel);
+
+    /* ---- 步進器（抽屜的每日工時；加班／半夜已改用滾輪）---- */
     document.querySelectorAll('.step-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         const input = $(btn.dataset.target);

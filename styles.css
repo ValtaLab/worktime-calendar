@@ -459,30 +459,88 @@ input, textarea { font-family: inherit; }
 }
 .unit-chip-lg.is-active .chip-sub { opacity: .9; }
 
-/* 加班時數 stepper（0.5 小時遞進） */
-.stepper-ot { width: 100%; }
-.stepper-ot .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; }
-.stepper-night { width: 100%; }
-.stepper-night .step-btn { width: 46px; font-size: 22px; flex: 0 0 46px; color: var(--night); }
-.stepper-display {
-  flex: 1 1 auto;
+/* ---- 加班／半夜時數滾輪（iOS 風格，上下滑動選擇）----
+   結構：.wheel-picker（外框，relative）
+        ├─ .wheel-scroll（可捲動選項列，scroll-snap 吸附置中）
+        ├─ .wheel-item × 49（0–24，每次 0.5，置中即選中）
+        └─ .wheel-band（中央選中帶＋右側「小時」單位，pointer-events:none）
+   選項高度以 --wheel-item-h 統一，JS 依 scrollTop / 項目高 換算索引；
+   上下 padding = (列數-1)/2 × 項目高，讓第一格與最後一格也能置中。 */
+.wheel-picker {
+  --wheel-item-h: 36px;
+  --wheel-rows: 5;
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  overflow: hidden;
+  touch-action: pan-y;
+}
+.wheel-scroll {
+  position: relative;
+  z-index: 2;
+  height: calc(var(--wheel-item-h) * var(--wheel-rows));
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  overscroll-behavior: contain; /* 滾到盡頭不帶動面板滾動 */
+  scrollbar-width: none;        /* 隱藏捲軸：滾輪本身即軌道 */
+  padding: calc(var(--wheel-item-h) * (var(--wheel-rows) - 1) / 2) 0;
+}
+.wheel-scroll::-webkit-scrollbar { display: none; }
+.wheel-item {
+  height: var(--wheel-item-h);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  min-width: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  scroll-snap-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: color .12s ease;
 }
-.stepper-display input {
-  width: 2.8em;
-  max-width: 60%;
-  text-align: right;
-  padding: 11px 0;
+.wheel-item[data-active] { color: var(--text); font-weight: 800; }
+/* 圖層順序：色帶(z1) < 選項(z2) < 上下淡出(z3)。
+   色帶若畫在選項之上，會把置中的選中值蓋住（不透明底色）。 */
+.wheel-band {
+  position: absolute;
+  left: 10px; right: 10px; top: 50%;
+  height: var(--wheel-item-h);
+  transform: translateY(-50%);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ot) 9%, var(--surface));
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 14px;
+  pointer-events: none;
+  z-index: 1;
 }
-.stepper-unit {
-  font-size: 13px;
+.wheel-night .wheel-band { background: color-mix(in srgb, var(--night) 9%, var(--surface)); }
+.wheel-unit {
+  font-size: 12px;
   font-weight: 700;
-  color: var(--text-2);
-  flex: 0 0 auto;
+  color: var(--text-3);
+}
+/* 上下邊緣淡出：讓選項列有「漸遠」的深度感（蓋在選項之上） */
+.wheel-picker::before,
+.wheel-picker::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: calc(var(--wheel-item-h) * 1.5);
+  pointer-events: none;
+  z-index: 3;
+}
+.wheel-picker::before { top: 0; background: linear-gradient(to bottom, var(--surface-2) 12%, transparent); }
+.wheel-picker::after { bottom: 0; background: linear-gradient(to top, var(--surface-2) 12%, transparent); }
+.wheel-picker:focus-visible {
+  outline: none;
+  border-color: var(--work);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--work) 16%, transparent);
 }
 
 /* 加班的選中色改為橘色系 */
@@ -492,12 +550,6 @@ input, textarea { font-family: inherit; }
   box-shadow: 0 2px 10px color-mix(in srgb, var(--ot) 35%, transparent);
 }
 #otUnitPicker .unit-chip:hover { border-color: color-mix(in srgb, var(--ot) 45%, var(--border)); }
-
-/* 加班 stepper 的加減號用橘色 */
-.stepper-ot .step-btn:active { background: color-mix(in srgb, var(--ot) 16%, transparent); }
-.stepper-ot .step-btn { color: var(--ot); }
-/* 半夜加班 stepper 的加減號用紫色 */
-.stepper-night .step-btn:active { background: color-mix(in srgb, var(--night) 16%, transparent); }
 
 .field-help {
   margin: 0;
