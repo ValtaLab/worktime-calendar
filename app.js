@@ -1,6 +1,6 @@
 /* =========================================================
  * 工時月曆 PWA
- * 主介面：月曆；雙擊日期 → 新增/編輯 工時描述 + 加班描述 + 半夜加班描述
+ * 主介面：月曆；雙擊日期 → 新增/編輯 工時描述 + 加班描述
  * 儲存：localStorage（同步、離線可用），含版本號
  * ========================================================= */
 (() => {
@@ -344,3 +344,821 @@
 
     el.calendarGrid.innerHTML = cells.map(cellHTML).join('');
   }
+
+  function cellHTML(c) {
+    if (c.blank) {
+      return `<div class="day is-blank" aria-hidden="true"></div>`;
+    }
+    const e = c.entry || {};
+    const wu = num(e.workUnits);
+    const oh = num(e.otHours);
+    const nh = num(e.nightHours);
+    const hasWork = wu > 0 || (e.workDesc && e.workDesc.trim());
+    const hasOt = oh > 0 || (e.otDesc && e.otDesc.trim());
+    const hasNight = nh > 0 || (e.nightDesc && e.nightDesc.trim());
+    const hasEntry = hasWork || hasOt || hasNight;
+
+    const classes = ['day'];
+    if (c.isWeekend) classes.push('is-weekend');
+    if (c.isToday) classes.push('is-today');
+    if (hasEntry) classes.push('has-entry');
+
+    // 三組資料，各自「描述在上、時數在下」：
+    //   第一組：工時描述 + 工數
+    //   第二組：加班描述 + 加班時數
+    //   第三組：半夜加班描述 + 半夜加班時數
+    // 以前的排版是「所有描述先排完，才排所有時數」，
+    // 多項都有時描述與對應的數字被拆散，不好對照。分組後語意清楚得多。
+    const workDesc = (e.workDesc || '').trim();
+    const otDesc = (e.otDesc || '').trim();
+    const nightDesc = (e.nightDesc || '').trim();
+    const showUnits = settings.showHours;
+
+    const groups = [];
+    if (hasWork) {
+      const rows = [];
+      if (workDesc) {
+        rows.push(`<div class="day-desc">${escapeHtml(workDesc)}</div>`);
+      }
+      if (showUnits) {
+        rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">工</span></span></div>`);
+      }
+      if (rows.length) groups.push(`<div class="day-group">${rows.join('')}</div>`);
+    }
+    if (hasOt) {
+      const rows = [];
+      if (otDesc) {
+        rows.push(`<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`);
+      }
+      if (showUnits) {
+        rows.push(`<div class="day-units ot-units"><span class="uv">+${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
+      }
+      if (rows.length) groups.push(`<div class="day-group ot-group">${rows.join('')}</div>`);
+    }
+    if (hasNight) {
+      const rows = [];
+      if (nightDesc) {
+        rows.push(`<div class="day-desc night-text">${escapeHtml(nightDesc)}</div>`);
+      }
+      if (showUnits) {
+        rows.push(`<div class="day-units night-units"><span class="uv">+${fmtH(nh)}<span class="u">h</span></span><span class="ut">半夜</span></div>`);
+      }
+      if (rows.length) groups.push(`<div class="day-group night-group">${rows.join('')}</div>`);
+    }
+    const groupsHtml = groups.length ? `<div class="day-groups">${groups.join('')}</div>` : '';
+
+    let badges = '';
+    if (hasEntry) {
+      badges = `<div class="day-badge">
+        ${hasWork ? '<i class="badge-dot"></i>' : ''}
+        ${hasOt ? '<i class="badge-dot ot"></i>' : ''}
+        ${hasNight ? '<i class="badge-dot night"></i>' : ''}
+      </div>`;
+    }
+
+    const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
+    if (hasEntry) {
+      if (hasWork) labelParts.push(`工時 ${fmtUnits(wu)} 工`);
+      if (hasOt) labelParts.push(`加班 ${fmtH(oh)} 小時`);
+      if (hasNight) labelParts.push(`半夜加班 ${fmtH(nh)} 小時`);
+    } else {
+      labelParts.push('尚無記錄');
+    }
+
+    return `<div class="${classes.join(' ')}" data-key="${c.key}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
+      ${badges}
+      <div class="day-num">${c.day}</div>
+      ${groupsHtml}
+    </div>`;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (ch) => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+    ));
+  }
+  const escapeAttr = escapeHtml;
+
+  function render() {
+    renderCalendar();
+    renderStats();
+    renderIncome();
+  }
+
+  /* ---------------- 面板：開啟 / 關閉 ---------------- */
+  let lastFocused = null;
+
+  function openSheet(key) {
+    editingKey = key;
+    const d = new Date(key + 'T00:00:00');
+    const e = entries[key] || {};
+
+    el.sheetDate.textContent = fmtDateLabel(d);
+    el.sheetTitle.textContent = hasContent(e) ? '編輯記錄' : '新增記錄';
+    el.workDesc.value = e.workDesc || '';
+    el.otDesc.value = e.otDesc || '';
+    el.nightDesc.value = e.nightDesc || '';
+    el.tagsInput.value = (e.tags || []).join(', ');
+
+    setWorkUnits(e.workUnits != null && num(e.workUnits) > 0 ? num(e.workUnits) : 1);
+    el.otHours.value = e.otHours != null ? num(e.otHours) : 0;
+    el.nightHours.value = e.nightHours != null ? num(e.nightHours) : 0;
+
+    el.deleteBtn.hidden = !hasContent(e);
+
+    lastFocused = document.activeElement;
+    showOverlay(el.sheetBackdrop, el.sheet);
+    setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
+  }
+
+  /** 設定工數（僅 0.5 工 / 1 工 兩個選項）並更新換算提示 */
+  function setWorkUnits(value) {
+    const v = num(value);
+    // 夾到最接近的合法選項
+    const chosen = WORK_CHOICES.includes(v)
+      ? v
+      : WORK_CHOICES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+
+    el.workUnitPicker.querySelectorAll('.unit-chip').forEach((chip) => {
+      const on = parseFloat(chip.dataset.value) === chosen;
+      chip.classList.toggle('is-active', on);
+      chip.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+
+    updateWorkEquivalent();
+  }
+
+  function getWorkUnits() {
+    const active = el.workUnitPicker.querySelector('.unit-chip.is-active');
+    return active ? round1(num(active.dataset.value)) : 0;
+  }
+
+  function getOtHours() {
+    return round1(num(el.otHours.value));
+  }
+
+  function getNightHours() {
+    return round1(num(el.nightHours.value));
+  }
+
+  /** 工數 → 小時換算提示 */
+  function updateWorkEquivalent() {
+    const hours = round1(getWorkUnits() * (num(settings.stdHours) || 8));
+    el.workEquivalent.textContent = `＝ ${fmtH(hours)} 小時`;
+  }
+
+  function hasContent(e) {
+    if (!e) return false;
+    return !!(String(e.workDesc || '').trim() || String(e.otDesc || '').trim() ||
+      String(e.nightDesc || '').trim() ||
+      num(e.workUnits) > 0 || num(e.otHours) > 0 || num(e.nightHours) > 0);
+  }
+
+  function closeSheet() {
+    hideOverlay(el.sheetBackdrop, el.sheet);
+    editingKey = null;
+    if (lastFocused && lastFocused.focus) lastFocused.focus({ preventScroll: true });
+  }
+
+  function showOverlay(backdrop, panel) {
+    backdrop.hidden = false;
+    panel.hidden = false;
+    requestAnimationFrame(() => {
+      backdrop.classList.add('show');
+      panel.classList.add('show');
+    });
+  }
+
+  function hideOverlay(backdrop, panel, done) {
+    backdrop.classList.remove('show');
+    panel.classList.remove('show');
+    setTimeout(() => {
+      backdrop.hidden = true;
+      panel.hidden = true;
+      done && done();
+    }, 280);
+  }
+
+  /* ---------------- 儲存 / 刪除 ---------------- */
+  function saveEntry() {
+    if (!editingKey) return;
+    const workDesc = el.workDesc.value.trim();
+    const otDesc = el.otDesc.value.trim();
+    const nightDesc = el.nightDesc.value.trim();
+    const workUnits = getWorkUnits();
+    const otHours = getOtHours();
+    const nightHours = getNightHours();
+    const tags = el.tagsInput.value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
+
+    const empty = !workDesc && !otDesc && !nightDesc && workUnits === 0 &&
+      otHours === 0 && nightHours === 0 && tags.length === 0;
+    if (empty) {
+      delete entries[editingKey];
+    } else {
+      entries[editingKey] = {
+        workDesc, workUnits, otDesc, otHours, nightDesc, nightHours, tags,
+        updatedAt: Date.now(),
+      };
+    }
+
+    save();
+    closeSheet();
+    render();
+    toast(empty ? '已清空此日記錄' : '已儲存');
+  }
+
+  function deleteEntry() {
+    if (!editingKey) return;
+    delete entries[editingKey];
+    save();
+    closeSheet();
+    render();
+    toast('已刪除記錄');
+  }
+
+  /* ---------------- 事件綁定 ---------------- */
+  function bind() {
+    el.prevMonth.addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
+      render();
+    });
+    el.nextMonth.addEventListener('click', () => {
+      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
+      render();
+    });
+    el.todayBtn.addEventListener('click', () => {
+      const t = new Date();
+      view = new Date(t.getFullYear(), t.getMonth(), 1);
+      render();
+      toast('已回到本月');
+    });
+
+    /* ---- 月曆：雙擊開啟；同時支援單擊（觸控裝置）---- */
+    let lastTapKey = null;
+    let lastTapTime = 0;
+    let singleTapTimer = null;
+
+    el.calendarGrid.addEventListener('click', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      const k = cell.dataset.key;
+
+      const now = Date.now();
+      if (lastTapKey === k && now - lastTapTime < 320) {
+        // 雙擊確認
+        clearTimeout(singleTapTimer);
+        lastTapKey = null;
+        lastTapTime = 0;
+        openSheet(k);
+        return;
+      }
+      lastTapKey = k;
+      lastTapTime = now;
+
+      // 觸控裝置：延遲後視為單擊 → 也開啟（行動端較直覺）
+      const isTouch = matchMedia('(hover: none)').matches;
+      if (isTouch) {
+        clearTimeout(singleTapTimer);
+        singleTapTimer = setTimeout(() => { openSheet(k); }, 200);
+      }
+    });
+
+    // 滑鼠雙擊（桌機原生 dblclick）
+    el.calendarGrid.addEventListener('dblclick', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      clearTimeout(singleTapTimer);
+      openSheet(cell.dataset.key);
+    });
+
+    // 鍵盤操作
+    el.calendarGrid.addEventListener('keydown', (ev) => {
+      const cell = ev.target.closest('.day');
+      if (!cell || cell.classList.contains('is-blank')) return;
+      if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault();
+        openSheet(cell.dataset.key);
+      }
+    });
+
+    /* ---- 面板 ---- */
+    el.saveBtn.addEventListener('click', saveEntry);
+    el.cancelBtn.addEventListener('click', closeSheet);
+    el.sheetClose.addEventListener('click', closeSheet);
+    el.deleteBtn.addEventListener('click', () => {
+      if (confirm('確定要刪除此日記錄嗎？')) deleteEntry();
+    });
+    el.sheetBackdrop.addEventListener('click', closeSheet);
+
+    // Ctrl/Cmd + Enter 快速儲存
+    el.sheet.addEventListener('keydown', (ev) => {
+      if ((ev.metaKey || ev.ctrlKey) && ev.key === 'Enter') { ev.preventDefault(); saveEntry(); }
+      if (ev.key === 'Escape') { ev.preventDefault(); closeSheet(); }
+    });
+
+    /* ---- 工數選項（僅 0.5 工 / 1 工）---- */
+    el.workUnitPicker.addEventListener('click', (ev) => {
+      const chip = ev.target.closest('.unit-chip');
+      if (!chip) return;
+      setWorkUnits(parseFloat(chip.dataset.value));
+    });
+
+    /* ---- 步進器（加班時數 + 抽屜設定）---- */
+    document.querySelectorAll('.step-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const input = $(btn.dataset.target);
+        if (!input) return;
+        const delta = parseFloat(btn.dataset.delta);
+        const cur = parseFloat(input.value) || 0;
+        let next = round1(cur + delta);
+        const max = parseFloat(input.max) || 24;
+        if (next < 0) next = 0;
+        if (next > max) next = max;
+        input.value = next;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    });
+
+    /* ---- 抽屜 ---- */
+    el.menuBtn.addEventListener('click', () => {
+      el.stdHours.value = settings.stdHours;
+      el.dayPay.value = settings.dayPay > 0 ? settings.dayPay : '';
+      el.otPay.value = settings.otPay > 0 ? settings.otPay : '';
+      el.nightPay.value = settings.nightPay > 0 ? settings.nightPay : '';
+      el.optWeekend.checked = settings.showWeekend;
+      el.optShowHours.checked = settings.showHours;
+      el.optMondayFirst.checked = settings.mondayFirst;
+      showOverlay(el.drawerBackdrop, el.drawer);
+    });
+    const closeDrawer = () => hideOverlay(el.drawerBackdrop, el.drawer);
+    el.drawerClose.addEventListener('click', closeDrawer);
+    el.drawerBackdrop.addEventListener('click', closeDrawer);
+
+    el.stdHours.addEventListener('change', () => {
+      const v = num(el.stdHours.value);
+      settings.stdHours = v > 0 ? Math.min(v, 24) : 8;
+      el.stdHours.value = settings.stdHours;
+      saveSettings();
+      renderStats();
+      // 面板開著時同步更新小時換算
+      if (!el.sheet.hidden) updateWorkEquivalent();
+    });
+
+    // 薪資設定：日薪、加班時薪、半夜加班時薪
+    // 用 input 事件即時反映（使用者邊打字邊看到收入變化），change 時寫入儲存
+    const payFields = [
+      [el.dayPay, 'dayPay'],
+      [el.otPay, 'otPay'],
+      [el.nightPay, 'nightPay'],
+    ];
+    payFields.forEach(([input, name]) => {
+      const apply = () => {
+        const raw = input.value.trim();
+        // 空字串視為 0（未設定），避免顯示成 NaN
+        const v = raw === '' ? 0 : Math.max(0, num(raw));
+        settings[name] = v;
+        renderIncome();
+      };
+      input.addEventListener('input', apply);
+      input.addEventListener('change', () => {
+        apply();
+        // 正規化顯示：0 或空 → 清空；有值 → 原樣保留
+        input.value = settings[name] > 0 ? settings[name] : '';
+        saveSettings();
+        renderIncome();
+      });
+    });
+
+    const toggleMap = [
+      [el.optWeekend, 'showWeekend'],
+      [el.optShowHours, 'showHours'],
+      [el.optMondayFirst, 'mondayFirst'],
+    ];
+    toggleMap.forEach(([input, name]) => {
+      input.addEventListener('change', () => {
+        settings[name] = input.checked;
+        saveSettings();
+        render();
+      });
+    });
+
+    /* ---- 匯出 CSV ---- */
+    el.exportCsv.addEventListener('click', () => {
+      const y = view.getFullYear(), m = view.getMonth();
+      const prefix = `${y}-${pad(m + 1)}-`;
+      const rows = [['日期', '星期', '工數(工)', '工時描述', '加班(小時)', '加班描述',
+        '半夜加班(小時)', '半夜加班描述', '標籤']];
+      Object.keys(entries).filter((k) => k.startsWith(prefix)).sort().forEach((k) => {
+        const e = entries[k];
+        const d = new Date(k + 'T00:00:00');
+        rows.push([
+          k, `週${WEEK_TC[d.getDay()]}`,
+          num(e.workUnits), e.workDesc || '',
+          num(e.otHours), e.otDesc || '',
+          num(e.nightHours), e.nightDesc || '',
+          (e.tags || []).join(' / '),
+        ]);
+      });
+      if (rows.length === 1) { toast('本月尚無記錄可匯出'); return; }
+      const csv = '\uFEFF' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n');
+      download(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `工時月曆_${y}-${pad(m + 1)}.csv`);
+      toast('已匯出 CSV');
+    });
+
+    /* ---- 匯出 JSON ---- */
+    el.exportJson.addEventListener('click', () => {
+      const payload = { app: 'worktime-calendar', v: 1, exportedAt: new Date().toISOString(), settings, data: entries };
+      download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `工時月曆_備份_${todayKey()}.json`);
+      toast('已匯出備份');
+    });
+
+    /* ---- 匯入 JSON ---- */
+    el.importJson.addEventListener('click', () => el.importFile.click());
+    el.importFile.addEventListener('change', async () => {
+      const file = el.importFile.files && el.importFile.files[0];
+      if (!file) return;
+      try {
+        const parsed = JSON.parse(await file.text());
+        const data = parsed.data || parsed;
+        if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('格式錯誤');
+        const incoming = Object.keys(data).length;
+        if (!confirm(`將匯入 ${incoming} 筆記錄，同名日期會被覆蓋。確定繼續？`)) return;
+        // 舊版小時制備份也會自動轉換為「工」
+        entries = { ...entries, ...migrate(data).data };
+        if (parsed.settings) settings = { ...settings, ...parsed.settings };
+        save(); saveSettings();
+        closeDrawer();
+        render();
+        toast(`已匯入 ${incoming} 筆記錄`);
+      } catch (err) {
+        toast('匯入失敗：檔案格式不正確');
+        console.error(err);
+      } finally {
+        el.importFile.value = '';
+      }
+    });
+
+    /* ---- 清除全部 ---- */
+    el.clearAll.addEventListener('click', () => {
+      if (!confirm('確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。')) return;
+      entries = {};
+      save();
+      closeDrawer();
+      render();
+      toast('已清除全部資料');
+    });
+
+    /* ---- 全域快捷鍵 ---- */
+    document.addEventListener('keydown', (ev) => {
+      if (el.sheet.hidden && el.drawer.hidden) {
+        if (ev.key === 'ArrowLeft') el.prevMonth.click();
+        if (ev.key === 'ArrowRight') el.nextMonth.click();
+        if (ev.key.toLowerCase() === 't') el.todayBtn.click();
+      }
+    });
+
+    // 瀏覽器返回鍵關閉面板
+    window.addEventListener('popstate', () => {
+      if (!el.sheet.hidden) closeSheet();
+      if (!el.drawer.hidden) closeDrawer();
+    });
+  }
+
+  function csvCell(v) {
+    const s = String(v == null ? '' : v);
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  }
+
+  function download(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  }
+
+  /* ---------------- PWA 安裝提示 ---------------- */
+  let deferredPrompt = null;
+  window.addEventListener('beforeinstallprompt', (ev) => {
+    ev.preventDefault();
+    deferredPrompt = ev;
+    el.installHint.textContent = '此應用可安裝到主畫面：點右上角選單 → 安裝應用程式。';
+  });
+
+  window.addEventListener('appinstalled', () => {
+    deferredPrompt = null;
+    el.installHint.textContent = '已安裝到裝置，可離線使用。';
+  });
+
+  function setupInstallHint() {
+    const isStandalone = matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    if (isStandalone) {
+      el.installHint.textContent = '已以獨立應用模式執行，離線可用。';
+    } else if (isIOS) {
+      el.installHint.textContent = 'iOS：點「分享」→「加入主畫面」即可安裝。';
+    } else if (!deferredPrompt) {
+      el.installHint.textContent = '可安裝為 App：瀏覽器選單 → 安裝／加到主畫面。';
+    }
+  }
+
+  /* =========================================================
+   * 版本檢測與更新
+   * ========================================================= */
+  const version = {
+    remote: null,      // 遠端最新版本資訊
+    waiting: null,     // 等待接管的新版 Service Worker
+    updating: false,   // 是否正在更新
+    dismissed: null,   // 使用者選擇「稍後」的版本號
+  };
+
+  /** 版本號比對：a 是否比 b 新 */
+  function isNewer(a, b) {
+    if (!a || !b) return false;
+    const pa = String(a).split('.').map((n) => parseInt(n, 10) || 0);
+    const pb = String(b).split('.').map((n) => parseInt(n, 10) || 0);
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+      const x = pa[i] || 0, y = pb[i] || 0;
+      if (x > y) return true;
+      if (x < y) return false;
+    }
+    return false;
+  }
+
+  function formatBuild(b) {
+    // 20260915-1848 → 2026/09/15 18:48
+    const m = /^(\d{4})(\d{2})(\d{2})-(\d{2})(\d{2})$/.exec(b || '');
+    return m ? `${m[1]}/${m[2]}/${m[3]} ${m[4]}:${m[5]}` : (b || '');
+  }
+
+  function renderVersionInfo() {
+    el.verCurrent.textContent = `v${APP_VERSION}`;
+    el.verBuild.textContent = APP_BUILD ? `建置於 ${formatBuild(APP_BUILD)}` : '';
+  }
+
+  /** 向伺服器查詢最新版本（繞過所有快取） */
+  async function fetchRemoteVersion() {
+    // 單檔模式（file://）無法連網，直接跳過，避免瀏覽器拋出無謂錯誤
+    if (location.protocol === 'file:') return null;
+    try {
+      const res = await fetch(`./version.json?t=${Date.now()}`, { cache: 'no-store' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.version ? data : null;
+    } catch (e) {
+      console.info('[版本] 查詢失敗（可能離線）', e);
+      return null;
+    }
+  }
+
+  /** 檢查更新 → 'update' | 'latest' | 'error' */
+  async function checkForUpdate({ silent = false } = {}) {
+    if (version.updating) return 'error';
+    if (!silent) el.verStatus.textContent = '檢查中…';
+
+    // 1) 已有 waiting 的新版 SW → 這是新版鐵證，直接提示
+    if (version.waiting) {
+      showUpdateBar(null, true);
+      if (!silent) el.verStatus.textContent = '發現新版本，可立即更新';
+      return 'update';
+    }
+
+    // 2) 比對 version.json
+    const remote = await fetchRemoteVersion();
+    if (!remote) {
+      if (!silent) {
+        el.verStatus.textContent = (location.protocol === 'file:')
+          ? '單檔版不支援線上檢查更新'
+          : '目前離線，無法檢查更新';
+      }
+      return 'error';
+    }
+    version.remote = remote;
+
+    if (isNewer(remote.version, APP_VERSION)) {
+      showUpdateBar(remote);
+      if (!silent) el.verStatus.textContent = `發現新版本 v${remote.version}`;
+      return 'update';
+    }
+
+    if (!silent) {
+      el.verStatus.textContent = '已是最新版本';
+      toast('已是最新版本');
+    }
+    return 'latest';
+  }
+
+  /**
+   * 顯示更新提示橫幅
+   * @param {object}  remote   遠端版本資訊（可省略）
+   * @param {boolean} trusted  true = 已確認有新版本（例如 SW 進入 waiting），不再做版本比較
+   */
+  function showUpdateBar(remote, trusted) {
+    // 有遠端版本資訊就用它；沒有也照樣提示
+    const info = remote || version.remote || null;
+    const ver = info && info.version;
+
+    if (!trusted) {
+      // 只有在「非可信來源」時才做版本比較，避免誤報；
+      // 但若連版本號都拿不到，寧可提示也不要靜默失敗
+      if (ver && !isNewer(ver, APP_VERSION)) return;
+
+      // 使用者已選「稍後」→ 同一版本不再重複提示
+      if (ver && version.dismissed === ver) return;
+    } else if (ver && version.dismissed === ver) {
+      return;
+    }
+
+    el.updateDesc.textContent = (ver && isNewer(ver, APP_VERSION))
+      ? (info.notes ? `v${ver}：${info.notes}` : `更新至 v${ver}`)
+      : '已下載新版本，點此套用';
+
+    el.updateBar.hidden = false;
+    // 強制一次重排，確保 transition 由 transform 起始值開始
+    void el.updateBar.offsetHeight;
+    el.updateBar.classList.add('show');
+    el.updateBar.setAttribute('aria-hidden', 'false');
+  }
+
+  function hideUpdateBar() {
+    el.updateBar.classList.remove('show');
+    el.updateBar.setAttribute('aria-hidden', 'true');
+    setTimeout(() => { el.updateBar.hidden = true; }, 300);
+  }
+
+  /** 一鍵更新 */
+  async function performUpdate() {
+    if (version.updating) return;
+    version.updating = true;
+
+    const btn = el.updateNowBtn;
+    const originalText = btn.textContent;
+    btn.textContent = '更新中…';
+    btn.disabled = true;
+
+    try {
+      // A) 已有 waiting 的 SW → 請它立即接管，controllerchange 會帶動重載
+      if (version.waiting) {
+        version.waiting.postMessage({ type: 'SKIP_WAITING' });
+        setTimeout(() => hardReload(), 3000);   // 保險：3 秒後仍未重載就手動刷新
+        return;
+      }
+
+      // B) 僅偵測到版本差異 → 主動更新註冊，促使瀏覽器抓新檔
+      if ('serviceWorker' in navigator) {
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (reg) {
+          await reg.update();
+          await new Promise((r) => setTimeout(r, 800));
+          if (reg.waiting) {
+            version.waiting = reg.waiting;
+            version.waiting.postMessage({ type: 'SKIP_WAITING' });
+            setTimeout(() => hardReload(), 3000);
+            return;
+          }
+        }
+      }
+
+      // C) 沒有 SW（單檔模式）→ 清快取後重載
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map((k) => caches.delete(k)));
+      }
+      hardReload();
+    } catch (e) {
+      console.warn('[更新] 失敗', e);
+      version.updating = false;
+      btn.textContent = originalText;
+      btn.disabled = false;
+      toast('更新失敗，請稍後再試');
+    }
+  }
+
+  /** 強制重新載入（加上參數避開瀏覽器快取） */
+  function hardReload() {
+    const url = new URL(location.href);
+    url.searchParams.set('_v', Date.now().toString(36));
+    location.replace(url.toString());
+  }
+
+  /**
+   * SW 偵測到新版本 → 補抓一次遠端版本資訊（讓文案顯示正確版本號），再提示
+   * 注意：SW 進入 waiting 已是新版本的鐵證，即使版本檔因舊 SW 快取而過期，
+   *       仍必須提示使用者（trusted = true）。
+   */
+  async function announceWaitingSW(sw) {
+    version.waiting = sw;
+    if (!version.remote) {
+      const remote = await fetchRemoteVersion();
+      // 只在真的拿到「比目前新」的版本號時才採用，避免覆蓋成過期資料
+      if (remote && isNewer(remote.version, APP_VERSION)) version.remote = remote;
+    }
+    showUpdateBar(null, true);
+  }
+
+  /** 註冊 Service Worker 並掛上更新偵測 */
+  function setupServiceWorker() {
+    if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+
+    navigator.serviceWorker.register('./sw.js').then((reg) => {
+      /** 檢查註冊狀態，若有 waiting 中的新 SW 就提示 */
+      function detectWaiting(reg) {
+        if (!reg || !reg.waiting) return false;
+        if (!navigator.serviceWorker.controller) return false;
+        if (version.waiting === reg.waiting) return true;   // 已處理過
+        announceWaitingSW(reg.waiting);
+        return true;
+      }
+
+      // 上次沒更新就關掉分頁 → 這裡補提示
+      detectWaiting(reg);
+
+      // 新 SW 安裝完成 → 提示
+      reg.addEventListener('updatefound', () => {
+        const incoming = reg.installing;
+        if (!incoming) return;
+        incoming.addEventListener('statechange', () => {
+          if (incoming.state === 'installed') detectWaiting(reg);
+        });
+      });
+
+      // 保險：輪詢 waiting（updatefound / statechange 有時機競態，會漏事件）
+      const poll = setInterval(() => {
+        if (detectWaiting(reg)) clearInterval(poll);
+      }, 1000);
+      // 60 秒後停止輪詢，避免長期佔用
+      setTimeout(() => clearInterval(poll), 60000);
+
+      // 回到前景時檢查
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          reg.update().catch(() => {});
+          setTimeout(() => detectWaiting(reg), 1500);
+        }
+      });
+
+      // 定期檢查（30 分鐘）
+      setInterval(() => {
+        reg.update().catch(() => {});
+        setTimeout(() => detectWaiting(reg), 1500);
+      }, 30 * 60 * 1000);
+
+      // 啟動時比對一次版本檔
+      setTimeout(() => checkForUpdate({ silent: true }), 1500);
+
+    }).catch((e) => console.warn('[SW] 註冊失敗', e));
+
+    // 新 SW 接管 → 重載為新版
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      hardReload();
+    });
+  }
+
+  function bindVersionUI() {
+    el.updateNowBtn.addEventListener('click', performUpdate);
+
+    el.updateLaterBtn.addEventListener('click', () => {
+      const v = version.remote && version.remote.version;
+      if (v) version.dismissed = v;
+      hideUpdateBar();
+      el.verStatus.textContent = '已稍後提醒，可隨時在選單檢查更新';
+    });
+
+    el.checkUpdateBtn.addEventListener('click', async () => {
+      const r = await checkForUpdate();
+      if (r === 'latest') el.verStatus.textContent = '已是最新版本';
+      if (r === 'update') el.verStatus.textContent = '發現新版本，請點上方提示更新';
+    });
+  }
+
+  /* ---------------- 啟動 ---------------- */
+  function init() {
+    load();
+    view = new Date();
+    view.setDate(1);
+    bind();
+    render();
+    setupInstallHint();
+    renderVersionInfo();
+    bindVersionUI();
+
+    if (window.addEventListener) {
+      window.addEventListener('load', setupServiceWorker);
+    } else {
+      setupServiceWorker();
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
