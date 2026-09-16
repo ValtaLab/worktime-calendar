@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.13.1';
-  const APP_BUILD = '20260917-0002';
+  const APP_VERSION = '1.13.2';
+  const APP_BUILD = '20260917-0051';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -440,7 +440,10 @@
       labelParts.push('尚無記錄');
     }
 
-    return `<div class="${classes.join(' ')}" data-key="${c.key}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
+    // data-dow：讓 CSS 能分辨「六」與「日」。
+    // 兩者都是週末（.is-weekend），但配色不同（星期六藍、星期日橘），
+    // 與表頭的 六／日 一致；單靠 .is-weekend 無法區分。
+    return `<div class="${classes.join(' ')}" data-key="${c.key}" data-dow="${c.dow}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
       ${badges}
       <div class="day-num">${c.day}</div>
       ${groupsHtml}

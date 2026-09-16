@@ -347,7 +347,11 @@ input, textarea { font-family: inherit; }
   pointer-events: none;
 }
 
+/* 桌機版（卡片風格）：週末沿用淡底，但「六」與「日」用不同色的日期數字，
+   讓相鄰兩欄不會因為同底色而看起來黏成一塊比其它欄更寬的區域。 */
 .day.is-weekend { background: var(--surface-2); }
+.day.is-weekend .day-num { color: var(--work); }
+.day.is-weekend[data-dow="0"] .day-num { color: var(--ot); }
 
 .day.is-today { border-color: var(--work); box-shadow: 0 0 0 2px color-mix(in srgb, var(--work) 24%, transparent); }
 
@@ -1110,17 +1114,25 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     gap: 2px;
     transition: background .12s ease;
   }
-  .day:active { transform: none; background: var(--surface-2); }
+  .day:active { transform: none; }
 
-  /* 網格風格下，週末與今日改用底色區分，而非邊框 */
-  .day.is-weekend { background: var(--surface-2); }
+  /* 手機版（網格線風格）：七欄必須看起來完全等寬。
+     週末不再用底色區分——第七欄緊鄰螢幕右緣，底色色塊會與右側的
+     系統捲軸／螢幕圓角產生的暗邊連成一片，讓「六」與「日」兩欄
+     視覺上黏成一塊比其它欄更寬的區域（實際幾何寬度完全相同，
+     是底色造成的錯覺）。
+     週末改用「日期數字變色」標示：星期六藍、星期日橘，
+     與表頭的 六／日 配色一致，不佔任何額外視覺寬度。 */
+  .day.is-weekend { background: var(--surface); }
   .day.is-blank { background: var(--surface); }
   /* 不再用底色區分「有沒有填」與「今天」——手機版格子裡已經有
      三個彩色資料塊，外層再上色會和色塊互相干擾（藍底＋藍塊分不出層次）。
      有填的日子改用左上角的徽章點標示，今天只留日期數字的圓形反白。 */
-  .day.is-today { background: var(--surface-2); }
+  .day.is-today { background: var(--surface); }
   .day.has-entry { background: var(--surface); }
-  .day.has-entry.is-weekend { background: var(--surface-2); }
+  .day.is-weekend.has-entry { background: var(--surface); }
+  .day.is-weekend .day-num { color: var(--work); }
+  .day.is-weekend[data-dow="0"] .day-num { color: var(--ot); }
 
   /* 日期數字：縮小並靠左上，把中段空間留給描述 */
   .day-num { font-size: 11px; line-height: 1; gap: 2px; }
