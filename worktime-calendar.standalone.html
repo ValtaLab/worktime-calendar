@@ -1042,13 +1042,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     color: #fff;
   }
 
-  /* 描述：放寬到 3 行，字級提升讓中文更易讀 */
+  /* 描述：手機版欄寬只有約 46px，中文每行約 4 個字。
+     現在工時與加班描述各佔一個 .day-desc，故每個限 3 行而不是共用 3 行，
+     兩者併排時才不會有一邊被整個擠掉。 */
   .day-desc {
     -webkit-line-clamp: 3;
     font-size: 9.5px;
     line-height: 1.25;
     margin-top: 0;
   }
+  /* 加班描述在手機版也維持橘色，與工時描述一眼可分 */
+  .day-desc.ot-text { color: var(--ot); opacity: 1; }
 
   /* 工數／加班：滿版底色塊，橫跨格子寬度並貼齊底部。
      負 margin 抵銷格子的左右與底部 padding，讓色塊真正頂到格線，
@@ -1116,23 +1120,28 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 @media (min-width: 700px) {
   #app { padding: 0 14px; }
   .calendar-wrap { padding: 0 14px 14px; }
-  .calendar-grid { grid-auto-rows: minmax(104px, auto); align-content: start; }
-  .day { min-height: 104px; padding: 9px 11px 10px; }
+  /* 列高改由內容決定（auto），下限 130px 足以容納
+     兩個描述 + 兩個色塊；記錄少的月份不會被硬撐高。 */
+  .calendar-grid { grid-auto-rows: minmax(130px, auto); align-content: start; }
+  .day { min-height: 130px; padding: 9px 11px 10px; }
+  /* 每個描述各自最多 2 行。不要給 min-height——那會讓只有一行短文的
+     加班描述也佔滿兩行高度，兩個描述之間出現莫名空隙。 */
   .day-desc {
     display: block;
     -webkit-line-clamp: unset;
     -webkit-box-orient: unset;
-    flex: 0 1 auto;
-    min-height: 2.8em;
+    flex: 0 0 auto;
     max-height: 2.8em;
+    overflow: hidden;
     font-size: 12px;
     line-height: 1.4;
   }
+  .day-desc.ot-text { margin-top: -1px; }
   .day-num { font-size: 15px; }
   .day-units { font-size: 14px; line-height: 1.2; letter-spacing: -.3px; }
   .day-units .u { font-size: 11px; }
   .day-units.ot-units { font-size: 13px; }
-  .day-units-wrap { gap: 3px; padding-top: 3px; margin-top: auto; }
+  .day-units-wrap { gap: 3px; padding-top: 3px; margin-top: auto; flex: 0 0 auto; }
   .field-group { padding: 14px; }
   .weekday-row { font-size: 12px; }
   /* 平板：收入列左右留白與月曆一致，總額放大一級 */
@@ -1144,16 +1153,23 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 @media (min-width: 1000px) {
   #app { padding: 0 20px; }
   .calendar-wrap { padding: 0 20px 20px; }
-  .calendar-grid { gap: 6px; grid-auto-rows: minmax(170px, 1fr); }
+  /* 列高下限要能容納「最擠」的格子：兩行工時描述 + 兩行加班描述
+     + 工數色塊 + 加班色塊。之前只按「單一描述」估 170px，
+     一旦同一天兩個描述都有，內容就會被 overflow: hidden 裁掉。
+     實測需要約 196px，取 200px 留一點餘裕。 */
+  .calendar-grid { gap: 6px; grid-auto-rows: minmax(200px, 1fr); }
   .weekday-row { gap: 6px; }
   .income-bar { margin-top: 12px; padding: 15px 21px; border-radius: 12px; }
   .income-label > span:first-child { font-size: 13.5px; }
   .income-formula { font-size: 12.5px; }
   .income-total { font-size: 32px; }
   .income-cur { font-size: 19px; }
-  .day { min-height: 170px; padding: 11px 14px 12px; border-radius: 12px; gap: 6px; }
+  .day { min-height: 200px; padding: 11px 14px 12px; border-radius: 12px; gap: 5px; }
   .day-num { font-size: 15px; padding-bottom: 6px; border-bottom: 1px solid var(--border); flex: 0 0 auto; }
   .day.is-today .day-num { width: 24px; height: 24px; padding-bottom: 0; border-bottom: none; }
+  /* 每個描述各自限高 2 行。兩個描述都出現時才不會把色塊擠出格子。
+     用 flex: 0 0 auto 而非 0 1 auto：描述不參與壓縮，
+     剩餘空間留給 margin-top: auto 把色塊推到底部。 */
   .day-desc {
     display: block;
     -webkit-line-clamp: unset;
@@ -1162,7 +1178,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     line-height: 1.4;
     color: var(--text);
     flex: 0 0 auto;
-    max-height: 4.2em;
+    max-height: 2.8em;
+    overflow: hidden;
+  }
+  /* 加班描述用橘色，與工時描述區隔（工時用預設的 --text） */
+  .day-desc.ot-text {
+    color: var(--ot);
+    margin-top: -1px;
   }
   .day-units-wrap { gap: 4px; padding-top: 5px; flex: 0 0 auto; margin-top: auto; }
   .day-units {
@@ -1190,18 +1212,22 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 @media (min-width: 1400px) {
   #app { padding: 0 28px; }
   .calendar-wrap { padding: 0 28px 24px; }
-  .calendar-grid { gap: 8px; grid-auto-rows: minmax(168px, 1fr); }
+  /* 同 1000px 區塊的理由：列高要容納兩個描述 + 兩個色塊。
+     字級放大到 14.5px、行高與色塊 padding 都變大後，實測最擠的格子
+     需要 211px，故取 214px 留一點餘裕。 */
+  .calendar-grid { gap: 8px; grid-auto-rows: minmax(214px, 1fr); }
   .weekday-row { gap: 8px; }
-  .day { min-height: 168px; padding: 13px 16px 14px; gap: 7px; }
+  .day { min-height: 214px; padding: 13px 16px 14px; gap: 5px; }
   .day-num { font-size: 16px; padding-bottom: 7px; }
   .day.is-today .day-num { width: 26px; height: 26px; }
   .day-desc {
     display: block;
     -webkit-line-clamp: unset;
     -webkit-box-orient: unset;
-    max-height: 7em;
+    max-height: 2.8em;
     font-size: 14.5px;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
+    overflow: hidden;
   }
   .day-units { font-size: 19px; line-height: 1.15; padding: 3px 11px; }
   .day-units .u { font-size: 13px; }
@@ -1456,8 +1482,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.8.1';
-  const APP_BUILD = '20260916-0808';
+  const APP_VERSION = '1.9.0';
+  const APP_BUILD = '20260916-0844';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1794,12 +1820,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     if (c.isToday) classes.push('is-today');
     if (hasEntry) classes.push('has-entry');
 
-    // 描述在前
+    // 描述：工時描述與加班描述都要顯示。
+    // 兩者各自獨立判斷，不再用 else if —— 同一天同時有工時與加班描述時，
+    // 以前的寫法會讓加班描述被吃掉，只顯示工時描述。
+    const workDesc = (e.workDesc || '').trim();
+    const otDesc = (e.otDesc || '').trim();
     let descHtml = '';
-    if (e.workDesc && e.workDesc.trim()) {
-      descHtml = `<div class="day-desc">${escapeHtml(e.workDesc.trim())}</div>`;
-    } else if (e.otDesc && e.otDesc.trim()) {
-      descHtml = `<div class="day-desc ot-text">${escapeHtml(e.otDesc.trim())}</div>`;
+    if (workDesc) {
+      descHtml += `<div class="day-desc">${escapeHtml(workDesc)}</div>`;
+    }
+    if (otDesc) {
+      descHtml += `<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`;
     }
 
     // 時數在後：工數一行，加班另起一行

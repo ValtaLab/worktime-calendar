@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.8.1';
-  const APP_BUILD = '20260916-0808';
+  const APP_VERSION = '1.9.0';
+  const APP_BUILD = '20260916-0844';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -345,12 +345,17 @@
     if (c.isToday) classes.push('is-today');
     if (hasEntry) classes.push('has-entry');
 
-    // 描述在前
+    // 描述：工時描述與加班描述都要顯示。
+    // 兩者各自獨立判斷，不再用 else if —— 同一天同時有工時與加班描述時，
+    // 以前的寫法會讓加班描述被吃掉，只顯示工時描述。
+    const workDesc = (e.workDesc || '').trim();
+    const otDesc = (e.otDesc || '').trim();
     let descHtml = '';
-    if (e.workDesc && e.workDesc.trim()) {
-      descHtml = `<div class="day-desc">${escapeHtml(e.workDesc.trim())}</div>`;
-    } else if (e.otDesc && e.otDesc.trim()) {
-      descHtml = `<div class="day-desc ot-text">${escapeHtml(e.otDesc.trim())}</div>`;
+    if (workDesc) {
+      descHtml += `<div class="day-desc">${escapeHtml(workDesc)}</div>`;
+    }
+    if (otDesc) {
+      descHtml += `<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`;
     }
 
     // 時數在後：工數一行，加班另起一行
