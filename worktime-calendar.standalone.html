@@ -194,7 +194,10 @@ input, textarea { font-family: inherit; }
 
 /* ===================== 月曆 ===================== */
 .calendar-wrap {
-  padding: 0 10px 10px;
+  /* 左右只留 2px：月曆方格要「用盡螢幕寬度」。
+     不再另外預留安全區邊距——貼邊的價值大於呼吸感，
+     且 2px 已足以避免圓角裁切與邊框被切掉的問題。 */
+  padding: 0 2px 10px;
   /* flex: 1 1 auto 讓月曆撐滿剩餘高度；但**不設 min-height: 0**，
      否則當視窗高度不足時，這個 flex 子項會被壓到比內容小，
      導致格子溢出覆蓋收入列。改為由內容決定下限，空間不足時
@@ -1245,8 +1248,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 }
 
 @media (min-width: 700px) {
-  #app { padding: 0 14px; }
-  .calendar-wrap { padding: 0 14px 14px; }
+  /* 月曆區塊幾乎貼邊；頭部與底部提示維持原有的可讀留白 */
+  .calendar-wrap { padding: 0 3px 14px; }
+  .topbar-inner { padding: 12px 16px 8px; }
+  .month-title-row { padding: 2px 16px 12px; }
   /* 列高改由內容決定（auto）。下限 130px 是「記錄少」時的美觀基準，
      但三組描述全滿的月份內容會超過 130px，把格子撐破 track 而溢出
      到收入列（實測 700px 寬時有 7 個格子越界）。
@@ -1285,8 +1290,11 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
 /* 大螢幕：格子變寬，工數／加班以醒目色塊呈現，用滿橫向空間 */
 @media (min-width: 1000px) {
-  #app { padding: 0 20px; }
-  .calendar-wrap { padding: 0 20px 20px; }
+  /* 大螢幕左右各留 6px：月曆方格要盡量用滿橫向空間，
+     但桌機可能有 15px 寬的垂直捲軸，留 6px 才不會被壓住。 */
+  .calendar-wrap { padding: 0 6px 20px; }
+  .topbar-inner { padding: 12px 24px 8px; }
+  .month-title-row { padding: 2px 24px 12px; }
   /* 列高「理想值」276px 是為了容納最擠的格子（三組描述＋三個色塊）。
      但桌機螢幕的實際可用高度，換算下來每列往往只有 84–142px──
      若把它寫成 minmax(276px, 1fr) 的硬性下限，6 列共需 1656px，
@@ -1357,8 +1365,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 }
 
 @media (min-width: 1400px) {
-  #app { padding: 0 28px; }
-  .calendar-wrap { padding: 0 28px 24px; }
+  .calendar-wrap { padding: 0 10px 24px; }
+  .topbar-inner { padding: 12px 32px 8px; }
+  .month-title-row { padding: 2px 32px 14px; }
   /* 同 1000px 區塊的理由：改用 minmax(0, 1fr) 讓列高可被真正壓縮，
      並移除 .day 的硬性 min-height，避免 grid item 撐破 track。
      理想列高（約 302px）在空間充足時由 1fr 自然達到。 */
@@ -1727,8 +1736,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.13.0';
-  const APP_BUILD = '20260916-2327';
+  const APP_VERSION = '1.13.1';
+  const APP_BUILD = '20260917-0002';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
