@@ -141,7 +141,29 @@ def api(method, path, payload=None, ok=(200, 201)):
             body = r.read().decode() or "{}"
             return r.status, json.loads(body)
     except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode() or "{}")
+        code = e.code
+        raw  = e.read().decode() or "{}"
+        try:
+            d = json.loads(raw)
+        except Exception:
+            d = {"message": raw[:200]}
+
+        # 403 幾乎都是 Fine-grained PAT 沒開 Contents: Read and write，
+        # 而非 token 失效（失效會是 401）。直接把修法印出來，省下瞎猜的時間。
+        if code == 403 and "not accessible" in str(d.get("message", "")):
+            print()
+            print("  ✗ 403 —— Fine-grained PAT 權限不足")
+            print("    這不是 token 失效（失效會是 401），是沒有「寫入」權限。")
+            print()
+            print("    修法（改完即時生效，token 字串不變，不需重新產生）：")
+            print("      https://github.com/settings/personal-access-tokens")
+            print("      → 點進這組 token")
+            print("      → Repository permissions → Contents 設為 Read and write")
+            print("      → Save")
+            print()
+            print("    同時確認 Repository access 有包含這個 repo。")
+            print()
+        return code, d
 
 # ---- 可選：建立 repo 並啟用 Pages ----
 if INIT:
