@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.12.1';
-  const APP_BUILD = '20260916-1904';
+  const APP_VERSION = '1.13.0';
+  const APP_BUILD = '20260916-2327';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -378,12 +378,12 @@
     if (c.isToday) classes.push('is-today');
     if (hasEntry) classes.push('has-entry');
 
-    // 三組資料，各自「描述在上、時數在下」：
+    // 三組資料，各自「描述在上、時數在下」，但兩者包在**同一個色塊**裡：
     //   第一組：工時描述 + 工數
     //   第二組：加班描述 + 加班時數
     //   第三組：半夜加班描述 + 半夜加班時數
-    // 以前的排版是「所有描述先排完，才排所有時數」，
-    // 多項都有時描述與對應的數字被拆散，不好對照。分組後語意清楚得多。
+    // 色塊（.day-group）本身帶底色框住整組，描述與數字都在裡面，
+    // 一眼就能看出「這個描述對應這個數字」。
     const workDesc = (e.workDesc || '').trim();
     const otDesc = (e.otDesc || '').trim();
     const nightDesc = (e.nightDesc || '').trim();
@@ -398,7 +398,7 @@
       if (showUnits) {
         rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">工</span></span></div>`);
       }
-      if (rows.length) groups.push(`<div class="day-group">${rows.join('')}</div>`);
+      if (rows.length) groups.push(`<div class="day-group work-group">${rows.join('')}</div>`);
     }
     if (hasOt) {
       const rows = [];
