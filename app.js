@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.9.0';
-  const APP_BUILD = '20260916-0844';
+  const APP_VERSION = '1.10.0';
+  const APP_BUILD = '20260916-0859';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -345,31 +345,38 @@
     if (c.isToday) classes.push('is-today');
     if (hasEntry) classes.push('has-entry');
 
-    // 描述：工時描述與加班描述都要顯示。
-    // 兩者各自獨立判斷，不再用 else if —— 同一天同時有工時與加班描述時，
-    // 以前的寫法會讓加班描述被吃掉，只顯示工時描述。
+    // 兩組資料，各自「描述在上、時數在下」：
+    //   第一組：工時描述 + 工數
+    //   第二組：加班描述 + 加班時數
+    // 以前的排版是「所有描述先排完，才排所有時數」，
+    // 兩天都有時會變成「工時描述 / 加班描述 / 工數 / 加班時數」四行，
+    // 描述與對應的數字被拆散，不好對照。改成分組後語意清楚得多。
     const workDesc = (e.workDesc || '').trim();
     const otDesc = (e.otDesc || '').trim();
-    let descHtml = '';
-    if (workDesc) {
-      descHtml += `<div class="day-desc">${escapeHtml(workDesc)}</div>`;
-    }
-    if (otDesc) {
-      descHtml += `<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`;
-    }
+    const showUnits = settings.showHours;
 
-    // 時數在後：工數一行，加班另起一行
-    let unitsHtml = '';
-    if (settings.showHours && hasEntry) {
+    const groups = [];
+    if (hasWork) {
       const rows = [];
-      if (hasWork) {
+      if (workDesc) {
+        rows.push(`<div class="day-desc">${escapeHtml(workDesc)}</div>`);
+      }
+      if (showUnits) {
         rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">工</span></span></div>`);
       }
-      if (hasOt) {
+      if (rows.length) groups.push(`<div class="day-group">${rows.join('')}</div>`);
+    }
+    if (hasOt) {
+      const rows = [];
+      if (otDesc) {
+        rows.push(`<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`);
+      }
+      if (showUnits) {
         rows.push(`<div class="day-units ot-units"><span class="uv">+${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
       }
-      if (rows.length) unitsHtml = `<div class="day-units-wrap">${rows.join('')}</div>`;
+      if (rows.length) groups.push(`<div class="day-group ot-group">${rows.join('')}</div>`);
     }
+    const groupsHtml = groups.length ? `<div class="day-groups">${groups.join('')}</div>` : '';
 
     let badges = '';
     if (hasEntry) {
@@ -390,8 +397,7 @@
     return `<div class="${classes.join(' ')}" data-key="${c.key}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
       ${badges}
       <div class="day-num">${c.day}</div>
-      ${descHtml}
-      ${unitsHtml}
+      ${groupsHtml}
     </div>`;
   }
 
