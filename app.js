@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.20.0';
-  const APP_BUILD = '20260917-2337';
+  const APP_VERSION = '1.21.0';
+  const APP_BUILD = '20260918-0025';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -21,6 +21,7 @@
     dayPay: 0,      // 日薪（1 工）
     otPay: 0,       // 加班時薪
     nightPay: 0,    // 半夜加班時薪
+    pinHash: '',    // 螢幕鎖定密碼（SHA-256 雜湊）；空字串＝未啟用
   };
 
   /* ---------------- 狀態 ---------------- */
@@ -151,6 +152,13 @@
     monthTitle: $('monthTitle'),
     monthStats: $('monthStats'),
     incomeBar: $('incomeBar'),
+    lockScreen: $('lockScreen'),
+    lockTitle: $('lockTitle'),
+    lockDots: $('lockDots'),
+    lockMsg: $('lockMsg'),
+    lockPad: $('lockPad'),
+    lockState: $('lockState'),
+    lockBtn: $('lockBtn'),
     weekdayRow: $('weekdayRow'),
     calendarGrid: $('calendarGrid'),
     prevMonth: $('prevMonth'),
@@ -250,6 +258,119 @@
       workIncome, otIncome, nightIncome,
       total: workIncome + otIncome + nightIncome,
     };
+  }
+
+  /* ===================== 螢幕鎖定 =====================
+     啟用後：每次載入 App（init）、以及每次從背景回到前台（PWA 掛起
+     不會重載頁面，靠 visibilitychange 補上「每次開 App 都要解鎖」），
+     都要先輸入 4 位數字密碼。密碼只存 SHA-256 雜湊（settings.pinHash），
+     不存明文、不離開裝置。連錯 5 次鎖鍵盤 30 秒（防瞎猜）。 */
+  const LOCK_MAX = 4;
+  let lockMode = '';        // '' 無 | 'unlock' | 'set1' | 'set2' | 'off'
+  let lockBuf = '';
+  let lockTemp = '';        // set1 暫存的新 PIN
+  let lockWrong = 0;
+  let lockCooldown = 0;
+  let lockTimer = null;
+
+  async function sha256Hex(s) {
+    try {
+      if (crypto && crypto.subtle) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+        return [...new Uint8Array(buf)].map((x) => x.toString(16).padStart(2, '0')).join('');
+      }
+    } catch (e) { /* 非 secure context，走後備 */ }
+    // 後備（本地單機場景：防窺不防駭）
+    let h1 = 0x811c9dc5, h2 = 0x01000193;
+    for (let i = 0; i < s.length; i++) {
+      h1 = ((h1 ^ s.charCodeAt(i)) * 0x01000193) >>> 0;
+      h2 = ((h2 + s.charCodeAt(i) * (i + 7)) * 0x85ebca6b) >>> 0;
+    }
+    return 'fb' + h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+  }
+
+  function lockRenderDots() {
+    [...el.lockDots.children].forEach((d, i) => d.classList.toggle('on', i < lockBuf.length));
+  }
+  function lockMsg(text, hint) {
+    el.lockMsg.textContent = text || '';
+    el.lockMsg.classList.toggle('hint', !!hint);
+  }
+  function openLock(mode) {
+    lockMode = mode; lockBuf = '';
+    el.lockScreen.hidden = false;
+    el.lockScreen.classList.remove('unlocked', 'shake');
+    if (Date.now() < lockCooldown) lockTickCooldown();
+    else { el.lockPad.classList.remove('locked'); lockMsg(''); }
+    if (mode === 'unlock') { el.lockTitle.textContent = '輸入密碼'; lockMsg(''); }
+    else if (mode === 'set1') { el.lockTitle.textContent = '設定新密碼'; lockMsg('請輸入 4 位數字', true); }
+    else if (mode === 'set2') { el.lockTitle.textContent = '再輸入一次確認'; lockMsg(''); }
+    else if (mode === 'off') { el.lockTitle.textContent = '關閉鎖定'; lockMsg('輸入目前密碼以確認', true); }
+    lockRenderDots();
+  }
+  function closeLock() {
+    lockMode = ''; lockBuf = ''; lockTemp = '';
+    el.lockScreen.classList.add('unlocked');
+    setTimeout(() => { el.lockScreen.hidden = true; }, 300);
+  }
+  function lockFail(msg) {
+    lockWrong++;
+    el.lockScreen.classList.remove('shake');
+    void el.lockScreen.offsetWidth;   // 重觸發抖動動畫
+    el.lockScreen.classList.add('shake');
+    lockBuf = ''; lockRenderDots();
+    if (lockWrong >= 5) { lockCooldown = Date.now() + 30000; lockTickCooldown(); }
+    else lockMsg(msg);
+  }
+  function lockTickCooldown() {
+    const left = Math.ceil((lockCooldown - Date.now()) / 1000);
+    if (left > 0) {
+      el.lockPad.classList.add('locked');
+      lockMsg(`嘗試次數過多，${left} 秒後可再試`);
+      clearTimeout(lockTimer);
+      lockTimer = setTimeout(lockTickCooldown, 500);
+    } else {
+      lockWrong = 0;
+      el.lockPad.classList.remove('locked');
+      lockMsg('');
+    }
+  }
+  async function lockSubmit() {
+    if (Date.now() < lockCooldown) return;
+    const pin = lockBuf;
+    lockBuf = ''; lockRenderDots();
+    if (lockMode === 'unlock') {
+      if (pin && await sha256Hex(pin) === settings.pinHash) { lockWrong = 0; closeLock(); }
+      else lockFail('密碼錯誤，請重試');
+    } else if (lockMode === 'set1') {
+      lockTemp = pin; openLock('set2');
+    } else if (lockMode === 'set2') {
+      if (pin === lockTemp) {
+        settings.pinHash = await sha256Hex(pin);
+        saveSettings(); syncLockUI();
+        closeLock(); toast('螢幕鎖定已啟用');
+      } else { openLock('set1'); lockMsg('兩次輸入不一致，請重新設定'); }
+    } else if (lockMode === 'off') {
+      if (pin && await sha256Hex(pin) === settings.pinHash) {
+        settings.pinHash = '';
+        saveSettings(); syncLockUI();
+        closeLock(); toast('螢幕鎖定已關閉');
+      } else lockFail('密碼錯誤，請重試');
+    }
+  }
+  function lockKey(k) {
+    if (!lockMode || Date.now() < lockCooldown) return;
+    if (k === 'clear') lockBuf = '';
+    else if (k === 'back') lockBuf = lockBuf.slice(0, -1);
+    else if (lockBuf.length < LOCK_MAX) lockBuf += k;
+    lockRenderDots();
+    lockMsg('');
+    if (lockBuf.length === LOCK_MAX) setTimeout(lockSubmit, 120);  // 輸滿自動驗證
+  }
+  function syncLockUI() {
+    const on = !!settings.pinHash;
+    el.lockState.textContent = on ? '已啟用' : '未啟用';
+    el.lockBtn.textContent = on ? '關閉鎖定' : '設定密碼';
   }
 
   /* 收入金額的顯示狀態：session 內記憶、每次載入 App 都預設隱藏
@@ -915,6 +1036,24 @@
       renderIncome();
     });
 
+    /* ---- 螢幕鎖定：鍵盤（點擊委派）、選單入口、回前台重鎖 ---- */
+    el.lockPad.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('.lock-key');
+      if (btn) lockKey(btn.dataset.k);
+    });
+    el.lockBtn.addEventListener('click', () => {
+      closeDrawer();
+      openLock(settings.pinHash ? 'off' : 'set1');
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'visible') return;
+      if (!settings.pinHash) return;                 // 未啟用：不鎖
+      if (el.lockScreen.hidden) openLock('unlock');  // 已解鎖狀態從背景回來 → 重鎖
+      // 鎖屏本來就開著（輸入到一半切走）也重開一次，清掉輸入
+      else if (lockMode === 'unlock') openLock('unlock');
+    });
+    syncLockUI();
+
     /* ---- 匯出 CSV ---- */
     el.exportCsv.addEventListener('click', () => {
       const y = view.getFullYear(), m = view.getMonth();
@@ -1325,6 +1464,7 @@
     load();
     view = new Date();
     view.setDate(1);
+    if (settings.pinHash) openLock('unlock');   // 先蓋鎖屏再渲染，內容不閃現
     bind();
     render();
     updateHintText();

@@ -1702,3 +1702,121 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     .day-group { padding: 2px 5px; }
   }
 }
+
+/* ===================== 螢幕鎖定 ===================== */
+/* 覆蓋層：不透明底（完全蓋住底下的月曆內容），自帶光斑裝飾。
+   z-index 9999 高於 toast(200)／sheet(150) 等一切浮層——鎖著時
+   任何 UI 都碰不到，解鎖後才交還。 */
+.lock-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background:
+    radial-gradient(80% 55% at 8% -10%, color-mix(in srgb, var(--work) 20%, transparent), transparent 70%),
+    radial-gradient(70% 50% at 100% 8%, color-mix(in srgb, var(--ot) 16%, transparent), transparent 68%),
+    var(--bg);
+  opacity: 1;
+  transition: opacity .28s ease;
+}
+.lock-screen.unlocked { opacity: 0; pointer-events: none; }
+/* hidden 屬性的 UA display:none 會被上面 .lock-screen 的 display:grid 蓋掉，
+   必須顯式聲明，否則「關閉」的鎖屏仍攔截全頁點擊（同 .income-bar[hidden] 慣例）。 */
+.lock-screen[hidden] { display: none; }
+
+.lock-card {
+  width: min(320px, 92vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 26px 22px 20px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, var(--glass-cell-hi), var(--glass-cell-lo));
+  border: 1px solid var(--glass-border-soft);
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 3px rgba(31, 41, 55, .05);
+}
+.lock-screen.shake .lock-card { animation: lock-shake .4s ease; }
+@keyframes lock-shake {
+  20% { transform: translateX(-9px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(4px); }
+}
+
+.lock-icon { color: var(--work); }
+.lock-card h2 {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: .5px;
+  color: var(--text-2);
+}
+
+.lock-dots { display: flex; gap: 14px; margin: 4px 0 2px; }
+.lock-dots i {
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  border: 1.6px solid var(--text-3);
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.lock-dots i.on {
+  background: var(--work);
+  border-color: var(--work);
+  transform: scale(1.12);
+}
+
+.lock-msg {
+  min-height: 18px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--danger, #dc2626);
+}
+.lock-msg.hint { color: var(--text-3); }
+
+.lock-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+}
+.lock-key {
+  height: 56px;
+  border-radius: 14px;
+  border: 1px solid var(--glass-border-soft);
+  background: linear-gradient(180deg, var(--glass-cell-hi), var(--glass-cell-lo));
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: transform .08s ease, background .15s ease;
+}
+.lock-key:active { transform: scale(.94); background: var(--glass-cell-hi); }
+.lock-key-fn {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+  display: grid;
+  place-items: center;
+}
+.lock-pad.locked .lock-key { opacity: .45; pointer-events: none; }
+
+/* 選單裡的狀態行 */
+.lock-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.lock-state { font-size: 13.5px; color: var(--text-2); }
+
+@media (max-height: 700px) {
+  .lock-card { padding: 18px 18px 14px; gap: 8px; }
+  .lock-key { height: 46px; border-radius: 12px; font-size: 18px; }
+  .lock-pad { gap: 8px; }
+}

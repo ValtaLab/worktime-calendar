@@ -221,6 +221,15 @@
   </div>
 
   <div class="drawer-section">
+    <p class="drawer-label">螢幕鎖定</p>
+    <div class="lock-row">
+      <span id="lockState" class="lock-state">未啟用</span>
+      <button id="lockBtn" class="drawer-btn" type="button">設定密碼</button>
+    </div>
+    <p class="drawer-help">啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。</p>
+  </div>
+
+  <div class="drawer-section">
     <p class="drawer-label">資料</p>
     <button id="exportCsv" class="drawer-btn" type="button">匯出 CSV（本月）</button>
     <button id="exportJson" class="drawer-btn" type="button">匯出備份 JSON</button>
@@ -268,6 +277,36 @@
 </div>
 
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<!-- ============ 螢幕鎖定（最上層；啟用後每次開啟／回前台都要解鎖） ============ -->
+<div id="lockScreen" class="lock-screen" hidden role="dialog" aria-modal="true" aria-label="螢幕鎖定">
+  <div class="lock-card">
+    <svg class="lock-icon" viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5"/>
+      <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
+      <circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/>
+    </svg>
+    <h2 id="lockTitle">輸入密碼</h2>
+    <div class="lock-dots" id="lockDots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <p id="lockMsg" class="lock-msg" role="alert"></p>
+    <div class="lock-pad" id="lockPad">
+      <button class="lock-key" type="button" data-k="1">1</button>
+      <button class="lock-key" type="button" data-k="2">2</button>
+      <button class="lock-key" type="button" data-k="3">3</button>
+      <button class="lock-key" type="button" data-k="4">4</button>
+      <button class="lock-key" type="button" data-k="5">5</button>
+      <button class="lock-key" type="button" data-k="6">6</button>
+      <button class="lock-key" type="button" data-k="7">7</button>
+      <button class="lock-key" type="button" data-k="8">8</button>
+      <button class="lock-key" type="button" data-k="9">9</button>
+      <button class="lock-key lock-key-fn" type="button" data-k="clear">清除</button>
+      <button class="lock-key" type="button" data-k="0">0</button>
+      <button class="lock-key lock-key-fn" type="button" data-k="back" aria-label="刪除最後一位">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7z"/><path d="M12 9.5l5 5M17 9.5l-5 5"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
 
 <script src="./app.js"></script>
 </body>
