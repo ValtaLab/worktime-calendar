@@ -34,10 +34,10 @@ html = re.sub(
     lambda m: '<script>\n' + js + '\n</script>',
     html, count=1)
 
-# 3) 圖示：任何指向 icons/*.png 的連結 → data URI
+# 3) 圖示：任何指向 icons/*.png 的連結（href= 或 src=）→ data URI
 html = re.sub(
-    r'href="\./icons/[^"]+\.png"',
-    lambda m: 'href="data:image/png;base64,' + icon + '"',
+    r'(href|src)="\./icons/[^"]+\.png"',
+    lambda m: m.group(1) + '="data:image/png;base64,' + icon + '"',
     html)
 
 # 4) manifest 在單檔模式下無意義（無法提供外部檔案）

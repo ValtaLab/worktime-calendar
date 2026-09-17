@@ -99,15 +99,17 @@ input, textarea { font-family: inherit; }
 }
 
 .brand { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+/* 左上角品牌標記＝App icon 本尊（icons/icon-192.png，與桌面圖示完全一致）。
+   icon 本身已內建圓角與漸層底，這裡只負責尺寸與陰影。 */
 .brand-mark {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 34px; height: 34px;
   flex: 0 0 34px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--work), #7c3aed);
-  color: #fff;
+  border-radius: 8px;
   box-shadow: var(--shadow-sm);
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
 }
 .brand h1 {
   font-size: 16px;
