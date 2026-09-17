@@ -493,9 +493,9 @@ input, textarea { font-family: inherit; }
 .field-group {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 14px;
+  gap: 6px;
+  padding: 9px;
+  border-radius: 13px;
   background: var(--glass-cell);
   border: 1px solid var(--glass-border-soft);
   box-shadow: inset 0 1px 0 var(--glass-highlight);
@@ -505,7 +505,7 @@ input, textarea { font-family: inherit; }
   align-items: center;
   gap: 7px;
   margin: 0;
-  font-size: 13.5px;
+  font-size: 13px;
   font-weight: 800;
   color: var(--text);
   letter-spacing: -.2px;
@@ -550,17 +550,17 @@ input, textarea { font-family: inherit; }
 
 /* 兩個大選項（0.5 工 / 1 工） */
 .unit-chip-lg {
-  height: 58px;
+  height: 46px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  border-radius: 12px;
+  gap: 1px;
+  border-radius: 11px;
 }
-.unit-chip-lg .chip-main { font-size: 15.5px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15; }
+.unit-chip-lg .chip-main { font-size: 14.5px; font-weight: 800; letter-spacing: -.2px; line-height: 1.15; }
 .unit-chip-lg .chip-sub {
-  font-size: 10.5px;
+  font-size: 9.5px;
   font-weight: 600;
   opacity: .7;
   letter-spacing: .3px;
@@ -576,8 +576,11 @@ input, textarea { font-family: inherit; }
    選項高度以 --wheel-item-h 統一，JS 依 scrollTop / 項目高 換算索引；
    上下 padding = (列數-1)/2 × 項目高，讓第一格與最後一格也能置中。 */
 .wheel-picker {
-  --wheel-item-h: 36px;
-  --wheel-rows: 5;
+  /* 3 行 × 34px＝102px：面板濃縮後改 3 行（原 5 行 180px），
+     上下各一行相鄰選項＋中央選中，仍保留「滾動選擇」的操作感。
+     JS 的 wheelItemH() 讀 --wheel-item-h 換算索引，改這裡即可全站生效。 */
+  --wheel-item-h: 30px;
+  --wheel-rows: 3;
   position: relative;
   border: 1px solid var(--glass-border-soft);
   border-radius: var(--radius-sm);
@@ -602,7 +605,7 @@ input, textarea { font-family: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
@@ -631,19 +634,21 @@ input, textarea { font-family: inherit; }
 }
 .wheel-night .wheel-band { background: color-mix(in srgb, var(--night) 9%, var(--surface)); }
 .wheel-unit {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--text-3);
 }
 /* 上下邊緣淡出：讓選項列有「漸遠」的深度感（蓋在選項之上）。
    淡出霧用 --glass-fade（高不透明玻璃色）——若用純 transparent 結尾疊在
-   半透明底上，頂底與中段同色，淡出效果會直接失效。 */
+   半透明底上，頂底與中段同色，淡出效果會直接失效。
+   高度 0.62 個項目高：3 行滾輪總高只有 102px，1.5 行的舊值會把
+   中央選中帶整個蓋掉，縮短到只暈開上下兩行的外緣。 */
 .wheel-picker::before,
 .wheel-picker::after {
   content: '';
   position: absolute;
   left: 0; right: 0;
-  height: calc(var(--wheel-item-h) * 1.5);
+  height: calc(var(--wheel-item-h) * .62);
   pointer-events: none;
   z-index: 3;
 }
@@ -665,9 +670,10 @@ input, textarea { font-family: inherit; }
 
 .field-help {
   margin: 0;
-  font-size: 11.5px;
+  font-size: 10.5px;
   color: var(--text-3);
   font-weight: 600;
+  line-height: 1.3;
 }
 
 /* 每組的色塊：描述與數字「上下排列，但同屬一個色塊」。
@@ -820,7 +826,7 @@ input, textarea { font-family: inherit; }
   width: 40px; height: 4px;
   border-radius: 999px;
   background: color-mix(in srgb, var(--text) 22%, transparent);
-  margin: 9px auto 2px;
+  margin: 7px auto 0;
   flex: 0 0 auto;
 }
 
@@ -829,38 +835,43 @@ input, textarea { font-family: inherit; }
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 16px 10px;
+  padding: 6px 16px 4px;
   flex: 0 0 auto;
 }
 .sheet-date {
-  margin: 0 0 2px;
+  margin: 0 0 1px;
   font-size: 12px;
   font-weight: 600;
   color: var(--work);
   letter-spacing: .2px;
 }
-.sheet-title { margin: 0; font-size: 18px; font-weight: 800; letter-spacing: -.3px; }
+.sheet-title { margin: 0; font-size: 17px; font-weight: 800; letter-spacing: -.3px; }
 
 .sheet-body {
-  padding: 2px 16px 6px;
+  /* 兩欄 grid：工時組與標籤跨兩欄，加班／半夜並排——
+     面板全部內容（三組＋標籤）在 844px 高的手機上不需滾動一屏看完。
+     grid 取代 flex 後，min-height: 0 與 overflow-y 仍是面板可捲動的必要條件。 */
+  padding: 2px 14px 6px;
   overflow-y: auto;
   flex: 1 1 auto;
   min-height: 0; /* flex 子項預設 min-height:auto 不會收縮——內容超過面板
                     max-height 時會把底部儲存列推出視窗外（滾輪加高後實測發生），
                     必須歸零才能讓內部捲動生效、foot 固定在面板底部。 */
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
 }
+.sheet-body > .field-group:first-child,
+.sheet-body > .field:last-child { grid-column: 1 / -1; }
 
-.field { display: flex; flex-direction: column; gap: 6px; flex: 1 1 0; min-width: 0; }
+.field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; min-width: 0; }
 .field-row { display: flex; gap: 12px; }
 
 .field-label {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-2);
 }
@@ -873,7 +884,7 @@ input, textarea { font-family: inherit; }
    會自動放大整個頁面（特寫輸入框），使用者已表示不需要該行為。 */
 textarea, .field input[type="text"] {
   width: 100%;
-  padding: 11px 12px;
+  padding: 8px 10px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border-soft);
   background: var(--glass-input);
@@ -931,7 +942,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 .sheet-foot {
   display: flex;
   gap: 10px;
-  padding: 12px 16px 14px;
+  padding: 10px 16px 12px;
   /* 透明底：讓 sheet 本體的玻璃一路延伸到底部儲存列，
      若留在 var(--surface) 實心底，玻璃會在 foot 處「斷層」。 */
   border-top: 1px solid var(--hairline);
@@ -941,7 +952,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
 .btn {
   flex: 1;
-  height: 46px;
+  height: 44px;
   border-radius: 12px;
   border: 1px solid transparent;
   font-size: 14.5px;
@@ -1269,6 +1280,23 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   text-align: center;
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ---- 矮屏專用（max-height ≤ 700px，如 iPhone SE）----
+   主流機型上面板已一屏；667px 高的舊小屏再壓一輪：
+   滾輪行高 26、面板各段內距縮緊，讓小屏也盡量一屏看完。 */
+@media (max-height: 700px) {
+  .sheet-handle { margin-top: 5px; }
+  .sheet-head { padding: 4px 14px 2px; }
+  .sheet-date { font-size: 11px; }
+  .sheet-title { font-size: 16px; }
+  .sheet-body { padding: 2px 12px 4px; gap: 7px; }
+  .field-group { gap: 5px; padding: 8px; }
+  .wheel-picker { --wheel-item-h: 26px; }
+  .wheel-item { font-size: 14px; }
+  textarea, .field input[type="text"] { padding: 7px 10px; }
+  .sheet-foot { padding: 8px 14px 10px; }
+  .btn { height: 42px; }
+}
 
 /* ===================== 響應式 ===================== */
 /*
