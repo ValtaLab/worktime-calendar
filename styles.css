@@ -400,6 +400,11 @@ input, textarea { font-family: inherit; }
   letter-spacing: 2px;
   color: color-mix(in srgb, var(--work) 55%, var(--text-3));
 }
+/* 算式內的單價遮蔽點（字級跟隨算式，不放大） */
+.income-mask.sm {
+  font-size: inherit;
+  letter-spacing: 1px;
+}
 
 /* 「顯示／隱藏」小標籤 */
 .income-eye {

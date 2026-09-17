@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.19.4';
-  const APP_BUILD = '20260917-2319';
+  const APP_VERSION = '1.20.0';
+  const APP_BUILD = '20260917-2337';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -21,7 +21,6 @@
     dayPay: 0,      // 日薪（1 工）
     otPay: 0,       // 加班時薪
     nightPay: 0,    // 半夜加班時薪
-    incomeVisible: false,   // 收入金額預設遮蔽，點一下才顯示
   };
 
   /* ---------------- 狀態 ---------------- */
@@ -253,6 +252,11 @@
     };
   }
 
+  /* 收入金額的顯示狀態：session 內記憶、每次載入 App 都預設隱藏
+     （不寫進 settings/localStorage——重新打開 App 不會記住「顯示」，
+     避免在旁人面前一打開就直接暴露收入）。 */
+  let incomeShown = false;
+
   function renderIncome() {
     const y = view.getFullYear(), m = view.getMonth();
     const inc = incomeOfMonth(y, m);
@@ -260,20 +264,22 @@
 
     // 只有設定了費率的項目才出現在計算式裡，
     // 避免使用者只設日薪時還看到「0 h × $0」這種沒意義的片段。
+    // 金額（日薪／加班時薪／半夜時薪的單價與總額）預設全部遮蔽，
+    // 時數保留——旁人只看得到「做了多少」，看不到「值多少錢」。
+    const shown = incomeShown;   // 先取狀態，money() 才能在模板展開時讀到
+    const money = (v) => shown
+      ? `$${fmtMoney(v)}`
+      : `<span class="income-mask sm" aria-hidden="true">•••</span>`;
     const parts = [];
     if (inc.dayPay > 0) {
-      parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} 工 × $${fmtMoney(inc.dayPay)}</span>`);
+      parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} 工 × ${money(inc.dayPay)}</span>`);
     }
     if (inc.otPay > 0) {
-      parts.push(`<span class="income-part ot">${fmtH(inc.totalOt)} h × $${fmtMoney(inc.otPay)}</span>`);
+      parts.push(`<span class="income-part ot">${fmtH(inc.totalOt)} h × ${money(inc.otPay)}</span>`);
     }
     if (inc.nightPay > 0) {
-      parts.push(`<span class="income-part night">${fmtH(inc.totalNight)} h × $${fmtMoney(inc.nightPay)}</span>`);
+      parts.push(`<span class="income-part night">${fmtH(inc.totalNight)} h × ${money(inc.nightPay)}</span>`);
     }
-
-    // 金額預設遮蔽，點一下才顯示（避免在旁人面前直接暴露收入）。
-    // 遮蔽狀態存進 settings，重新渲染或換月都不會自己彈開。
-    const shown = settings.incomeVisible === true;
     const amount = shown
       ? `<span class="income-cur">$</span>${fmtMoney(inc.total)}`
       : `<span class="income-mask" aria-hidden="true">••••••</span>`;
@@ -905,8 +911,7 @@
        按鈕本身每次 renderIncome() 都會重建，所以用委派綁在容器上。 */
     el.incomeBar.addEventListener('click', (ev) => {
       if (!ev.target.closest('#incomeToggle')) return;
-      settings.incomeVisible = settings.incomeVisible !== true;
-      saveSettings();
+      incomeShown = !incomeShown;   // 只記在記憶體：重載 App 回到預設隱藏
       renderIncome();
     });
 
