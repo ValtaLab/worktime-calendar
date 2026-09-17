@@ -1070,7 +1070,6 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 .drawer-btn-danger { color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, var(--border)); }
 
 .drawer-help { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-3); }
-.gist-status { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: var(--text-2); }
 
 /* 薪資設定：日薪 / 加班時薪
  * 沿用 .stepper 的視覺語言（同樣的邊框、圓角、surface-2 底色），
