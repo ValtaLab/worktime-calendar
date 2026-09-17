@@ -717,7 +717,9 @@ input, textarea { font-family: inherit; }
 .day-desc {
   font-size: 10.5px;
   line-height: 1.32;
-  color: var(--text-2);
+  /* 描述與同一組的數字同色（工時組＝藍）：使用者指定描述與工時字同色，
+     讓「這行文字屬於哪一組」由顏色直接表達，不再靠灰階區分 */
+  color: var(--work);
   overflow: hidden;
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -727,8 +729,8 @@ input, textarea { font-family: inherit; }
   /* 描述在色塊內佔滿寬度，數字排在下一行 */
   flex: 0 1 auto;
 }
-.day-desc.ot-text { color: var(--ot); opacity: .95; }
-.day-desc.night-text { color: var(--night); opacity: .95; }
+.day-desc.ot-text { color: var(--ot); }
+.day-desc.night-text { color: var(--night); }
 
 .day-units {
   display: flex;
@@ -1408,7 +1410,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     padding: 0;
     border-radius: 0;
     background: none;
-    color: color-mix(in srgb, var(--work) 88%, var(--text));
+    /* 與描述同色（工時組＝藍），組內描述與數字顏色完全一致 */
+    color: var(--work);
     justify-content: flex-start;
     text-align: left;
     margin: 0;
@@ -1418,12 +1421,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   .day-units .ut { display: none; }
   .day-units.ot-units {
     font-size: 9px;
-    color: color-mix(in srgb, var(--ot) 92%, var(--text));
+    color: var(--ot);
   }
   /* 半夜加班色塊：紫色系，與工數、加班塊併排時仍分得開 */
   .day-units.night-units {
     font-size: 9px;
-    color: color-mix(in srgb, var(--night) 92%, var(--text));
+    color: var(--night);
   }
 
   .month-title { font-size: 19px; }
@@ -1531,7 +1534,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     -webkit-box-orient: unset;
     font-size: 13.5px;
     line-height: 1.4;
-    color: var(--text);
+    color: var(--work);
     max-height: 2.8em;
     overflow: hidden;
   }
@@ -1734,7 +1737,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
       <div class="field">
         <label class="field-label" for="workDesc">描述</label>
-        <textarea id="workDesc" rows="3" placeholder="例：專案 A 開發、需求評審…"></textarea>
+        <textarea id="workDesc" rows="1"></textarea>
       </div>
 
       <div class="field">
@@ -1759,7 +1762,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
       <div class="field">
         <label class="field-label" for="otDesc">描述</label>
-        <textarea id="otDesc" rows="2" placeholder="例：上線支援、客戶會議…"></textarea>
+        <textarea id="otDesc" rows="1"></textarea>
       </div>
 
       <div class="field">
@@ -1782,7 +1785,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
       <div class="field">
         <label class="field-label" for="nightDesc">描述</label>
-        <textarea id="nightDesc" rows="2" placeholder="例：大夜班、凌晨搶修…"></textarea>
+        <textarea id="nightDesc" rows="1"></textarea>
       </div>
 
       <div class="field">
@@ -1934,8 +1937,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.17.0';
-  const APP_BUILD = '20260917-1302';
+  const APP_VERSION = '1.17.1';
+  const APP_BUILD = '20260917-1342';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
