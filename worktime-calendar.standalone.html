@@ -1970,8 +1970,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.18.0';
-  const APP_BUILD = '20260917-1831';
+  const APP_VERSION = '1.18.1';
+  const APP_BUILD = '20260917-1842';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2273,6 +2273,27 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       ${totalNight > 0 ? `<span class="stat-pill night">半夜 <b>${fmtH(totalNight)}</b> h</span>` : ''}
       <span class="stat-pill">記錄 <b>${days}</b> 天</span>
     `;
+    fitStatsRow();
+  }
+
+  /* 統計膠囊字級「按情況」自適應：內容寬到必須折行時（如手機直向四枚膠囊），
+     逐步縮小字級（每次 0.5px，下限 11px）讓膠囊排回同一行；
+     縮到下限仍放不下（極窄機＋超長數字）就回預設字級、保持換行——資訊完整優先。
+     觸發時機：每次渲染統計、視窗 resize。 */
+  function fitStatsRow() {
+    const box = el.monthStats;
+    if (!box) return;
+    box.style.fontSize = '';
+    const pills = box.querySelectorAll('.stat-pill');
+    if (pills.length < 2) return;
+    const onOneRow = () => [...pills].every((p) => p.offsetTop === pills[0].offsetTop);
+    if (onOneRow()) return;
+    let size = parseFloat(getComputedStyle(box).fontSize);
+    for (size -= .5; size >= 11; size -= .5) {
+      box.style.fontSize = size + 'px';
+      if (onOneRow()) return;
+    }
+    box.style.fontSize = '';
   }
 
   function renderWeekdayRow() {
@@ -2650,6 +2671,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   /* ---------------- 事件綁定 ---------------- */
   function bind() {
+    /* 視窗尺寸變化時重算統計膠囊字級（轉屏、桌面拉窗） */
+    window.addEventListener('resize', fitStatsRow);
     el.prevMonth.addEventListener('click', () => {
       view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
       render();
