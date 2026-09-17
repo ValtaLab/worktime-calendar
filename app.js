@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.16.2';
-  const APP_BUILD = '20260917-1057';
+  const APP_VERSION = '1.16.3';
+  const APP_BUILD = '20260917-1108';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1263,12 +1263,22 @@
   }
 
   /* ---------------- 啟動 ---------------- */
+  /** 底部提示文字：依輸入方式調整——觸控裝置單擊即開面板，滑鼠需雙擊 */
+  function updateHintText() {
+    const el = document.getElementById('hintText');
+    if (!el) return;
+    el.textContent = matchMedia('(hover: none)').matches
+      ? '點一下日期可新增或編輯工時／加班／半夜記錄'
+      : '雙擊日期可新增或編輯工時／加班／半夜記錄';
+  }
+
   function init() {
     load();
     view = new Date();
     view.setDate(1);
     bind();
     render();
+    updateHintText();
     setupInstallHint();
     renderVersionInfo();
     bindVersionUI();
