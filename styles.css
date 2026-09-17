@@ -1469,7 +1469,6 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     gap: 6px;
     margin-top: auto;
     padding: 9px 11px;
-    border-radius: 8px;
   }
   .income-label > span:first-child { font-size: 14px; }
   .income-formula { font-size: 12.5px; gap: 3px; }
