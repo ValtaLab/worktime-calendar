@@ -238,6 +238,37 @@
     <button id="clearAll" class="drawer-btn drawer-btn-danger" type="button">清除全部資料</button>
   </div>
 
+  <div class="drawer-section">
+    <p class="drawer-label">雲端備份（GitHub Gist）</p>
+    <div id="gistSetup">
+      <div class="pay-field">
+        <span class="pay-label">GitHub Token（需 gist 權限）</span>
+        <div class="pay-input-wrap">
+          <input id="gistToken" class="pay-input" type="password" autocomplete="off" placeholder="貼上 ghp_ 開頭的 Token">
+        </div>
+      </div>
+      <button id="gistConnect" class="drawer-btn" type="button">連接雲端備份</button>
+    </div>
+    <div id="gistConnected" hidden>
+      <p class="gist-status" id="gistStatus"></p>
+      <div class="lock-row">
+        <button id="gistRestore" class="drawer-btn" type="button">從雲端還原</button>
+        <button id="gistBackupNow" class="drawer-btn" type="button">立即備份</button>
+      </div>
+      <button id="gistDisconnect" class="drawer-btn drawer-btn-danger" type="button">斷開</button>
+    </div>
+    <p class="drawer-help">連接後，每次修改資料會自動備份到你的<b>私密 Gist</b>。iOS 刪除主畫面圖示會清空本地資料，重裝後輸入同一組 Token 即可找回。Token 請自行存到備忘錄保管。</p>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label">快速備份碼（免帳號）</p>
+    <div class="lock-row">
+      <button id="codeExport" class="drawer-btn" type="button">複製備份碼</button>
+      <button id="codeImport" class="drawer-btn" type="button">貼上還原</button>
+    </div>
+    <p class="drawer-help">把備份碼貼到備忘錄／訊息收藏保存；重裝後貼回來即可還原。</p>
+  </div>
+
   <div class="drawer-section drawer-about">
     <p id="installHint" class="drawer-help"></p>
     <p class="drawer-help">資料儲存在此裝置的瀏覽器中，離線可用。</p>

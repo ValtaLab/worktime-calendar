@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.21.0';
-  const APP_BUILD = '20260918-0025';
+  const APP_VERSION = '1.22.0';
+  const APP_BUILD = '20260918-0213';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -22,6 +22,9 @@
     otPay: 0,       // 加班時薪
     nightPay: 0,    // 半夜加班時薪
     pinHash: '',    // 螢幕鎖定密碼（SHA-256 雜湊）；空字串＝未啟用
+    gistToken: '',  // 雲端備份用 GitHub Token（明文存本機，僅 gist 權限）
+    gistId: '',     // 備份用私密 Gist 的 id
+    gistAt: '',     // 上次成功備份時間（ISO）
   };
 
   /* ---------------- 狀態 ---------------- */
@@ -140,6 +143,7 @@
       toast('儲存失敗，瀏覽器空間可能已滿');
       console.error(e);
     }
+    scheduleGistBackup();  // 已連接雲端時：8 秒 debounce 自動備份
   }
 
   function saveSettings() {
@@ -159,6 +163,16 @@
     lockPad: $('lockPad'),
     lockState: $('lockState'),
     lockBtn: $('lockBtn'),
+    gistSetup: $('gistSetup'),
+    gistConnected: $('gistConnected'),
+    gistToken: $('gistToken'),
+    gistConnect: $('gistConnect'),
+    gistStatus: $('gistStatus'),
+    gistRestore: $('gistRestore'),
+    gistBackupNow: $('gistBackupNow'),
+    gistDisconnect: $('gistDisconnect'),
+    codeExport: $('codeExport'),
+    codeImport: $('codeImport'),
     weekdayRow: $('weekdayRow'),
     calendarGrid: $('calendarGrid'),
     prevMonth: $('prevMonth'),
@@ -258,6 +272,223 @@
       workIncome, otIncome, nightIncome,
       total: workIncome + otIncome + nightIncome,
     };
+  }
+
+  /* ===================== 雲端備份（GitHub Gist） =====================
+     iOS 刪掉主畫面 App 圖示時，系統會連同該 PWA 的 localStorage 一起清掉，
+     網頁本身無法阻止。解法是把資料備份到裝置之外：
+     使用者提供自己的 GitHub Token（只需 gist 權限），App 把整份資料寫進
+     一個私密 Gist。重裝後貼上同一組 Token，資料自動找回。
+     Token 只存在本機 settings，不經過任何第三方伺服器。 */
+  const GIST_FILE = 'worktime-calendar-backup.json';
+
+  function ghHeaders(token) {
+    return {
+      'Accept': 'application/vnd.github+json',
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`,
+    };
+  }
+
+  // 備份內容＝全部打卡記錄＋全部設定。Token／Gist id／PIN 不進雲端：
+  // PIN 只存雜湊且 4 位數可被暴力窮舉，備份走雲會放大風險，還原後重設即可。
+  function backupPayload() {
+    return {
+      app: 'worktime-calendar',
+      v: 1,
+      exportedAt: new Date().toISOString(),
+      entries,
+      settings: { ...settings, gistToken: '', gistId: '', gistAt: '', pinHash: '' },
+    };
+  }
+
+  async function gistApi(method, url, body) {
+    const res = await fetch(url, {
+      method,
+      headers: ghHeaders(settings.gistToken),
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`GitHub API ${res.status}: ${text.slice(0, 200)}`);
+    }
+    return res.json();
+  }
+
+  function gistFileOf(gist) {
+    return !!(gist && gist.files && gist.files[GIST_FILE]);
+  }
+
+  async function gistPush() {
+    const body = {
+      description: `工時月曆備份 ${new Date().toLocaleString('zh-TW')}`,
+      files: { [GIST_FILE]: { content: JSON.stringify(backupPayload()) } },
+    };
+    const gist = settings.gistId
+      ? await gistApi('PATCH', `https://api.github.com/gists/${settings.gistId}`, body)
+      : await gistApi('POST', 'https://api.github.com/gists', body);
+    settings.gistId = gist.id;
+    settings.gistAt = new Date().toISOString();
+    saveSettings();
+    return gist;
+  }
+
+  let gistTimer = null;
+  // debounce 8 秒：連續改多格只推一次。只在 save()（資料變更）時觸發，
+  // 不掛在 saveSettings() 上，否則 gistPush 內部的 saveSettings 會造成循環推送。
+  function scheduleGistBackup() {
+    if (!settings.gistToken || !settings.gistId) return;
+    clearTimeout(gistTimer);
+    gistTimer = setTimeout(() => {
+      gistPush().then(() => {
+        syncGistUI();
+      }).catch((e) => {
+        console.warn('[備份] 自動備份失敗', e);
+      });
+    }, 8000);
+  }
+
+  function syncGistUI() {
+    const on = !!(settings.gistToken && settings.gistId);
+    el.gistSetup.hidden = on;
+    el.gistConnected.hidden = !on;
+    if (on) {
+      const t = settings.gistAt ? new Date(settings.gistAt) : null;
+      el.gistStatus.textContent = t
+        ? `已連接・上次備份：${t.toLocaleString('zh-TW')}`
+        : '已連接・尚未備份過';
+    }
+  }
+
+  async function connectGist() {
+    const token = el.gistToken.value.trim();
+    if (!token) { toast('請先貼上 GitHub Token'); el.gistToken.focus(); return; }
+    el.gistConnect.disabled = true;
+    el.gistConnect.textContent = '連接中…';
+    try {
+      settings.gistToken = token;
+      settings.gistId = '';
+      // 先找這組 Token 名下有沒有現成的備份檔（重裝／換機情境）
+      const gists = await gistApi('GET', 'https://api.github.com/gists?per_page=100');
+      const found = (Array.isArray(gists) ? gists : []).find((g) => gistFileOf(g));
+      if (found) {
+        settings.gistId = found.id;
+        if (!Object.keys(entries).length) {
+          await restoreGist(true);           // 本機是空的：直接還原
+          toast('已從雲端找回資料');
+        } else {
+          const useCloud = confirm('雲端已有備份。\n\n「確定」＝用雲端資料覆蓋本機\n「取消」＝保留本機，並把本機推上雲端');
+          if (useCloud) {
+            await restoreGist(true);
+            toast('已從雲端找回資料');
+          } else {
+            await gistPush();
+            toast('已把本機資料備份到雲端');
+          }
+        }
+      } else {
+        await gistPush();
+        toast('已建立雲端備份');
+      }
+    } catch (e) {
+      console.error(e);
+      toast('連接失敗：' + String(e.message || e).slice(0, 80));
+      settings.gistToken = '';
+      settings.gistId = '';
+    } finally {
+      saveSettings();
+      syncGistUI();
+      el.gistConnect.disabled = false;
+      el.gistConnect.textContent = '連接雲端備份';
+    }
+  }
+
+  async function restoreGist(silent) {
+    if (!settings.gistToken || !settings.gistId) { toast('尚未連接雲端'); return; }
+    if (!silent && !confirm('用雲端備份覆蓋本機資料？\n本機目前的記錄會被取代。')) return;
+    const gist = await gistApi('GET', `https://api.github.com/gists/${settings.gistId}`);
+    const file = gist && gist.files && gist.files[GIST_FILE];
+    if (!file || !file.content) throw new Error('備份檔不存在或已清空');
+    applyBackupPayload(JSON.parse(file.content));
+    view = new Date(); view.setDate(1);
+    render(); updateHintText();
+    syncGistUI();
+  }
+
+  function applyBackupPayload(payload) {
+    if (!payload || payload.app !== 'worktime-calendar' || !payload.entries) {
+      throw new Error('備份檔格式不符');
+    }
+    const migrated = migrate(payload.entries);
+    entries = migrated.data;
+    if (payload.settings) {
+      // 連接狀態與 PIN 留本機現值，其餘設定以備份為準
+      const keep = {
+        gistToken: settings.gistToken, gistId: settings.gistId,
+        gistAt: settings.gistAt, pinHash: settings.pinHash,
+      };
+      settings = { ...DEFAULTS, ...payload.settings, ...keep };
+    }
+    save(); saveSettings();
+  }
+
+  async function backupNow() {
+    if (!settings.gistToken || !settings.gistId) { toast('尚未連接雲端'); return; }
+    el.gistBackupNow.disabled = true;
+    try {
+      await gistPush();
+      syncGistUI();
+      toast('已備份到雲端');
+    } catch (e) {
+      console.error(e);
+      toast('備份失敗：' + String(e.message || e).slice(0, 80));
+    } finally {
+      el.gistBackupNow.disabled = false;
+    }
+  }
+
+  function disconnectGist() {
+    if (!confirm('斷開雲端備份？\n本機資料不受影響，之後不再自動備份。')) return;
+    settings.gistToken = '';
+    settings.gistId = '';
+    settings.gistAt = '';
+    saveSettings();
+    syncGistUI();
+    toast('已斷開雲端備份');
+  }
+
+  /* ---------------- 快速備份碼（免帳號） ----------------
+     把整份資料編成一長串 Base64 文字，複製到剪貼簿，由使用者自行
+     貼到備忘錄／訊息收藏保存。重裝後貼回來即可還原。 */
+  function backupCode() {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(backupPayload()))));
+  }
+
+  async function copyBackupCode() {
+    const code = backupCode();
+    try {
+      await navigator.clipboard.writeText(code);
+      toast(`備份碼已複製（${code.length} 字），請貼到安全處保存`);
+    } catch (e) {
+      prompt('複製失敗，請手動全選複製：', code);
+    }
+  }
+
+  function pasteBackupCode() {
+    const code = prompt('貼上備份碼：');
+    if (!code) return;
+    try {
+      const payload = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+      if (Object.keys(entries).length
+          && !confirm('還原會覆蓋本機目前的資料，確定？')) return;
+      applyBackupPayload(payload);
+      view = new Date(); view.setDate(1);
+      render(); updateHintText();
+      toast(`已還原 ${Object.keys(entries).length} 天的記錄`);
+    } catch (e) {
+      console.error(e);
+      toast('還原失敗：' + String(e.message || e).slice(0, 80));
+    }
   }
 
   /* ===================== 螢幕鎖定 =====================
@@ -1053,6 +1284,20 @@
       else if (lockMode === 'unlock') openLock('unlock');
     });
     syncLockUI();
+
+    /* ---- 雲端備份 ---- */
+    el.gistConnect.addEventListener('click', connectGist);
+    el.gistBackupNow.addEventListener('click', backupNow);
+    el.gistDisconnect.addEventListener('click', disconnectGist);
+    el.gistRestore.addEventListener('click', () => {
+      restoreGist(false).catch((e) => {
+        console.error(e);
+        toast('還原失敗：' + String(e.message || e).slice(0, 80));
+      });
+    });
+    el.codeExport.addEventListener('click', copyBackupCode);
+    el.codeImport.addEventListener('click', pasteBackupCode);
+    syncGistUI();
 
     /* ---- 匯出 CSV ---- */
     el.exportCsv.addEventListener('click', () => {
