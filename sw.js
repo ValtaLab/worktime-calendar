@@ -8,7 +8,7 @@
  *   4. controllerchange 觸發，頁面重新載入即為新版
  * ========================================================= */
 
-const CACHE = 'worktime-calendar-v1.17.2';
+const CACHE = 'worktime-calendar-v1.18.0';
 const PRECACHE = [
   './',
   './index.html',
