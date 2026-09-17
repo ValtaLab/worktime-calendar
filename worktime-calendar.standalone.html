@@ -252,8 +252,15 @@ input, textarea { font-family: inherit; }
   gap: 6px;
   font-size: 14.5px;
   color: var(--text-2);
-  flex-wrap: wrap;
+  /* 膠囊自身不再折行：寬度不足由 fitStatsRow 以「縮字 → 精簡標籤」換取
+     與月標題同行（見 app.js），整行高度讓給月曆格子。 */
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-width: 0;
 }
+/* 精簡模式（fitStatsRow 二級）：極窄寬度下隱藏「工時/加班/記錄」標籤詞，
+   只留「數字＋單位」，語意靠膠囊色塊與數字顏色區分。 */
+.month-stats.stats-compact .pill-label { display: none; }
 .stat-pill {
   padding: 3px 9px;
   border-radius: 999px;
@@ -1970,8 +1977,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.18.1';
-  const APP_BUILD = '20260917-1842';
+  const APP_VERSION = '1.19.0';
+  const APP_BUILD = '20260917-1905';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2268,32 +2275,53 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       num(e.nightHours) > 0 || e.workDesc || e.otDesc || e.nightDesc).length;
 
     el.monthStats.innerHTML = `
-      <span class="stat-pill">工時 <b>${fmtUnits(totalWork)}</b> 工</span>
-      <span class="stat-pill ot">加班 <b>${fmtH(totalOt)}</b> h</span>
-      ${totalNight > 0 ? `<span class="stat-pill night">半夜 <b>${fmtH(totalNight)}</b> h</span>` : ''}
-      <span class="stat-pill">記錄 <b>${days}</b> 天</span>
+      <span class="stat-pill"><span class="pill-label">工時 </span><b>${fmtUnits(totalWork)}</b> 工</span>
+      <span class="stat-pill ot"><span class="pill-label">加班 </span><b>${fmtH(totalOt)}</b> h</span>
+      ${totalNight > 0 ? `<span class="stat-pill night"><span class="pill-label">半夜 </span><b>${fmtH(totalNight)}</b> h</span>` : ''}
+      <span class="stat-pill"><span class="pill-label">記錄 </span><b>${days}</b> 天</span>
     `;
     fitStatsRow();
   }
 
-  /* 統計膠囊字級「按情況」自適應：內容寬到必須折行時（如手機直向四枚膠囊），
-     逐步縮小字級（每次 0.5px，下限 11px）讓膠囊排回同一行；
-     縮到下限仍放不下（極窄機＋超長數字）就回預設字級、保持換行——資訊完整優先。
+  /* 統計膠囊與月標題「強制同行」自適應（讓出整行高度給月曆格子）：
+     1) 寬度本來就夠（桌機）→ 原字級直接同行；
+     2) 放不下 → 逐步縮膠囊字級（0.5px 步進，下限 10.5px）；
+     3) 縮到下限仍放不下 → 精簡模式：隱藏「工時/加班/記錄」標籤詞，
+        只留「數字＋單位」靠膠囊色塊區分語意，再視需要微縮；
+     4) 極端情況 → 連月標題字級也輕微下調（下限 17px）；
+     5) 全部失敗（如 320px 極窄機）→ 保留精簡模式折到標題下方獨佔一行：
+        精簡版寬度遠小於完整版，即使折行也不會水平溢出。
+     同行判定：膠囊容器與標題有垂直重疊（flex wrap 後兩者完全分離）。
      觸發時機：每次渲染統計、視窗 resize。 */
   function fitStatsRow() {
+    const title = el.monthTitle;
     const box = el.monthStats;
-    if (!box) return;
+    if (!box || !title || !box.children.length) return;
     box.style.fontSize = '';
-    const pills = box.querySelectorAll('.stat-pill');
-    if (pills.length < 2) return;
-    const onOneRow = () => [...pills].every((p) => p.offsetTop === pills[0].offsetTop);
+    title.style.fontSize = '';
+    box.classList.remove('stats-compact');
+    const onOneRow = () => box.offsetTop < title.offsetTop + title.offsetHeight - 2;
     if (onOneRow()) return;
     let size = parseFloat(getComputedStyle(box).fontSize);
-    for (size -= .5; size >= 11; size -= .5) {
+    for (size -= .5; size >= 10.5; size -= .5) {          // 一級：縮膠囊字級
+      box.style.fontSize = size + 'px';
+      if (onOneRow()) return;
+    }
+    box.classList.add('stats-compact');                    // 二級：精簡模式
+    box.style.fontSize = '';
+    if (onOneRow()) return;
+    for (size = 14; size >= 11; size -= .5) {              // 精簡下再微縮
       box.style.fontSize = size + 'px';
       if (onOneRow()) return;
     }
     box.style.fontSize = '';
+    let t = parseFloat(getComputedStyle(title).fontSize);
+    for (t -= .5; t >= 17; t -= .5) {                      // 三級：縮月標題
+      title.style.fontSize = t + 'px';
+      if (onOneRow()) return;
+    }
+    title.style.fontSize = '';
+    /* 全敗：保留 compact 折到標題下方——比完整折行版窄 ~100px，不會水平溢出。 */
   }
 
   function renderWeekdayRow() {

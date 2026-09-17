@@ -238,8 +238,15 @@ input, textarea { font-family: inherit; }
   gap: 6px;
   font-size: 14.5px;
   color: var(--text-2);
-  flex-wrap: wrap;
+  /* 膠囊自身不再折行：寬度不足由 fitStatsRow 以「縮字 → 精簡標籤」換取
+     與月標題同行（見 app.js），整行高度讓給月曆格子。 */
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  min-width: 0;
 }
+/* 精簡模式（fitStatsRow 二級）：極窄寬度下隱藏「工時/加班/記錄」標籤詞，
+   只留「數字＋單位」，語意靠膠囊色塊與數字顏色區分。 */
+.month-stats.stats-compact .pill-label { display: none; }
 .stat-pill {
   padding: 3px 9px;
   border-radius: 999px;
