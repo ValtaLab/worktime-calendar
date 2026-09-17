@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.21.0';
-  const APP_BUILD = '20260918-0025';
+  const APP_VERSION = '1.22.0';
+  const APP_BUILD = '20260918-0324';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -22,6 +22,10 @@
     otPay: 0,       // 加班時薪
     nightPay: 0,    // 半夜加班時薪
     pinHash: '',    // 螢幕鎖定密碼（SHA-256 雜湊）；空字串＝未啟用
+    cfEndpoint: '', // 雲端備份 Worker 網址
+    cfCode: '',     // 恢復碼（8 位，重裝找回資料的唯一憑證）
+    cfAt: '',       // 上次成功備份時間（ISO）
+    cfHash: '',     // 上次成功備份的內容指紋（沒變不重推）
   };
 
   /* ---------------- 狀態 ---------------- */
@@ -140,10 +144,12 @@
       toast('儲存失敗，瀏覽器空間可能已滿');
       console.error(e);
     }
+    scheduleCfBackup();  // 已連接雲端時：20 秒 debounce 自動備份
   }
 
   function saveSettings() {
     try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) { /* noop */ }
+    scheduleCfBackup();  // 費率等設定變更也納入自動備份（內容沒變會自動跳過）
   }
 
   /* ---------------- 畫面元素 ---------------- */
@@ -202,6 +208,19 @@
     importJson: $('importJson'),
     importFile: $('importFile'),
     clearAll: $('clearAll'),
+    cfSetup: $('cfSetup'),
+    cfEndpoint: $('cfEndpoint'),
+    cfCodeInput: $('cfCodeInput'),
+    cfConnect: $('cfConnect'),
+    cfConnected: $('cfConnected'),
+    cfStatus: $('cfStatus'),
+    cfRestore: $('cfRestore'),
+    cfBackupNow: $('cfBackupNow'),
+    cfShowCode: $('cfShowCode'),
+    cfDisconnect: $('cfDisconnect'),
+    cfCodeShow: $('cfCodeShow'),
+    cfCodeText: $('cfCodeText'),
+    cfCodeOk: $('cfCodeOk'),
     installHint: $('installHint'),
 
     // 版本與更新
@@ -258,6 +277,263 @@
       workIncome, otIncome, nightIncome,
       total: workIncome + otIncome + nightIncome,
     };
+  }
+
+  /* ===================== 雲端備份（Cloudflare Worker） =====================
+     資料加密後備份到站長自己的 Cloudflare Worker＋KV：
+     - 恢復碼（8 位隨機碼）是唯一憑證：重裝 App 後填回 Worker 網址＋恢復碼即自動找回。
+     - 端到端加密：金鑰由「恢復碼＋Worker 網址」派生（SHA-256 → AES-GCM），
+       伺服器只有密文，站長也看不到內容。
+     - 自動備份：資料或設定變更後 20 秒 debounce 推送；內容指紋沒變不重推；
+       切到背景前若有未推送變更立即補推。 */
+  const CF_APP = 'worktime-calendar-cf';
+  const CF_DEBOUNCE = 20000;
+
+  function genRecoveryCode() {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';  // 去掉易混淆的 I/O/0/1/L
+    const rnd = crypto.getRandomValues(new Uint8Array(8));
+    let s = '';
+    for (let i = 0; i < 8; i++) s += chars[rnd[i] % chars.length];
+    return s;
+  }
+
+  function fmtCode(code) {
+    return code.length === 8 ? code.slice(0, 4) + '-' + code.slice(4) : code;
+  }
+
+  function cfNorm(u) {
+    return (u || '').trim().replace(/\/+$/, '');
+  }
+
+  function cfB64(bytes) {
+    let s = '';
+    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s);
+  }
+
+  function cfUnb64(s) {
+    const bin = atob(s);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  async function cfKey(code, endpoint) {
+    const raw = await crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(`${CF_APP}|${code}|${endpoint}`)
+    );
+    return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+  }
+
+  async function cfEncrypt(state, code, endpoint) {
+    const key = await cfKey(code, endpoint);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      new TextEncoder().encode(JSON.stringify(state))
+    );
+    return { iv: cfB64(iv), data: cfB64(new Uint8Array(ct)) };
+  }
+
+  async function cfDecrypt(enc, code, endpoint) {
+    const key = await cfKey(code, endpoint);
+    const pt = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: cfUnb64(enc.iv) },
+      key,
+      cfUnb64(enc.data)
+    );
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  // 備份內容＝全部打卡記錄＋全部設定；連接資訊與 PIN 不上雲
+  function cfBackupPayload() {
+    return {
+      entries,
+      settings: { ...settings, cfEndpoint: '', cfCode: '', cfAt: '', cfHash: '', pinHash: '' },
+    };
+  }
+
+  function cfHashOfState() {
+    const s = { ...settings };
+    delete s.cfEndpoint; delete s.cfCode; delete s.cfAt; delete s.cfHash; delete s.pinHash;
+    const str = JSON.stringify({ entries, s });
+    // FNV-1a 32 位：夠用於「內容有沒有變」的判斷
+    let h = 0x811c9dc5;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = (h * 0x01000193) >>> 0;
+    }
+    return String(h);
+  }
+
+  async function cfApi(method, body) {
+    const ep = cfNorm(settings.cfEndpoint);
+    const res = await fetch(
+      `${ep}/api/backup?code=${encodeURIComponent(settings.cfCode)}`,
+      {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: body ? JSON.stringify(body) : undefined,
+      }
+    );
+    let j = null;
+    try { j = await res.json(); } catch (e) { /* 非 JSON 回應 */ }
+    return { status: res.status, ok: res.ok, json: j };
+  }
+
+  async function cfPush() {
+    const endpoint = cfNorm(settings.cfEndpoint);
+    if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
+      throw new Error('Worker 網址必須是 https://');
+    }
+    const enc = await cfEncrypt(cfBackupPayload(), settings.cfCode, endpoint);
+    const body = { app: CF_APP, v: 1, savedAt: new Date().toISOString(), enc };
+    const r = await cfApi('PUT', body);
+    if (!r.ok) throw new Error(`備份失敗（${r.status}）`);
+    settings.cfAt = new Date().toISOString();
+    settings.cfHash = cfHashOfState();
+    saveSettings();
+  }
+
+  let cfTimer = null;
+  function scheduleCfBackup() {
+    if (!settings.cfEndpoint || !settings.cfCode) return;
+    if (cfHashOfState() === settings.cfHash) return;  // 內容沒變不重推（省 KV 寫入額度）
+    clearTimeout(cfTimer);
+    cfTimer = setTimeout(() => {
+      cfPush().then(syncCfUI).catch((e) => console.warn('[備份] 自動備份失敗', e));
+    }, CF_DEBOUNCE);
+  }
+
+  function syncCfUI() {
+    const on = !!(settings.cfEndpoint && settings.cfCode);
+    el.cfSetup.hidden = on;
+    el.cfConnected.hidden = !on;
+    if (on) {
+      const t = settings.cfAt ? new Date(settings.cfAt) : null;
+      el.cfStatus.textContent = t
+        ? `已連接・上次備份：${t.toLocaleString('zh-TW')}`
+        : '已連接・尚未備份過';
+    }
+  }
+
+  function showCfCode(fromNew) {
+    el.cfCodeText.textContent = fmtCode(settings.cfCode);
+    el.cfCodeShow.hidden = false;
+    el.cfCodeShow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  async function connectCf() {
+    const endpoint = cfNorm(el.cfEndpoint.value);
+    if (!endpoint) { toast('請先填 Worker 網址'); el.cfEndpoint.focus(); return; }
+    if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
+      toast('Worker 網址必須是 https:// 開頭');
+      el.cfEndpoint.focus();
+      return;
+    }
+    const typed = el.cfCodeInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const isNew = !typed;
+    const code = isNew ? genRecoveryCode() : typed;
+
+    el.cfConnect.disabled = true;
+    el.cfConnect.textContent = '連接中…';
+    const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
+    try {
+      settings.cfEndpoint = endpoint;
+      settings.cfCode = code;
+      const r = await cfApi('GET');
+      if (r.status === 200 && r.json && r.json.found) {
+        if (Object.keys(entries).length) {
+          const cloudAt = r.json.data && r.json.data.savedAt
+            ? new Date(r.json.data.savedAt).toLocaleString('zh-TW') : '時間不明';
+          const useCloud = confirm(`雲端已有這個碼的備份（${cloudAt}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝把本機推上雲端`);
+          if (useCloud) {
+            await cfRestore(true);
+            toast('已從雲端找回資料');
+          } else {
+            await cfPush();
+            toast('已把本機資料備份到雲端');
+          }
+        } else {
+          await cfRestore(true);   // 本機是空的：直接還原
+          toast('已從雲端找回資料');
+        }
+      } else if (r.status === 404) {
+        if (!isNew) toast('這個碼在雲端沒有備份，將以本機資料開始');
+        await cfPush();
+        toast('已建立雲端備份');
+      } else {
+        throw new Error(`Worker 回應異常（${r.status}）`);
+      }
+      saveSettings();
+      syncCfUI();
+      el.cfCodeInput.value = '';
+      if (isNew) showCfCode(true);   // 新碼：立即大字展示引導截圖
+    } catch (e) {
+      console.error(e);
+      toast('連接失敗：' + String(e.message || e).slice(0, 80));
+      settings.cfEndpoint = prev.ep;
+      settings.cfCode = prev.code;
+      saveSettings();
+      syncCfUI();
+    } finally {
+      el.cfConnect.disabled = false;
+      el.cfConnect.textContent = '連接雲端備份';
+    }
+  }
+
+  async function cfRestore(silent) {
+    if (!settings.cfEndpoint || !settings.cfCode) { toast('尚未連接雲端'); return; }
+    if (!silent && !confirm('用雲端備份覆蓋本機資料？\n本機目前的記錄會被取代。')) return;
+    const r = await cfApi('GET');
+    if (r.status !== 200 || !r.json || !r.json.found) {
+      throw new Error('雲端沒有這個碼的備份');
+    }
+    const endpoint = cfNorm(settings.cfEndpoint);
+    const state = await cfDecrypt(r.json.data.enc, settings.cfCode, endpoint);
+    if (!state || !state.entries) throw new Error('備份格式不符');
+    entries = migrate(state.entries).data;   // migrate 回傳 { data, converted }
+    if (state.settings) {
+      // 連接資訊與 PIN 留本機現值，其餘設定以備份為準
+      const keep = {
+        cfEndpoint: settings.cfEndpoint, cfCode: settings.cfCode,
+        cfAt: settings.cfAt, cfHash: settings.cfHash, pinHash: settings.pinHash,
+      };
+      settings = { ...DEFAULTS, ...state.settings, ...keep };
+    }
+    settings.cfHash = cfHashOfState();  // 剛還原的內容＝雲端內容，避免立刻重推
+    save(); saveSettings();
+    view = new Date(); view.setDate(1);
+    render(); updateHintText();
+    syncCfUI();
+  }
+
+  async function cfBackupNow() {
+    if (!settings.cfEndpoint || !settings.cfCode) { toast('尚未連接雲端'); return; }
+    el.cfBackupNow.disabled = true;
+    try {
+      await cfPush();
+      syncCfUI();
+      toast('已備份到雲端');
+    } catch (e) {
+      console.error(e);
+      toast('備份失敗：' + String(e.message || e).slice(0, 80));
+    } finally {
+      el.cfBackupNow.disabled = false;
+    }
+  }
+
+  function disconnectCf() {
+    if (!confirm('斷開雲端備份？\n本機資料不受影響，之後不再自動備份。\n（恢復碼若要繼續使用，請保留截圖）')) return;
+    settings.cfEndpoint = '';
+    settings.cfCode = '';
+    settings.cfAt = '';
+    settings.cfHash = '';
+    saveSettings();
+    syncCfUI();
+    toast('已斷開雲端備份');
   }
 
   /* ===================== 螢幕鎖定 =====================
@@ -1053,6 +1329,27 @@
       else if (lockMode === 'unlock') openLock('unlock');
     });
     syncLockUI();
+
+    /* ---- 雲端備份（Cloudflare） ---- */
+    el.cfConnect.addEventListener('click', connectCf);
+    el.cfBackupNow.addEventListener('click', cfBackupNow);
+    el.cfDisconnect.addEventListener('click', disconnectCf);
+    el.cfShowCode.addEventListener('click', () => showCfCode(false));
+    el.cfCodeOk.addEventListener('click', () => { el.cfCodeShow.hidden = true; });
+    el.cfRestore.addEventListener('click', () => {
+      cfRestore(false).catch((e) => {
+        console.error(e);
+        toast('還原失敗：' + String(e.message || e).slice(0, 80));
+      });
+    });
+    // 切到背景前若有未推送的變更，立即補推（瀏覽器通常允許剛發起的請求完成）
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState !== 'hidden') return;
+      if (!settings.cfEndpoint || !settings.cfCode) return;
+      if (cfHashOfState() === settings.cfHash) return;
+      cfPush().then(syncCfUI).catch(() => {});
+    });
+    syncCfUI();
 
     /* ---- 匯出 CSV ---- */
     el.exportCsv.addEventListener('click', () => {

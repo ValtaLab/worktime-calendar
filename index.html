@@ -238,6 +238,40 @@
     <button id="clearAll" class="drawer-btn drawer-btn-danger" type="button">清除全部資料</button>
   </div>
 
+  <div class="drawer-section">
+    <p class="drawer-label">雲端備份（Cloudflare）</p>
+    <div id="cfSetup">
+      <div class="pay-field">
+        <span class="pay-label">Worker 網址</span>
+        <div class="pay-input-wrap">
+          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" placeholder="https://worktime-backup.xxx.workers.dev">
+        </div>
+      </div>
+      <div class="pay-field">
+        <span class="pay-label">恢復碼（重裝找回資料用；留空＝自動生成）</span>
+        <div class="pay-input-wrap">
+          <input id="cfCodeInput" class="pay-input" type="text" autocomplete="off" spellcheck="false" placeholder="留空自動生成">
+        </div>
+      </div>
+      <button id="cfConnect" class="drawer-btn" type="button">連接雲端備份</button>
+    </div>
+    <div id="cfConnected" hidden>
+      <p class="cf-status" id="cfStatus"></p>
+      <div class="lock-row">
+        <button id="cfRestore" class="drawer-btn" type="button">從雲端還原</button>
+        <button id="cfBackupNow" class="drawer-btn" type="button">立即備份</button>
+      </div>
+      <button id="cfShowCode" class="drawer-btn" type="button">查看恢復碼</button>
+      <button id="cfDisconnect" class="drawer-btn drawer-btn-danger" type="button">斷開</button>
+    </div>
+    <div id="cfCodeShow" hidden>
+      <p class="cf-code-hint">這組恢復碼是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
+      <p class="cf-code" id="cfCodeText"></p>
+      <button id="cfCodeOk" class="drawer-btn" type="button">已保存好</button>
+    </div>
+    <p class="drawer-help">連接後，每次修改會自動加密備份（伺服器只有密文）。<b>刪除 App 重裝後</b>：填回同一個 Worker 網址＋恢復碼即可自動找回資料。恢復碼務必截圖保管。</p>
+  </div>
+
   <div class="drawer-section drawer-about">
     <p id="installHint" class="drawer-help"></p>
     <p class="drawer-help">資料儲存在此裝置的瀏覽器中，離線可用。</p>
