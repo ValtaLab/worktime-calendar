@@ -341,15 +341,12 @@ input, textarea { font-family: inherit; }
   margin-top: 6px;
   padding: 11px 14px;
   border-radius: var(--radius-sm);
-  /* 玻璃＋品牌光：白描邊、內高光，底色往藍橘兩端輕微漸變，
-     讓金額列從「一格卡片」升級成「玻璃展示台」。 */
+  /* 與月曆格同一種玻璃：上亮下透漸層＋內高光＋極輕投影（材料一致），
+     收入列成為月曆格子的自然延伸，不再是一張「更亮、帶品牌色」的卡片；
+     dark 模式吃同一組 --glass-cell-* token，自動跟隨。 */
   border: 1px solid var(--glass-border-soft);
-  background: linear-gradient(135deg,
-    color-mix(in srgb, var(--work) 9%, var(--glass-bg)),
-    color-mix(in srgb, var(--ot) 7%, var(--glass-bg)));
-  backdrop-filter: saturate(170%) blur(16px);
-  -webkit-backdrop-filter: saturate(170%) blur(16px);
-  box-shadow: var(--glass-shadow);
+  background: linear-gradient(180deg, var(--glass-cell-hi), var(--glass-cell-lo));
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 3px rgba(31, 41, 55, .05);
 }
 .income-bar[hidden] { display: none; }
 
@@ -1553,7 +1550,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   .weekday-row { gap: 6px; }
   .day-groups { flex: 0 1 auto; }
   .day-group { flex: 0 1 auto; min-height: 0; }
-  .income-bar { margin-top: 12px; padding: 15px 21px; border-radius: 12px; }
+  .income-bar { margin-top: 12px; padding: 15px 21px; }
   .income-label > span:first-child { font-size: 16px; }
   .income-formula { font-size: 15px; }
   .income-total { font-size: 38.5px; }
@@ -1977,8 +1974,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.19.0';
-  const APP_BUILD = '20260917-1905';
+  const APP_VERSION = '1.19.1';
+  const APP_BUILD = '20260917-1923';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
