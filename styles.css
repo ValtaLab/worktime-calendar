@@ -1131,9 +1131,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
  */
 @media (max-width: 480px) {
   .calendar-grid {
-    /* 列高以內容為基礎（auto），下限 64px。
-       不用 1fr：那會把只有少量記錄的月份硬拉成等高，在下方留下大片空區。
-       auto 讓有記錄的列自然長高、空白列維持 64px，網格收在內容結束處。
+    /* 列高以內容為基礎（auto），下限 64px；align-content: stretch 會把
+       容器剩餘高度**平均分給每一列**——月曆下方的空白（過去積在
+       「最後一列 ↔ 收入列」之間）由所有格子一起長高吸收，空間用盡。
+       有記錄的列只會更高、不會被裁切（stretch 只加分不減分）。
 
        格線做法：容器鋪滿 --grid-line 底色，格子之間留 1px gap 讓底色透出，
        形成連續的細格線。全域的 --border（#e4e8f0）在手機高解析度下
@@ -1141,13 +1142,15 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     --grid-line: color-mix(in srgb, var(--text) 22%, var(--surface));
     grid-auto-rows: minmax(64px, auto);
     gap: 1px;
-    align-content: start;
+    align-content: stretch;
     background: var(--grid-line);
     padding: 1px 0;
-    /* 手機版列高由內容決定，網格不該再撐滿容器（那會在最後一列下方
-       留下一大片空白）。改為 flex: 0 0 auto 讓它自然收在內容結束處；
-       收入列再用 margin-top: auto 貼到容器底部，兩者之間就沒有空隙。 */
-    flex: 0 0 auto;
+    /* flex: 1 1 auto 讓網格撐滿「統計列 ↔ 收入列」之間的剩餘高度，
+       配合上面的 stretch，格子把原本的空白全部吃掉。內容總高超過
+       可用空間時（如三組色塊全滿的月份），stretch 不會再加分、
+       列維持內容高度，頁面自然可垂直滾動。 */
+    flex: 1 1 auto;
+    min-height: 0;
   }
   .weekday-row { gap: 1px; }
   /* 表頭也加上分隔線，與日期格對齊 */
@@ -1269,8 +1272,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   /* 手機版收入列：改為「標籤在上、金額在下」的兩行堆疊。
      手機寬度只有 360–430px，橫向排列會把 24px 的總額擠成換行，
      看起來像排版壞掉；堆疊後金額可獨占整行，反而更醒目。
-     margin-top: auto 把收入列推到容器底部，吸收網格縮短後留下的空間，
-     避免最後一列與收入列之間出現大片空白。 */
+     margin-top: auto 保留作保險：網格已用 align-content: stretch 吃掉
+     剩餘空間（見 .calendar-grid），正常情況下不再有殘留空白；
+     萬一網格被 hidden（無記錄月份？）等邊界情況，收入列仍會貼底。 */
   .income-bar {
     flex-direction: column;
     align-items: stretch;
