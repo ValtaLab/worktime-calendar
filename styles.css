@@ -324,7 +324,7 @@ input, textarea { font-family: inherit; }
   gap: 12px;
   flex-wrap: wrap;
   flex: 0 0 auto;
-  margin-top: 6px;
+  margin-top: 4px;
   padding: 11px 14px;
   border-radius: var(--radius-sm);
   /* 與月曆格同一種玻璃：上亮下透漸層＋內高光＋極輕投影（材料一致），
@@ -1467,8 +1467,14 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     flex-direction: column;
     align-items: stretch;
     gap: 6px;
-    margin-top: auto;
+    /* 融入網格線風格：與格子同款（無框無圓角、同漸層），間隔＝格線寬 1px。
+       grid 隱藏時收入列同時隱藏（兩者同進退），原 margin-top: auto 的
+       貼底保險不再需要。 */
+    margin-top: 1px;
     padding: 9px 11px;
+    border: none;
+    border-radius: 0;
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
   }
   .income-label > span:first-child { font-size: 14px; }
   .income-formula { font-size: 12.5px; gap: 3px; }
@@ -1535,7 +1541,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   .weekday-row { gap: 6px; }
   .day-groups { flex: 0 1 auto; }
   .day-group { flex: 0 1 auto; min-height: 0; }
-  .income-bar { margin-top: 12px; padding: 15px 21px; }
+  .income-bar { margin-top: 6px; padding: 15px 21px; border-radius: 12px; }
   .income-label > span:first-child { font-size: 16px; }
   .income-formula { font-size: 15px; }
   .income-total { font-size: 38.5px; }
