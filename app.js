@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.23.0';
-  const APP_BUILD = '20260918-0326';
+  const APP_VERSION = '1.24.0';
+  const APP_BUILD = '20260918-1029';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -221,6 +221,15 @@
     cfCodeShow: $('cfCodeShow'),
     cfCodeText: $('cfCodeText'),
     cfCodeOk: $('cfCodeOk'),
+    cfBanner: $('cfBanner'),
+    cfSheet: $('cfSheet'),
+    cfSheetBackdrop: $('cfSheetBackdrop'),
+    cfSheetClose: $('cfSheetClose'),
+    cfSheetOpen: $('cfSheetOpen'),
+    cfSheetIntro: $('cfSheetIntro'),
+    cfSheetCode: $('cfSheetCode'),
+    cfSheetCodeText: $('cfSheetCodeText'),
+    cfSheetDone: $('cfSheetDone'),
     installHint: $('installHint'),
 
     // 版本與更新
@@ -287,6 +296,8 @@
      - 自動備份：資料或設定變更後 20 秒 debounce 推送；內容指紋沒變不重推；
        切到背景前若有未推送變更立即補推。 */
   const CF_APP = 'worktime-calendar-cf';
+  // 站長部署的預設備份端點：用戶一鍵開啟即用，無需填寫
+  const CF_DEFAULT_ENDPOINT = 'https://worktime-backup.isearover.workers.dev';
   const CF_DEBOUNCE = 20000;
 
   function genRecoveryCode() {
@@ -426,8 +437,7 @@
   }
 
   async function connectCf() {
-    const endpoint = cfNorm(el.cfEndpoint.value);
-    if (!endpoint) { toast('請先填 Worker 網址'); el.cfEndpoint.focus(); return; }
+    const endpoint = cfNorm(el.cfEndpoint.value) || cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
     if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
       toast('Worker 網址必須是 https:// 開頭');
       el.cfEndpoint.focus();
@@ -533,7 +543,57 @@
     settings.cfHash = '';
     saveSettings();
     syncCfUI();
+    syncCfBanner();
     toast('已斷開雲端備份');
+  }
+
+  /* ---------------- 一鍵開啟（主畫面橫幅） ---------------- */
+  function syncCfBanner() {
+    el.cfBanner.hidden = !!settings.cfCode;   // 已開啟（有恢復碼）就收起
+  }
+
+  function openCfSheet() {
+    el.cfSheetIntro.hidden = false;
+    el.cfSheetOpen.hidden = false;
+    el.cfSheetCode.hidden = true;
+    showOverlay(el.cfSheetBackdrop, el.cfSheet);
+  }
+
+  function closeCfSheet() {
+    hideOverlay(el.cfSheetBackdrop, el.cfSheet);
+  }
+
+  async function oneTapConnect() {
+    el.cfSheetOpen.disabled = true;
+    el.cfSheetOpen.textContent = '開啟中…';
+    const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
+    try {
+      settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
+      settings.cfCode = genRecoveryCode();
+      // 撞碼（機率約 10^-11）就換一碼重試一次
+      let r = await cfApi('GET');
+      if (r.status === 200 && r.json && r.json.found) {
+        settings.cfCode = genRecoveryCode();
+        await cfApi('GET');
+      }
+      await cfPush();
+      saveSettings();
+      syncCfUI();
+      syncCfBanner();
+      el.cfSheetIntro.hidden = true;
+      el.cfSheetOpen.hidden = true;
+      el.cfSheetCode.hidden = false;
+      el.cfSheetCodeText.textContent = fmtCode(settings.cfCode);
+    } catch (e) {
+      console.error(e);
+      settings.cfEndpoint = prev.ep;
+      settings.cfCode = prev.code;
+      saveSettings();
+      toast('開啟失敗：' + String(e.message || e).slice(0, 80));
+    } finally {
+      el.cfSheetOpen.disabled = false;
+      el.cfSheetOpen.textContent = '一鍵開啟自動備份';
+    }
   }
 
   /* ===================== 螢幕鎖定 =====================
@@ -1336,6 +1396,11 @@
     el.cfDisconnect.addEventListener('click', disconnectCf);
     el.cfShowCode.addEventListener('click', () => showCfCode(false));
     el.cfCodeOk.addEventListener('click', () => { el.cfCodeShow.hidden = true; });
+    el.cfBanner.addEventListener('click', openCfSheet);
+    el.cfSheetOpen.addEventListener('click', oneTapConnect);
+    el.cfSheetDone.addEventListener('click', closeCfSheet);
+    el.cfSheetClose.addEventListener('click', closeCfSheet);
+    el.cfSheetBackdrop.addEventListener('click', closeCfSheet);
     el.cfRestore.addEventListener('click', () => {
       cfRestore(false).catch((e) => {
         console.error(e);
@@ -1350,6 +1415,7 @@
       cfPush().then(syncCfUI).catch(() => {});
     });
     syncCfUI();
+    syncCfBanner();
 
     /* ---- 匯出 CSV ---- */
     el.exportCsv.addEventListener('click', () => {

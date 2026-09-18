@@ -1085,6 +1085,32 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
 .drawer-help { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-3); }
 .cf-status { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: var(--text-2); }
+/* ---- 雲端備份橫幅（主畫面） ---- */
+.cf-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--glass-cell-hi), var(--glass-cell-lo));
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 3px rgba(31,41,55,.05);
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.cf-banner[hidden] { display: none; }   /* display:flex 會覆蓋 hidden，必須顯式聲明 */
+.cf-banner-icon { display: inline-flex; color: var(--work); flex: none; }
+.cf-banner-text { flex: 1; min-width: 0; color: var(--text-2); }
+.cf-banner-text b { color: var(--text); }
+.cf-banner-go { color: var(--work); font-weight: 600; white-space: nowrap; }
+.cf-sheet-line { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
+.cf-sheet-line b { color: var(--text); }
+#cfSheetOpen { width: 100%; margin-top: 4px; }
+#cfSheetDone { width: 100%; margin-top: 4px; }
 .cf-code-hint { margin: 12px 0 8px; font-size: 13px; line-height: 1.55; color: var(--text-2); }
 .cf-code {
   margin: 0 0 10px;
@@ -1888,6 +1914,14 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="月曆"></div>
     <!-- 收入總計：需在選單設定日薪與加班時薪後才顯示 -->
     <div id="incomeBar" class="income-bar" hidden></div>
+    <!-- 雲端備份橫幅：未開啟時顯示，點擊彈出一鍵開啟面板 -->
+    <button id="cfBanner" class="cf-banner" type="button" hidden>
+      <span class="cf-banner-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98 6 6 0 1 0-11.58 1.98A3.5 3.5 0 0 0 6.5 19z"/></svg>
+      </span>
+      <span class="cf-banner-text"><b>開啟自動備份</b>　刪除 App 也不怕資料消失</span>
+      <span class="cf-banner-go">一鍵開啟</span>
+    </button>
   </main>
 
   <footer class="hint-bar">
@@ -2081,9 +2115,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     <p class="drawer-label">雲端備份（Cloudflare）</p>
     <div id="cfSetup">
       <div class="pay-field">
-        <span class="pay-label">Worker 網址</span>
+        <span class="pay-label">Worker 網址（可留空）</span>
         <div class="pay-input-wrap">
-          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" placeholder="https://worktime-backup.xxx.workers.dev">
+          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" placeholder="留空＝使用預設雲端">
         </div>
       </div>
       <div class="pay-field">
@@ -2152,6 +2186,33 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- ============ 螢幕鎖定（最上層；啟用後每次開啟／回前台都要解鎖） ============ -->
+<!-- ============ 雲端備份一鍵開啟 ============ -->
+<div id="cfSheetBackdrop" class="sheet-backdrop" hidden></div>
+<section id="cfSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="cfSheetTitle" hidden>
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <header class="sheet-head">
+    <div>
+      <p class="sheet-date">自動備份</p>
+      <h3 id="cfSheetTitle" class="sheet-title">雲端備份</h3>
+    </div>
+    <button id="cfSheetClose" class="icon-btn" type="button" aria-label="關閉">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </header>
+  <div class="sheet-body">
+    <div id="cfSheetIntro">
+      <p class="cf-sheet-line">開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。</p>
+      <p class="cf-sheet-line">刪除 App 重裝後，輸入<b>恢復碼</b>即可自動找回全部記錄與設定。</p>
+    </div>
+    <button id="cfSheetOpen" class="btn btn-primary" type="button">一鍵開啟自動備份</button>
+    <div id="cfSheetCode" hidden>
+      <p class="cf-code-hint">這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
+      <p class="cf-code" id="cfSheetCodeText"></p>
+      <button id="cfSheetDone" class="btn btn-primary" type="button">已截圖保存，完成</button>
+    </div>
+  </div>
+</section>
+
 <div id="lockScreen" class="lock-screen" hidden role="dialog" aria-modal="true" aria-label="螢幕鎖定">
   <div class="lock-card">
     <svg class="lock-icon" viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2191,8 +2252,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.23.0';
-  const APP_BUILD = '20260918-0326';
+  const APP_VERSION = '1.24.0';
+  const APP_BUILD = '20260918-1029';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2405,6 +2466,15 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     cfCodeShow: $('cfCodeShow'),
     cfCodeText: $('cfCodeText'),
     cfCodeOk: $('cfCodeOk'),
+    cfBanner: $('cfBanner'),
+    cfSheet: $('cfSheet'),
+    cfSheetBackdrop: $('cfSheetBackdrop'),
+    cfSheetClose: $('cfSheetClose'),
+    cfSheetOpen: $('cfSheetOpen'),
+    cfSheetIntro: $('cfSheetIntro'),
+    cfSheetCode: $('cfSheetCode'),
+    cfSheetCodeText: $('cfSheetCodeText'),
+    cfSheetDone: $('cfSheetDone'),
     installHint: $('installHint'),
 
     // 版本與更新
@@ -2471,6 +2541,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
      - 自動備份：資料或設定變更後 20 秒 debounce 推送；內容指紋沒變不重推；
        切到背景前若有未推送變更立即補推。 */
   const CF_APP = 'worktime-calendar-cf';
+  // 站長部署的預設備份端點：用戶一鍵開啟即用，無需填寫
+  const CF_DEFAULT_ENDPOINT = 'https://worktime-backup.isearover.workers.dev';
   const CF_DEBOUNCE = 20000;
 
   function genRecoveryCode() {
@@ -2610,8 +2682,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   }
 
   async function connectCf() {
-    const endpoint = cfNorm(el.cfEndpoint.value);
-    if (!endpoint) { toast('請先填 Worker 網址'); el.cfEndpoint.focus(); return; }
+    const endpoint = cfNorm(el.cfEndpoint.value) || cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
     if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
       toast('Worker 網址必須是 https:// 開頭');
       el.cfEndpoint.focus();
@@ -2717,7 +2788,57 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     settings.cfHash = '';
     saveSettings();
     syncCfUI();
+    syncCfBanner();
     toast('已斷開雲端備份');
+  }
+
+  /* ---------------- 一鍵開啟（主畫面橫幅） ---------------- */
+  function syncCfBanner() {
+    el.cfBanner.hidden = !!settings.cfCode;   // 已開啟（有恢復碼）就收起
+  }
+
+  function openCfSheet() {
+    el.cfSheetIntro.hidden = false;
+    el.cfSheetOpen.hidden = false;
+    el.cfSheetCode.hidden = true;
+    showOverlay(el.cfSheetBackdrop, el.cfSheet);
+  }
+
+  function closeCfSheet() {
+    hideOverlay(el.cfSheetBackdrop, el.cfSheet);
+  }
+
+  async function oneTapConnect() {
+    el.cfSheetOpen.disabled = true;
+    el.cfSheetOpen.textContent = '開啟中…';
+    const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
+    try {
+      settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
+      settings.cfCode = genRecoveryCode();
+      // 撞碼（機率約 10^-11）就換一碼重試一次
+      let r = await cfApi('GET');
+      if (r.status === 200 && r.json && r.json.found) {
+        settings.cfCode = genRecoveryCode();
+        await cfApi('GET');
+      }
+      await cfPush();
+      saveSettings();
+      syncCfUI();
+      syncCfBanner();
+      el.cfSheetIntro.hidden = true;
+      el.cfSheetOpen.hidden = true;
+      el.cfSheetCode.hidden = false;
+      el.cfSheetCodeText.textContent = fmtCode(settings.cfCode);
+    } catch (e) {
+      console.error(e);
+      settings.cfEndpoint = prev.ep;
+      settings.cfCode = prev.code;
+      saveSettings();
+      toast('開啟失敗：' + String(e.message || e).slice(0, 80));
+    } finally {
+      el.cfSheetOpen.disabled = false;
+      el.cfSheetOpen.textContent = '一鍵開啟自動備份';
+    }
   }
 
   /* ===================== 螢幕鎖定 =====================
@@ -3520,6 +3641,11 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.cfDisconnect.addEventListener('click', disconnectCf);
     el.cfShowCode.addEventListener('click', () => showCfCode(false));
     el.cfCodeOk.addEventListener('click', () => { el.cfCodeShow.hidden = true; });
+    el.cfBanner.addEventListener('click', openCfSheet);
+    el.cfSheetOpen.addEventListener('click', oneTapConnect);
+    el.cfSheetDone.addEventListener('click', closeCfSheet);
+    el.cfSheetClose.addEventListener('click', closeCfSheet);
+    el.cfSheetBackdrop.addEventListener('click', closeCfSheet);
     el.cfRestore.addEventListener('click', () => {
       cfRestore(false).catch((e) => {
         console.error(e);
@@ -3534,6 +3660,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       cfPush().then(syncCfUI).catch(() => {});
     });
     syncCfUI();
+    syncCfBanner();
 
     /* ---- 匯出 CSV ---- */
     el.exportCsv.addEventListener('click', () => {

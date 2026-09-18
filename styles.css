@@ -1071,6 +1071,32 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
 .drawer-help { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-3); }
 .cf-status { margin: 0 0 10px; font-size: 13px; line-height: 1.5; color: var(--text-2); }
+/* ---- 雲端備份橫幅（主畫面） ---- */
+.cf-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--glass-cell-hi), var(--glass-cell-lo));
+  box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 3px rgba(31,41,55,.05);
+  color: var(--text);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+.cf-banner[hidden] { display: none; }   /* display:flex 會覆蓋 hidden，必須顯式聲明 */
+.cf-banner-icon { display: inline-flex; color: var(--work); flex: none; }
+.cf-banner-text { flex: 1; min-width: 0; color: var(--text-2); }
+.cf-banner-text b { color: var(--text); }
+.cf-banner-go { color: var(--work); font-weight: 600; white-space: nowrap; }
+.cf-sheet-line { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
+.cf-sheet-line b { color: var(--text); }
+#cfSheetOpen { width: 100%; margin-top: 4px; }
+#cfSheetDone { width: 100%; margin-top: 4px; }
 .cf-code-hint { margin: 12px 0 8px; font-size: 13px; line-height: 1.55; color: var(--text-2); }
 .cf-code {
   margin: 0 0 10px;

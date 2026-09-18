@@ -49,6 +49,14 @@
     <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="月曆"></div>
     <!-- 收入總計：需在選單設定日薪與加班時薪後才顯示 -->
     <div id="incomeBar" class="income-bar" hidden></div>
+    <!-- 雲端備份橫幅：未開啟時顯示，點擊彈出一鍵開啟面板 -->
+    <button id="cfBanner" class="cf-banner" type="button" hidden>
+      <span class="cf-banner-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98 6 6 0 1 0-11.58 1.98A3.5 3.5 0 0 0 6.5 19z"/></svg>
+      </span>
+      <span class="cf-banner-text"><b>開啟自動備份</b>　刪除 App 也不怕資料消失</span>
+      <span class="cf-banner-go">一鍵開啟</span>
+    </button>
   </main>
 
   <footer class="hint-bar">
@@ -242,9 +250,9 @@
     <p class="drawer-label">雲端備份（Cloudflare）</p>
     <div id="cfSetup">
       <div class="pay-field">
-        <span class="pay-label">Worker 網址</span>
+        <span class="pay-label">Worker 網址（可留空）</span>
         <div class="pay-input-wrap">
-          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" placeholder="https://worktime-backup.xxx.workers.dev">
+          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" placeholder="留空＝使用預設雲端">
         </div>
       </div>
       <div class="pay-field">
@@ -313,6 +321,33 @@
 <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 
 <!-- ============ 螢幕鎖定（最上層；啟用後每次開啟／回前台都要解鎖） ============ -->
+<!-- ============ 雲端備份一鍵開啟 ============ -->
+<div id="cfSheetBackdrop" class="sheet-backdrop" hidden></div>
+<section id="cfSheet" class="sheet" role="dialog" aria-modal="true" aria-labelledby="cfSheetTitle" hidden>
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <header class="sheet-head">
+    <div>
+      <p class="sheet-date">自動備份</p>
+      <h3 id="cfSheetTitle" class="sheet-title">雲端備份</h3>
+    </div>
+    <button id="cfSheetClose" class="icon-btn" type="button" aria-label="關閉">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </header>
+  <div class="sheet-body">
+    <div id="cfSheetIntro">
+      <p class="cf-sheet-line">開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。</p>
+      <p class="cf-sheet-line">刪除 App 重裝後，輸入<b>恢復碼</b>即可自動找回全部記錄與設定。</p>
+    </div>
+    <button id="cfSheetOpen" class="btn btn-primary" type="button">一鍵開啟自動備份</button>
+    <div id="cfSheetCode" hidden>
+      <p class="cf-code-hint">這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
+      <p class="cf-code" id="cfSheetCodeText"></p>
+      <button id="cfSheetDone" class="btn btn-primary" type="button">已截圖保存，完成</button>
+    </div>
+  </div>
+</section>
+
 <div id="lockScreen" class="lock-screen" hidden role="dialog" aria-modal="true" aria-label="螢幕鎖定">
   <div class="lock-card">
     <svg class="lock-icon" viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
