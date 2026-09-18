@@ -1434,9 +1434,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     min-height: 0;
   }
   .weekday-row { gap: 1px; }
-  /* 表頭也加上分隔線，與日期格對齊 */
+  /* 表頭也加上分隔線，與日期格對齊。
+     padding-top 6px 與原有 padding-bottom 6px 對稱 → 文字在分隔線上下置中
+     （原本只有下 padding，文字貼著上緣，視覺上下不置中）。 */
   .weekday-row {
     border-bottom: 1px solid var(--grid-line);
+    padding-top: 6px;
   }
 
   .day {

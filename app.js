@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.26.1';
-  const APP_BUILD = '20260918-1408';
+  const APP_VERSION = '1.27.0';
+  const APP_BUILD = '20260918-1844';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1294,6 +1294,29 @@
       render();
       toast('已回到本月');
     });
+
+    /* ---- 月曆左右滑動切換月份（觸控）----
+       水平位移 ≥56px、且水平明顯大於垂直（≥1.5 倍）才判定為滑動，
+       避免和頁面上下捲動、格子單擊（位移小於閾值）互相干擾。
+       面板／抽屜蓋住格子時 touchstart 不會落在格子上，無需額外判斷。 */
+    let swipeX = null, swipeY = null, swipeAt = 0;
+    el.calendarGrid.addEventListener('touchstart', (ev) => {
+      if (ev.touches.length !== 1) { swipeX = null; return; }   // 多指（縮放）不處理
+      swipeX = ev.touches[0].clientX;
+      swipeY = ev.touches[0].clientY;
+      swipeAt = Date.now();
+    }, { passive: true });
+    el.calendarGrid.addEventListener('touchend', (ev) => {
+      if (swipeX == null) return;
+      const t = ev.changedTouches[0];
+      const dx = t.clientX - swipeX;
+      const dy = t.clientY - swipeY;
+      swipeX = null;
+      if (Date.now() - swipeAt > 650) return;                          // 拖太久＝長按拖曳，不算滑
+      if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+      if (dx < 0) el.nextMonth.click();   // 左滑 → 下個月
+      else el.prevMonth.click();          // 右滑 → 上個月
+    }, { passive: true });
 
     /* ---- 月曆：雙擊開啟；同時支援單擊（觸控裝置）---- */
     let lastTapKey = null;
