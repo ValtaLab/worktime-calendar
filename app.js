@@ -7,18 +7,19 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.25.0';
-  const APP_BUILD = '20260918-1213';
+  const APP_VERSION = '1.26.0';
+  const APP_BUILD = '20260918-1329';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
 
   const DEFAULTS = {
-    stdHours: 8,
+    stdHours: 8,    // 僅供舊資料遷移換算（1 工 = N 小時）；UI 已移除此設定
     showWeekend: true,
     showHours: true,
     mondayFirst: true,
     dayPay: 0,      // 日薪（1 工）
+    hourlyPay: 0,   // 時薪（兼職小時 × 時薪）
     otPay: 0,       // 加班時薪
     nightPay: 0,    // 半夜加班時薪
     pinHash: '',    // 螢幕鎖定密碼（SHA-256 雜湊）；空字串＝未啟用
@@ -29,7 +30,7 @@
   };
 
   /* ---------------- 狀態 ---------------- */
-  let entries = {};              // { 'YYYY-MM-DD': {workDesc, workUnits, otDesc, otHours, nightDesc, nightHours, tags, updatedAt} }
+  let entries = {};              // { 'YYYY-MM-DD': {workDesc, workUnits, partHours, otDesc, otHours, nightDesc, nightHours, tags, updatedAt} }
   let settings = { ...DEFAULTS };
   let view = new Date();         // 目前顯示月份
   let editingKey = null;         // 正在編輯的日期 key
@@ -185,9 +186,10 @@
     cancelBtn: $('cancelBtn'),
     deleteBtn: $('deleteBtn'),
 
-    // 工數（0.5 工 / 1 工）、加班時數與半夜加班時數（滾輪選擇，input 為資料來源）
+    // 工數（0.5 工 / 1 工）、兼職時數、加班與半夜時數（滾輪選擇，input 為資料來源）
     workUnitPicker: $('workUnitPicker'),
-    workEquivalent: $('workEquivalent'),
+    partHours: $('partHours'),
+    partHoursWheel: $('partHoursWheel'),
     otHours: $('otHours'),
     nightHours: $('nightHours'),
     otHoursWheel: $('otHoursWheel'),
@@ -196,8 +198,8 @@
     drawer: $('drawer'),
     drawerBackdrop: $('drawerBackdrop'),
     drawerClose: $('drawerClose'),
-    stdHours: $('stdHours'),
     dayPay: $('dayPay'),
+    hourlyPay: $('hourlyPay'),
     otPay: $('otPay'),
     nightPay: $('nightPay'),
     optWeekend: $('optWeekend'),
@@ -270,25 +272,28 @@
       .map(([, v]) => v);
   }
 
-  // 本月收入：工數 × 日薪 + 加班時數 × 加班時薪 + 半夜加班時數 × 半夜加班時薪
-  // 三個費率都未設定（皆為 0）時回傳 null，呼叫端據此隱藏整個區塊
+  // 本月收入：工數 × 日薪 + 兼職時數 × 時薪 + 加班時數 × 加班時薪 + 半夜加班時數 × 半夜加班時薪
+  // 四個費率都未設定（皆為 0）時回傳 null，呼叫端據此隱藏整個區塊
   function incomeOfMonth(y, m) {
     const dayPay = num(settings.dayPay);
+    const hourlyPay = num(settings.hourlyPay);
     const otPay = num(settings.otPay);
     const nightPay = num(settings.nightPay);
-    if (dayPay <= 0 && otPay <= 0 && nightPay <= 0) return null;
+    if (dayPay <= 0 && hourlyPay <= 0 && otPay <= 0 && nightPay <= 0) return null;
 
     const list = entriesOfMonth(y, m);
     const totalWork = list.reduce((s, e) => s + num(e.workUnits), 0);
+    const totalPart = list.reduce((s, e) => s + num(e.partHours), 0);
     const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);
     const totalNight = list.reduce((s, e) => s + num(e.nightHours), 0);
     const workIncome = totalWork * dayPay;
+    const partIncome = totalPart * hourlyPay;
     const otIncome = totalOt * otPay;
     const nightIncome = totalNight * nightPay;
     return {
-      totalWork, totalOt, totalNight, dayPay, otPay, nightPay,
-      workIncome, otIncome, nightIncome,
-      total: workIncome + otIncome + nightIncome,
+      totalWork, totalPart, totalOt, totalNight, dayPay, hourlyPay, otPay, nightPay,
+      workIncome, partIncome, otIncome, nightIncome,
+      total: workIncome + partIncome + otIncome + nightIncome,
     };
   }
 
@@ -794,6 +799,9 @@
     if (inc.dayPay > 0) {
       parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} 工 × ${money(inc.dayPay)}</span>`);
     }
+    if (inc.hourlyPay > 0) {
+      parts.push(`<span class="income-part part">${fmtH(inc.totalPart)} h × ${money(inc.hourlyPay)}</span>`);
+    }
     if (inc.otPay > 0) {
       parts.push(`<span class="income-part ot">${fmtH(inc.totalOt)} h × ${money(inc.otPay)}</span>`);
     }
@@ -825,13 +833,16 @@
     const y = view.getFullYear(), m = view.getMonth();
     const list = entriesOfMonth(y, m);
     const totalWork = list.reduce((s, e) => s + num(e.workUnits), 0);        // 工
+    const totalPart = list.reduce((s, e) => s + num(e.partHours), 0);        // 小時
     const totalOt = list.reduce((s, e) => s + num(e.otHours), 0);            // 小時
     const totalNight = list.reduce((s, e) => s + num(e.nightHours), 0);      // 小時
-    const days = list.filter((e) => num(e.workUnits) > 0 || num(e.otHours) > 0 ||
-      num(e.nightHours) > 0 || e.workDesc || e.otDesc || e.nightDesc).length;
+    const days = list.filter((e) => num(e.workUnits) > 0 || num(e.partHours) > 0 ||
+      num(e.otHours) > 0 || num(e.nightHours) > 0 ||
+      e.workDesc || e.otDesc || e.nightDesc).length;
 
     el.monthStats.innerHTML = `
       <span class="stat-pill"><span class="pill-label">工時 </span><b>${fmtUnits(totalWork)}</b> 工</span>
+      ${totalPart > 0 ? `<span class="stat-pill part"><span class="pill-label">兼職 </span><b>${fmtH(totalPart)}</b> h</span>` : ''}
       <span class="stat-pill ot"><span class="pill-label">加班 </span><b>${fmtH(totalOt)}</b> h</span>
       ${totalNight > 0 ? `<span class="stat-pill night"><span class="pill-label">半夜 </span><b>${fmtH(totalNight)}</b> h</span>` : ''}
       <span class="stat-pill"><span class="pill-label">記錄 </span><b>${days}</b> 天</span>
@@ -936,22 +947,25 @@
     }
     const e = c.entry || {};
     const wu = num(e.workUnits);
+    const ph = num(e.partHours);
     const oh = num(e.otHours);
     const nh = num(e.nightHours);
     const hasWork = wu > 0 || (e.workDesc && e.workDesc.trim());
+    const hasPart = ph > 0;
     const hasOt = oh > 0 || (e.otDesc && e.otDesc.trim());
     const hasNight = nh > 0 || (e.nightDesc && e.nightDesc.trim());
-    const hasEntry = hasWork || hasOt || hasNight;
+    const hasEntry = hasWork || hasPart || hasOt || hasNight;
 
     const classes = ['day'];
     if (c.isWeekend) classes.push('is-weekend');
     if (c.isToday) classes.push('is-today');
     if (hasEntry) classes.push('has-entry');
 
-    // 三組資料，各自「描述在上、時數在下」，但兩者包在**同一個色塊**裡：
-    //   第一組：工時描述 + 工數
-    //   第二組：加班描述 + 加班時數
-    //   第三組：半夜加班描述 + 半夜加班時數
+    // 四組資料，各自「描述在上、時數在下」，但兩者包在**同一個色塊**裡：
+    //   第一組：工時描述 + 工數（藍）
+    //   第二組：兼職時數（綠，時薪制）
+    //   第三組：加班描述 + 加班時數（橘）
+    //   第四組：半夜加班描述 + 半夜加班時數（紫）
     // 色塊（.day-group）本身帶底色框住整組，描述與數字都在裡面，
     // 一眼就能看出「這個描述對應這個數字」。
     const workDesc = (e.workDesc || '').trim();
@@ -969,6 +983,11 @@
         rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">工</span></span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group work-group">${rows.join('')}</div>`);
+    }
+    if (hasPart) {
+      if (showUnits) {
+        groups.push(`<div class="day-group part-group"><div class="day-units part-units"><span class="uv">${fmtH(ph)}<span class="u">h</span></span><span class="ut">兼職</span></div></div>`);
+      }
     }
     if (hasOt) {
       const rows = [];
@@ -995,6 +1014,7 @@
     const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
     if (hasEntry) {
       if (hasWork) labelParts.push(`工時 ${fmtUnits(wu)} 工`);
+      if (hasPart) labelParts.push(`兼職 ${fmtH(ph)} 小時`);
       if (hasOt) labelParts.push(`加班 ${fmtH(oh)} 小時`);
       if (hasNight) labelParts.push(`半夜加班 ${fmtH(nh)} 小時`);
     } else {
@@ -1038,7 +1058,10 @@
     el.nightDesc.value = e.nightDesc || '';
     el.tagsInput.value = (e.tags || []).join(', ');
 
-    setWorkUnits(e.workUnits != null && num(e.workUnits) > 0 ? num(e.workUnits) : 1);
+    // 工數預設：全新記錄 → 1 工（點開即存的快捷不變）；
+    // 編輯已有記錄但該日無工數（如純兼職日）→ 「不記」，避免誤存 1 工
+    setWorkUnits(num(e.workUnits) > 0 ? num(e.workUnits) : (hasContent(e) ? 0 : 1));
+    el.partHours.value = e.partHours != null ? num(e.partHours) : 0;
     el.otHours.value = e.otHours != null ? num(e.otHours) : 0;
     el.nightHours.value = e.nightHours != null ? num(e.nightHours) : 0;
 
@@ -1049,32 +1072,36 @@
     // 面板顯示後再同步滾輪位置（hidden 時 scrollTop 無效）。
     // 兩層 rAF 確保 layout 已完成，定位用 instant 不做動畫。
     requestAnimationFrame(() => requestAnimationFrame(() => {
+      syncWheel(el.partHoursWheel);
       syncWheel(el.otHoursWheel);
       syncWheel(el.nightHoursWheel);
     }));
     setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
   }
 
-  /** 設定工數（僅 0.5 工 / 1 工 兩個選項）並更新換算提示 */
+  /** 設定工數（不記 0 / 0.5 工 / 1 工 三個選項） */
   function setWorkUnits(value) {
     const v = num(value);
-    // 夾到最接近的合法選項
-    const chosen = WORK_CHOICES.includes(v)
-      ? v
-      : WORK_CHOICES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
+    // 夾到最接近的合法選項（0＝不記是合法值）
+    const chosen = v === 0 ? 0
+      : WORK_CHOICES.includes(v)
+        ? v
+        : WORK_CHOICES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
 
     el.workUnitPicker.querySelectorAll('.unit-chip').forEach((chip) => {
       const on = parseFloat(chip.dataset.value) === chosen;
       chip.classList.toggle('is-active', on);
       chip.setAttribute('aria-checked', on ? 'true' : 'false');
     });
-
-    updateWorkEquivalent();
   }
 
   function getWorkUnits() {
     const active = el.workUnitPicker.querySelector('.unit-chip.is-active');
     return active ? round1(num(active.dataset.value)) : 0;
+  }
+
+  function getPartHours() {
+    return round1(num(el.partHours.value));
   }
 
   function getOtHours() {
@@ -1085,17 +1112,12 @@
     return round1(num(el.nightHours.value));
   }
 
-  /** 工數 → 小時換算提示 */
-  function updateWorkEquivalent() {
-    const hours = round1(getWorkUnits() * (num(settings.stdHours) || 8));
-    el.workEquivalent.textContent = `＝ ${fmtH(hours)} 小時`;
-  }
-
   function hasContent(e) {
     if (!e) return false;
     return !!(String(e.workDesc || '').trim() || String(e.otDesc || '').trim() ||
       String(e.nightDesc || '').trim() ||
-      num(e.workUnits) > 0 || num(e.otHours) > 0 || num(e.nightHours) > 0);
+      num(e.workUnits) > 0 || num(e.partHours) > 0 ||
+      num(e.otHours) > 0 || num(e.nightHours) > 0);
   }
 
   function closeSheet() {
@@ -1223,17 +1245,18 @@
     const otDesc = el.otDesc.value.trim();
     const nightDesc = el.nightDesc.value.trim();
     const workUnits = getWorkUnits();
+    const partHours = getPartHours();
     const otHours = getOtHours();
     const nightHours = getNightHours();
     const tags = el.tagsInput.value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
 
     const empty = !workDesc && !otDesc && !nightDesc && workUnits === 0 &&
-      otHours === 0 && nightHours === 0 && tags.length === 0;
+      partHours === 0 && otHours === 0 && nightHours === 0 && tags.length === 0;
     if (empty) {
       delete entries[editingKey];
     } else {
       entries[editingKey] = {
-        workDesc, workUnits, otDesc, otHours, nightDesc, nightHours, tags,
+        workDesc, workUnits, partHours, otDesc, otHours, nightDesc, nightHours, tags,
         updatedAt: Date.now(),
       };
     }
@@ -1366,8 +1389,8 @@
 
     /* ---- 抽屜 ---- */
     el.menuBtn.addEventListener('click', () => {
-      el.stdHours.value = settings.stdHours;
       el.dayPay.value = settings.dayPay > 0 ? settings.dayPay : '';
+      el.hourlyPay.value = settings.hourlyPay > 0 ? settings.hourlyPay : '';
       el.otPay.value = settings.otPay > 0 ? settings.otPay : '';
       el.nightPay.value = settings.nightPay > 0 ? settings.nightPay : '';
       el.optWeekend.checked = settings.showWeekend;
@@ -1379,20 +1402,11 @@
     el.drawerClose.addEventListener('click', closeDrawer);
     el.drawerBackdrop.addEventListener('click', closeDrawer);
 
-    el.stdHours.addEventListener('change', () => {
-      const v = num(el.stdHours.value);
-      settings.stdHours = v > 0 ? Math.min(v, 24) : 8;
-      el.stdHours.value = settings.stdHours;
-      saveSettings();
-      renderStats();
-      // 面板開著時同步更新小時換算
-      if (!el.sheet.hidden) updateWorkEquivalent();
-    });
-
-    // 薪資設定：日薪、加班時薪、半夜加班時薪
+    // 薪資設定：日薪、時薪（兼職）、加班時薪、半夜加班時薪
     // 用 input 事件即時反映（使用者邊打字邊看到收入變化），change 時寫入儲存
     const payFields = [
       [el.dayPay, 'dayPay'],
+      [el.hourlyPay, 'hourlyPay'],
       [el.otPay, 'otPay'],
       [el.nightPay, 'nightPay'],
     ];
@@ -1492,7 +1506,7 @@
     el.exportCsv.addEventListener('click', () => {
       const y = view.getFullYear(), m = view.getMonth();
       const prefix = `${y}-${pad(m + 1)}-`;
-      const rows = [['日期', '星期', '工數(工)', '工時描述', '加班(小時)', '加班描述',
+      const rows = [['日期', '星期', '工數(工)', '工時描述', '兼職(小時)', '加班(小時)', '加班描述',
         '半夜加班(小時)', '半夜加班描述', '標籤']];
       Object.keys(entries).filter((k) => k.startsWith(prefix)).sort().forEach((k) => {
         const e = entries[k];
@@ -1500,6 +1514,7 @@
         rows.push([
           k, `週${WEEK_TC[d.getDay()]}`,
           num(e.workUnits), e.workDesc || '',
+          num(e.partHours),
           num(e.otHours), e.otDesc || '',
           num(e.nightHours), e.nightDesc || '',
           (e.tags || []).join(' / '),
@@ -1890,8 +1905,8 @@
     const el = document.getElementById('hintText');
     if (!el) return;
     el.textContent = matchMedia('(hover: none)').matches
-      ? '點一下日期可新增或編輯工時／加班／半夜記錄'
-      : '雙擊日期可新增或編輯工時／加班／半夜記錄';
+      ? '點一下日期可新增或編輯工時／兼職／加班／半夜記錄'
+      : '雙擊日期可新增或編輯工時／兼職／加班／半夜記錄';
   }
 
   function init() {

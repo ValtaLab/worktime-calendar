@@ -61,7 +61,7 @@
 
   <footer class="hint-bar">
     <span class="hint-mark" aria-hidden="true"></span>
-    <span id="hintText">雙擊日期可新增或編輯工時／加班／半夜記錄</span>
+    <span id="hintText">雙擊日期可新增或編輯工時／兼職／加班／半夜記錄</span>
   </footer>
 </div>
 
@@ -92,7 +92,11 @@
 
       <div class="field">
         <span class="field-label" id="workUnitsLabel">工數</span>
-        <div class="unit-picker unit-picker-2" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
+        <div class="unit-picker unit-picker-3" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
+          <button type="button" class="unit-chip unit-chip-lg" data-value="0" role="radio" aria-checked="false">
+            <span class="chip-main">不記</span>
+            <span class="chip-sub">純兼職</span>
+          </button>
           <button type="button" class="unit-chip unit-chip-lg" data-value="0.5" role="radio" aria-checked="false">
             <span class="chip-main">0.5 工</span>
             <span class="chip-sub">半日</span>
@@ -102,7 +106,23 @@
             <span class="chip-sub">全日</span>
           </button>
         </div>
-        <p class="field-help" id="workEquivalent">＝ 8 小時</p>
+      </div>
+    </section>
+
+    <!-- 兼職小時區塊（時薪制：小時 × 時薪） -->
+    <section class="field-group">
+      <h4 class="group-title"><span class="dot dot-part"></span>兼職小時</h4>
+
+      <div class="field">
+        <span class="field-label" id="partHoursLabel">兼職時數</span>
+        <!-- 與加班滾輪同一套：上下滑動、0–24、每次 0.5；隱藏 input 為資料來源 -->
+        <div class="wheel-picker wheel-part" id="partHoursWheel" data-input="partHours" role="spinbutton"
+             tabindex="0" aria-label="兼職時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+          <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
+          <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+        </div>
+        <input id="partHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
+        <p class="field-help">上下滑動選擇・按時薪計</p>
       </div>
     </section>
 
@@ -174,16 +194,6 @@
   </header>
 
   <div class="drawer-section">
-    <p class="drawer-label">1 工 = 幾小時</p>
-    <div class="stepper stepper-wide">
-      <button type="button" class="step-btn" data-target="stdHours" data-delta="-0.5">−</button>
-      <input id="stdHours" type="number" inputmode="decimal" step="0.5" min="0.5" max="24" value="8">
-      <button type="button" class="step-btn" data-target="stdHours" data-delta="0.5">+</button>
-    </div>
-    <p class="drawer-help">用來換算「1 工」對應的實際小時數</p>
-  </div>
-
-  <div class="drawer-section">
     <p class="drawer-label">薪資設定</p>
     <div class="pay-field">
       <label class="pay-label" for="dayPay">日薪（1 工）</label>
@@ -191,6 +201,14 @@
         <span class="pay-prefix">$</span>
         <input id="dayPay" class="pay-input" type="number" inputmode="decimal"
                step="100" min="0" placeholder="0" value="">
+      </div>
+    </div>
+    <div class="pay-field">
+      <label class="pay-label" for="hourlyPay">時薪（兼職）</label>
+      <div class="pay-input-wrap">
+        <span class="pay-prefix">$</span>
+        <input id="hourlyPay" class="pay-input" type="number" inputmode="decimal"
+               step="10" min="0" placeholder="0" value="">
       </div>
     </div>
     <div class="pay-field">
@@ -209,7 +227,7 @@
                step="10" min="0" placeholder="0" value="">
       </div>
     </div>
-    <p class="drawer-help">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。</p>
+    <p class="drawer-help">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。</p>
   </div>
 
   <div class="drawer-section">

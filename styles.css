@@ -10,6 +10,7 @@
 
   --work: #2563eb;
   --work-soft: #e5efff;
+  --part: #16a34a;
   --ot: #f97316;
   --ot-soft: #fff0e2;
   /* 半夜加班：用紫色與「加班」的橘色明確區隔。
@@ -59,6 +60,7 @@
 
     --work: #5b9bff;
     --work-soft: #17253d;
+    --part: #4ade80;
     --ot: #fb923c;
     --ot-soft: #3a2415;
     --night: #a78bfa;
@@ -258,6 +260,7 @@ input, textarea { font-family: inherit; }
 }
 .stat-pill b { color: var(--work); font-weight: 800; }
 .stat-pill.ot b { color: var(--ot); }
+.stat-pill.part b { color: var(--part); }
 .stat-pill.night b { color: var(--night); }
 
 /* ===================== 月曆 ===================== */
@@ -363,6 +366,7 @@ input, textarea { font-family: inherit; }
   font-style: normal;
   opacity: .65;
 }
+.income-part.part { color: color-mix(in srgb, var(--part) 80%, var(--text-2)); }
 .income-part.ot { color: color-mix(in srgb, var(--ot) 80%, var(--text-2)); }
 .income-part.night { color: color-mix(in srgb, var(--night) 80%, var(--text-2)); }
 
@@ -526,10 +530,14 @@ input, textarea { font-family: inherit; }
   gap: 8px;
   flex-wrap: wrap;
 }
-.unit-picker-2 .unit-chip-lg {
+.unit-picker-2 .unit-chip-lg,
+.unit-picker-3 .unit-chip-lg {
   flex: 1 1 0;
   min-width: 0;
 }
+/* 三選一（不記／半日／全日）時字級略收，避免「不記・純兼職」換行 */
+.unit-picker-3 .unit-chip-lg .chip-main { font-size: 16px; }
+.unit-picker-3 .unit-chip-lg .chip-sub { font-size: 10.5px; }
 
 .unit-chip {
   flex: 1 1 auto;
@@ -687,6 +695,7 @@ input, textarea { font-family: inherit; }
 
 /* 每組的色塊：描述與數字「上下排列，但同屬一個色塊」。
    .day-groups ─┬─ .day-group.work-group （工時描述 ＋ 工數）
+                ├─ .day-group.part-group （兼職時數，時薪制）
                 ├─ .day-group.ot-group   （加班描述 ＋ 加班時數）
                 └─ .day-group.night-group（半夜描述 ＋ 半夜時數）
    色塊（底色＋圓角）掛在 .day-group 上，描述與數字都在框內，
@@ -759,11 +768,18 @@ input, textarea { font-family: inherit; }
   opacity: .8;
 }
 /* 加班 / 半夜組的色塊底色與數字顏色（色塊在 .day-group 上） */
+.day-group.part-group {
+  background: color-mix(in srgb, var(--part) 13%, transparent);
+}
 .day-group.ot-group {
   background: color-mix(in srgb, var(--ot) 13%, transparent);
 }
 .day-group.night-group {
   background: color-mix(in srgb, var(--night) 13%, transparent);
+}
+.day-units.part-units {
+  color: var(--part);
+  font-size: 12.5px;
 }
 .day-units.ot-units {
   color: var(--ot);
@@ -886,6 +902,7 @@ input, textarea { font-family: inherit; }
 }
 .dot { width: 7px; height: 7px; border-radius: 50%; flex: 0 0 7px; }
 .dot-work { background: var(--work); }
+.dot-part { background: var(--part); }
 .dot-ot { background: var(--ot); }
 .dot-night { background: var(--night); }
 
@@ -1486,6 +1503,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
        格子本身已不再上底色，色塊是格子裡唯一的顏色來源。 */
     background: color-mix(in srgb, var(--work) 34%, var(--surface));
   }
+  .day-group.part-group {
+    background: color-mix(in srgb, var(--part) 40%, var(--surface));
+  }
   .day-group.ot-group {
     background: color-mix(in srgb, var(--ot) 40%, var(--surface));
   }
@@ -1515,6 +1535,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   }
   .day-units .u { font-size: 9.5px; }
   .day-units .ut { display: none; }
+  .day-units.part-units {
+    font-size: 11px;
+    color: var(--part);
+  }
   .day-units.ot-units {
     font-size: 11px;
     color: var(--ot);
@@ -1588,6 +1612,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   .day-num { font-size: 18px; }
   .day-units { font-size: 17px; line-height: 1.2; letter-spacing: -.3px; }
   .day-units .u { font-size: 13px; }
+  .day-units.part-units { font-size: 15.5px; }
   .day-units.ot-units { font-size: 15.5px; }
   .day-units.night-units { font-size: 15.5px; }
   .day-groups { gap: 6px; margin-top: 8px; padding-top: 0; }
@@ -1666,6 +1691,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     letter-spacing: .5px;
     margin-left: 5px;
   }
+  .day-units.part-units { font-size: 19px; }
   .day-units.ot-units { font-size: 19px; }
   .day-units.night-units { font-size: 19px; }
 }
