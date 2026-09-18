@@ -767,6 +767,12 @@ input, textarea { font-family: inherit; }
   margin-left: 1px;
   opacity: .8;
 }
+/* 「OT」前綴：不加粗（數字保持 800 粗體），與數字形成主次對比 */
+.day-units .ot-pre {
+  font-weight: 500;
+  letter-spacing: .3px;
+  margin-right: 1px;
+}
 /* 加班 / 半夜組的色塊底色與數字顏色（色塊在 .day-group 上） */
 .day-group.part-group {
   background: color-mix(in srgb, var(--part) 13%, transparent);

@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.26.0';
-  const APP_BUILD = '20260918-1329';
+  const APP_VERSION = '1.26.1';
+  const APP_BUILD = '20260918-1408';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -995,7 +995,7 @@
         rows.push(`<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units ot-units"><span class="uv">OT ${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
+        rows.push(`<div class="day-units ot-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group ot-group">${rows.join('')}</div>`);
     }
@@ -1005,7 +1005,7 @@
         rows.push(`<div class="day-desc night-text">${escapeHtml(nightDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units night-units"><span class="uv">OT ${fmtH(nh)}<span class="u">h</span></span><span class="ut">半夜</span></div>`);
+        rows.push(`<div class="day-units night-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(nh)}<span class="u">h</span></span><span class="ut">半夜</span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group night-group">${rows.join('')}</div>`);
     }
