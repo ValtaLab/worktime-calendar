@@ -1095,8 +1095,34 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 .cf-banner-go { color: var(--work); font-weight: 600; white-space: nowrap; }
 .cf-sheet-line { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
 .cf-sheet-line b { color: var(--text); }
+/* 雲端備份面板：覆蓋 sheet-body 預設兩欄 → 單欄直排
+   （intro、主按鈕、找回入口、輸入區各佔一行，避免擠在右欄） */
+#cfSheet .sheet-body { grid-template-columns: 1fr; }
 #cfSheetOpen { width: 100%; margin-top: 4px; }
 #cfSheetDone { width: 100%; margin-top: 4px; }
+#cfSheetHaveToggle { width: 100%; margin-top: 2px; }
+#cfSheetHave { margin-top: 2px; }
+.cf-have-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 54px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border-soft);
+  background: var(--glass-input);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+.cf-have-input:focus { outline: none; border-color: color-mix(in srgb, var(--work) 55%, transparent); }
+.cf-have-input::placeholder { color: var(--text-3); letter-spacing: 2px; }
+#cfSheetHaveGo { width: 100%; }
 .cf-code-hint { margin: 12px 0 8px; font-size: 13px; line-height: 1.55; color: var(--text-2); }
 .cf-code {
   margin: 0 0 10px;

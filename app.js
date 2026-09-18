@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.24.0';
-  const APP_BUILD = '20260918-1029';
+  const APP_VERSION = '1.25.0';
+  const APP_BUILD = '20260918-1213';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -227,6 +227,10 @@
     cfSheetClose: $('cfSheetClose'),
     cfSheetOpen: $('cfSheetOpen'),
     cfSheetIntro: $('cfSheetIntro'),
+    cfSheetHaveToggle: $('cfSheetHaveToggle'),
+    cfSheetHave: $('cfSheetHave'),
+    cfSheetHaveInput: $('cfSheetHaveInput'),
+    cfSheetHaveGo: $('cfSheetHaveGo'),
     cfSheetCode: $('cfSheetCode'),
     cfSheetCodeText: $('cfSheetCodeText'),
     cfSheetDone: $('cfSheetDone'),
@@ -555,6 +559,9 @@
   function openCfSheet() {
     el.cfSheetIntro.hidden = false;
     el.cfSheetOpen.hidden = false;
+    el.cfSheetHaveToggle.hidden = false;
+    el.cfSheetHave.hidden = true;          // 找回輸入區每次打開都收起
+    el.cfSheetHaveInput.value = '';
     el.cfSheetCode.hidden = true;
     showOverlay(el.cfSheetBackdrop, el.cfSheet);
   }
@@ -582,6 +589,8 @@
       syncCfBanner();
       el.cfSheetIntro.hidden = true;
       el.cfSheetOpen.hidden = true;
+      el.cfSheetHaveToggle.hidden = true;
+      el.cfSheetHave.hidden = true;
       el.cfSheetCode.hidden = false;
       el.cfSheetCodeText.textContent = fmtCode(settings.cfCode);
     } catch (e) {
@@ -593,6 +602,60 @@
     } finally {
       el.cfSheetOpen.disabled = false;
       el.cfSheetOpen.textContent = '一鍵開啟自動備份';
+    }
+  }
+
+  /* 重裝找回：輸入已有的恢復碼 → 雲端有備份就還原並沿用此碼；
+     沒有就報錯回滾，絕不悄悄換新碼。 */
+  async function restoreByCode() {
+    const code = (el.cfSheetHaveInput.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (code.length !== 8) {
+      toast('請輸入 8 位恢復碼（格式 XXXX-XXXX）');
+      el.cfSheetHaveInput.focus();
+      return;
+    }
+    el.cfSheetHaveGo.disabled = true;
+    el.cfSheetHaveGo.textContent = '找家中…';
+    const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
+    try {
+      settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
+      settings.cfCode = code;
+      const r = await cfApi('GET');
+      if (r.status === 200 && r.json && r.json.found) {
+        if (Object.keys(entries).length) {
+          // 本機已有資料：沿用 connectCf 的衝突選擇
+          const cloudAt = r.json.data && r.json.data.savedAt
+            ? new Date(r.json.data.savedAt).toLocaleString('zh-TW') : '時間不明';
+          const useCloud = confirm(`雲端已有這個碼的備份（${cloudAt}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝保留本機，把本機推上雲端`);
+          if (useCloud) {
+            await cfRestore(true);
+            toast('已從雲端找回資料');
+          } else {
+            await cfPush();
+            toast('已把本機資料備份到雲端');
+          }
+        } else {
+          await cfRestore(true);   // 本機是空的（剛重裝）：直接還原
+          toast('已從雲端找回資料');
+        }
+      } else if (r.status === 404) {
+        throw new Error('雲端沒有這組恢復碼的備份，請確認有沒有打錯');
+      } else {
+        throw new Error(`Worker 回應異常（${r.status}）`);
+      }
+      saveSettings();   // 沿用此碼：cfCode 已是舊碼，之後自動備份續用同一碼
+      syncCfUI();
+      syncCfBanner();   // 已開啟（有碼）→ 橫幅收起
+      closeCfSheet();
+    } catch (e) {
+      console.error(e);
+      settings.cfEndpoint = prev.ep;
+      settings.cfCode = prev.code;
+      saveSettings();
+      toast(String(e.message || e).slice(0, 100));
+    } finally {
+      el.cfSheetHaveGo.disabled = false;
+      el.cfSheetHaveGo.textContent = '用此碼找回並沿用';
     }
   }
 
@@ -1398,6 +1461,14 @@
     el.cfCodeOk.addEventListener('click', () => { el.cfCodeShow.hidden = true; });
     el.cfBanner.addEventListener('click', openCfSheet);
     el.cfSheetOpen.addEventListener('click', oneTapConnect);
+    el.cfSheetHaveToggle.addEventListener('click', () => {
+      el.cfSheetHave.hidden = !el.cfSheetHave.hidden;
+      if (!el.cfSheetHave.hidden) el.cfSheetHaveInput.focus();
+    });
+    el.cfSheetHaveGo.addEventListener('click', restoreByCode);
+    el.cfSheetHaveInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') restoreByCode();
+    });
     el.cfSheetDone.addEventListener('click', closeCfSheet);
     el.cfSheetClose.addEventListener('click', closeCfSheet);
     el.cfSheetBackdrop.addEventListener('click', closeCfSheet);

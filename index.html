@@ -54,8 +54,8 @@
       <span class="cf-banner-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98 6 6 0 1 0-11.58 1.98A3.5 3.5 0 0 0 6.5 19z"/></svg>
       </span>
-      <span class="cf-banner-text"><b>開啟自動備份</b>　刪除 App 也不怕資料消失</span>
-      <span class="cf-banner-go">一鍵開啟</span>
+      <span class="cf-banner-text"><b>雲端備份</b>　刪除 App 也不怕資料消失</span>
+      <span class="cf-banner-go">開啟／找回</span>
     </button>
   </main>
 
@@ -337,9 +337,17 @@
   <div class="sheet-body">
     <div id="cfSheetIntro">
       <p class="cf-sheet-line">開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。</p>
-      <p class="cf-sheet-line">刪除 App 重裝後，輸入<b>恢復碼</b>即可自動找回全部記錄與設定。</p>
+      <p class="cf-sheet-line">第一次使用 → 點<b>一鍵開啟</b>，會生成一組<b>恢復碼</b>，請截圖保存。</p>
+      <p class="cf-sheet-line">曾經開啟過（例如<b>刪除 App 後重裝</b>）→ 點<b>輸入恢復碼找回</b>，資料會自動回來，並<b>沿用原本的碼</b>，不需要新碼。</p>
     </div>
     <button id="cfSheetOpen" class="btn btn-primary" type="button">一鍵開啟自動備份</button>
+    <button id="cfSheetHaveToggle" class="btn btn-ghost" type="button">我已有恢復碼，輸入找回</button>
+    <div id="cfSheetHave" hidden>
+      <input id="cfSheetHaveInput" class="cf-have-input" type="text" inputmode="text"
+             autocapitalize="characters" autocomplete="off" spellcheck="false"
+             placeholder="XXXX-XXXX" maxlength="9" aria-label="恢復碼">
+      <button id="cfSheetHaveGo" class="btn btn-primary" type="button">用此碼找回並沿用</button>
+    </div>
     <div id="cfSheetCode" hidden>
       <p class="cf-code-hint">這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
       <p class="cf-code" id="cfSheetCodeText"></p>

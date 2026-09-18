@@ -1109,8 +1109,34 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 .cf-banner-go { color: var(--work); font-weight: 600; white-space: nowrap; }
 .cf-sheet-line { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
 .cf-sheet-line b { color: var(--text); }
+/* 雲端備份面板：覆蓋 sheet-body 預設兩欄 → 單欄直排
+   （intro、主按鈕、找回入口、輸入區各佔一行，避免擠在右欄） */
+#cfSheet .sheet-body { grid-template-columns: 1fr; }
 #cfSheetOpen { width: 100%; margin-top: 4px; }
 #cfSheetDone { width: 100%; margin-top: 4px; }
+#cfSheetHaveToggle { width: 100%; margin-top: 2px; }
+#cfSheetHave { margin-top: 2px; }
+.cf-have-input {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  height: 54px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border-soft);
+  background: var(--glass-input);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+.cf-have-input:focus { outline: none; border-color: color-mix(in srgb, var(--work) 55%, transparent); }
+.cf-have-input::placeholder { color: var(--text-3); letter-spacing: 2px; }
+#cfSheetHaveGo { width: 100%; }
 .cf-code-hint { margin: 12px 0 8px; font-size: 13px; line-height: 1.55; color: var(--text-2); }
 .cf-code {
   margin: 0 0 10px;
@@ -1919,8 +1945,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       <span class="cf-banner-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98 6 6 0 1 0-11.58 1.98A3.5 3.5 0 0 0 6.5 19z"/></svg>
       </span>
-      <span class="cf-banner-text"><b>開啟自動備份</b>　刪除 App 也不怕資料消失</span>
-      <span class="cf-banner-go">一鍵開啟</span>
+      <span class="cf-banner-text"><b>雲端備份</b>　刪除 App 也不怕資料消失</span>
+      <span class="cf-banner-go">開啟／找回</span>
     </button>
   </main>
 
@@ -2202,9 +2228,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   <div class="sheet-body">
     <div id="cfSheetIntro">
       <p class="cf-sheet-line">開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。</p>
-      <p class="cf-sheet-line">刪除 App 重裝後，輸入<b>恢復碼</b>即可自動找回全部記錄與設定。</p>
+      <p class="cf-sheet-line">第一次使用 → 點<b>一鍵開啟</b>，會生成一組<b>恢復碼</b>，請截圖保存。</p>
+      <p class="cf-sheet-line">曾經開啟過（例如<b>刪除 App 後重裝</b>）→ 點<b>輸入恢復碼找回</b>，資料會自動回來，並<b>沿用原本的碼</b>，不需要新碼。</p>
     </div>
     <button id="cfSheetOpen" class="btn btn-primary" type="button">一鍵開啟自動備份</button>
+    <button id="cfSheetHaveToggle" class="btn btn-ghost" type="button">我已有恢復碼，輸入找回</button>
+    <div id="cfSheetHave" hidden>
+      <input id="cfSheetHaveInput" class="cf-have-input" type="text" inputmode="text"
+             autocapitalize="characters" autocomplete="off" spellcheck="false"
+             placeholder="XXXX-XXXX" maxlength="9" aria-label="恢復碼">
+      <button id="cfSheetHaveGo" class="btn btn-primary" type="button">用此碼找回並沿用</button>
+    </div>
     <div id="cfSheetCode" hidden>
       <p class="cf-code-hint">這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
       <p class="cf-code" id="cfSheetCodeText"></p>
@@ -2252,8 +2286,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.24.0';
-  const APP_BUILD = '20260918-1029';
+  const APP_VERSION = '1.25.0';
+  const APP_BUILD = '20260918-1213';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2472,6 +2506,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     cfSheetClose: $('cfSheetClose'),
     cfSheetOpen: $('cfSheetOpen'),
     cfSheetIntro: $('cfSheetIntro'),
+    cfSheetHaveToggle: $('cfSheetHaveToggle'),
+    cfSheetHave: $('cfSheetHave'),
+    cfSheetHaveInput: $('cfSheetHaveInput'),
+    cfSheetHaveGo: $('cfSheetHaveGo'),
     cfSheetCode: $('cfSheetCode'),
     cfSheetCodeText: $('cfSheetCodeText'),
     cfSheetDone: $('cfSheetDone'),
@@ -2800,6 +2838,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   function openCfSheet() {
     el.cfSheetIntro.hidden = false;
     el.cfSheetOpen.hidden = false;
+    el.cfSheetHaveToggle.hidden = false;
+    el.cfSheetHave.hidden = true;          // 找回輸入區每次打開都收起
+    el.cfSheetHaveInput.value = '';
     el.cfSheetCode.hidden = true;
     showOverlay(el.cfSheetBackdrop, el.cfSheet);
   }
@@ -2827,6 +2868,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       syncCfBanner();
       el.cfSheetIntro.hidden = true;
       el.cfSheetOpen.hidden = true;
+      el.cfSheetHaveToggle.hidden = true;
+      el.cfSheetHave.hidden = true;
       el.cfSheetCode.hidden = false;
       el.cfSheetCodeText.textContent = fmtCode(settings.cfCode);
     } catch (e) {
@@ -2838,6 +2881,60 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     } finally {
       el.cfSheetOpen.disabled = false;
       el.cfSheetOpen.textContent = '一鍵開啟自動備份';
+    }
+  }
+
+  /* 重裝找回：輸入已有的恢復碼 → 雲端有備份就還原並沿用此碼；
+     沒有就報錯回滾，絕不悄悄換新碼。 */
+  async function restoreByCode() {
+    const code = (el.cfSheetHaveInput.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (code.length !== 8) {
+      toast('請輸入 8 位恢復碼（格式 XXXX-XXXX）');
+      el.cfSheetHaveInput.focus();
+      return;
+    }
+    el.cfSheetHaveGo.disabled = true;
+    el.cfSheetHaveGo.textContent = '找家中…';
+    const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
+    try {
+      settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
+      settings.cfCode = code;
+      const r = await cfApi('GET');
+      if (r.status === 200 && r.json && r.json.found) {
+        if (Object.keys(entries).length) {
+          // 本機已有資料：沿用 connectCf 的衝突選擇
+          const cloudAt = r.json.data && r.json.data.savedAt
+            ? new Date(r.json.data.savedAt).toLocaleString('zh-TW') : '時間不明';
+          const useCloud = confirm(`雲端已有這個碼的備份（${cloudAt}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝保留本機，把本機推上雲端`);
+          if (useCloud) {
+            await cfRestore(true);
+            toast('已從雲端找回資料');
+          } else {
+            await cfPush();
+            toast('已把本機資料備份到雲端');
+          }
+        } else {
+          await cfRestore(true);   // 本機是空的（剛重裝）：直接還原
+          toast('已從雲端找回資料');
+        }
+      } else if (r.status === 404) {
+        throw new Error('雲端沒有這組恢復碼的備份，請確認有沒有打錯');
+      } else {
+        throw new Error(`Worker 回應異常（${r.status}）`);
+      }
+      saveSettings();   // 沿用此碼：cfCode 已是舊碼，之後自動備份續用同一碼
+      syncCfUI();
+      syncCfBanner();   // 已開啟（有碼）→ 橫幅收起
+      closeCfSheet();
+    } catch (e) {
+      console.error(e);
+      settings.cfEndpoint = prev.ep;
+      settings.cfCode = prev.code;
+      saveSettings();
+      toast(String(e.message || e).slice(0, 100));
+    } finally {
+      el.cfSheetHaveGo.disabled = false;
+      el.cfSheetHaveGo.textContent = '用此碼找回並沿用';
     }
   }
 
@@ -3643,6 +3740,14 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.cfCodeOk.addEventListener('click', () => { el.cfCodeShow.hidden = true; });
     el.cfBanner.addEventListener('click', openCfSheet);
     el.cfSheetOpen.addEventListener('click', oneTapConnect);
+    el.cfSheetHaveToggle.addEventListener('click', () => {
+      el.cfSheetHave.hidden = !el.cfSheetHave.hidden;
+      if (!el.cfSheetHave.hidden) el.cfSheetHaveInput.focus();
+    });
+    el.cfSheetHaveGo.addEventListener('click', restoreByCode);
+    el.cfSheetHaveInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') restoreByCode();
+    });
     el.cfSheetDone.addEventListener('click', closeCfSheet);
     el.cfSheetClose.addEventListener('click', closeCfSheet);
     el.cfSheetBackdrop.addEventListener('click', closeCfSheet);
