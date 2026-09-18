@@ -269,6 +269,8 @@ input, textarea { font-family: inherit; }
      不再另外預留安全區邊距——貼邊的價值大於呼吸感，
      且 2px 已足以避免圓角裁切與邊框被切掉的問題。 */
   padding: 0 2px 10px;
+  /* 切月動畫的 clone 舊格層以 absolute 疊在 grid 原位 */
+  position: relative;
   /* flex: 1 1 auto 讓月曆撐滿剩餘高度；但**不設 min-height: 0**，
      否則當視窗高度不足時，這個 flex 子項會被壓到比內容小，
      導致格子溢出覆蓋收入列。改為由內容決定下限，空間不足時
@@ -295,6 +297,21 @@ input, textarea { font-family: inherit; }
 }
 .weekday-row span.wk-sat { color: var(--work); opacity: .75; }
 .weekday-row span.wk-sun { color: var(--ot); opacity: .8; }
+
+/* ===================== 切月滑動過渡 =====================
+   changeMonth() 觸發：舊格 clone 成 .calendar-clone 絕對定位層壓在原位，
+   新格（本體）從滑動方向滑入淡入，舊層向反方向滑出淡出，260ms 後清場。 */
+.calendar-grid.sliding {
+  transition: transform .26s ease-out, opacity .26s ease-out;
+}
+.calendar-clone {
+  position: absolute;
+  margin: 0;
+  pointer-events: none;   /* 純視覺層：不攔截點擊／觸控 */
+  z-index: 2;
+  transition: transform .26s ease-out, opacity .26s ease-out;
+  will-change: transform, opacity;
+}
 
 .calendar-grid {
   display: grid;

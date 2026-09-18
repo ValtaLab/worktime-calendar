@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.27.0';
-  const APP_BUILD = '20260918-1844';
+  const APP_VERSION = '1.27.1';
+  const APP_BUILD = '20260918-1859';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1280,14 +1280,62 @@
   function bind() {
     /* 視窗尺寸變化時重算統計膠囊字級（轉屏、桌面拉窗） */
     window.addEventListener('resize', fitStatsRow);
-    el.prevMonth.addEventListener('click', () => {
-      view = new Date(view.getFullYear(), view.getMonth() - 1, 1);
-      render();
-    });
-    el.nextMonth.addEventListener('click', () => {
-      view = new Date(view.getFullYear(), view.getMonth() + 1, 1);
-      render();
-    });
+    /* ---- 切換月份（按鈕與滑動共用）：帶方向性滑動過渡 ----
+       dir=1 下一個月（新格從右滑入、舊格向左滑出淡出）；dir=-1 相反。
+       prefers-reduced-motion 時直接切換不做動畫。 */
+    let slideLock = false;
+    function changeMonth(dir, animated) {
+      view = new Date(view.getFullYear(), view.getMonth() + dir, 1);
+      if (animated && !slideLock &&
+          !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        animateSlide(dir);
+      } else {
+        // 動畫中途連滑：先清掉上一輪殘留的位移/透明樣式，立即切換
+        el.calendarGrid.style.transform = '';
+        el.calendarGrid.style.opacity = '';
+        render();
+      }
+    }
+
+    /** 舊格 clone 成絕對定位層 → render 新月份 → 新格從 dir 側滑入、
+        舊層向反方向滑出淡出 → 260ms 後移除 clone。期間 slideLock 鎖連滑。 */
+    function animateSlide(dir) {
+      slideLock = true;
+      const grid = el.calendarGrid;
+      const parent = grid.parentElement;
+      const clone = grid.cloneNode(true);
+      clone.removeAttribute('id');   // 避免動畫期間出現重複 id
+      clone.classList.add('calendar-clone');
+      clone.setAttribute('aria-hidden', 'true');
+      const b = grid.getBoundingClientRect();
+      const pb = parent.getBoundingClientRect();
+      clone.style.left = (b.left - pb.left) + 'px';
+      clone.style.top = (b.top - pb.top) + 'px';
+      clone.style.width = b.width + 'px';
+      clone.style.height = b.height + 'px';
+      parent.appendChild(clone);
+
+      render();   // grid 換上新月份內容
+      grid.style.transform = `translateX(${dir * 56}px)`;
+      grid.style.opacity = '0';
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        grid.classList.add('sliding');
+        grid.style.transform = 'translateX(0)';
+        grid.style.opacity = '1';
+        clone.style.transform = `translateX(${-dir * 72}px)`;
+        clone.style.opacity = '0';
+      }));
+      setTimeout(() => {
+        clone.remove();
+        grid.classList.remove('sliding');
+        grid.style.transform = '';
+        grid.style.opacity = '';
+        slideLock = false;
+      }, 290);
+    }
+
+    el.prevMonth.addEventListener('click', () => changeMonth(-1, true));
+    el.nextMonth.addEventListener('click', () => changeMonth(1, true));
     el.todayBtn.addEventListener('click', () => {
       const t = new Date();
       view = new Date(t.getFullYear(), t.getMonth(), 1);
@@ -1314,8 +1362,8 @@
       swipeX = null;
       if (Date.now() - swipeAt > 650) return;                          // 拖太久＝長按拖曳，不算滑
       if (Math.abs(dx) < 56 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-      if (dx < 0) el.nextMonth.click();   // 左滑 → 下個月
-      else el.prevMonth.click();          // 右滑 → 上個月
+      if (dx < 0) changeMonth(1, true);   // 左滑 → 下個月
+      else changeMonth(-1, true);         // 右滑 → 上個月
     }, { passive: true });
 
     /* ---- 月曆：雙擊開啟；同時支援單擊（觸控裝置）---- */
