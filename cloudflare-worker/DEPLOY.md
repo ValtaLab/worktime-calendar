@@ -62,3 +62,24 @@ https://worktime-backup.<你的子域>.workers.dev/api/backup?code=AAAAAAAA
 Worker 網址改了（例如換子域）：App 端填新網址＋原恢復碼即可找回資料
 （加密金鑰由「恢復碼＋網址」共同派生，所以**必須填同一個網址**；若要永久搬家，
 在舊網址還原→新網址重新連接備份一次）。
+
+---
+
+## ✅ 已部署（2026-09-18，透過 API 自動部署）
+
+| 項目 | 值 |
+|---|---|
+| Worker 網址 | `https://worktime-backup.isearover.workers.dev` |
+| Worker 名稱 | `worktime-backup` |
+| KV namespace | `worktime-backup`（id `32ecc1c3302f4b4f9d0bfa725013dfcc`） |
+| KV 綁定變數 | `BACKUP_KV` |
+| workers.dev | 已啟用 |
+
+App 端「Worker 網址」直接填：`https://worktime-backup.isearover.workers.dev`
+
+驗證方式：手機瀏覽器打開
+`https://worktime-backup.isearover.workers.dev/api/backup?code=AAAAAAAA`
+看到 `{"found":false}`（404）＝正常。
+
+> 更新 Worker 代碼：改 `worker.js` 後用 Dashboard 的 Edit code 貼上重新 Deploy，
+> 或用同一支部署腳本重新 PUT。
