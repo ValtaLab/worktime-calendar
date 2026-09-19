@@ -7,15 +7,76 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.27.1';
-  const APP_BUILD = '20260918-1859';
+  const APP_VERSION = '1.28.0';
+  const APP_BUILD = '20260919-0953';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
 
+  // 香港公眾假期（紅日）——資料來源：1823 官方 iCal（www.1823.gov.hk）
+  // 2025–2027 已由政府憲報公布；新一年公布後於年末更新此表。
+  // 無資料的年份照常運作（只是不顯示假期標示）。
+  const HK_HOLIDAYS = {
+    // 2025
+    '2025-01-01': '一月一日',
+    '2025-01-29': '農曆年初一',
+    '2025-01-30': '農曆年初二',
+    '2025-01-31': '農曆年初三',
+    '2025-04-04': '清明節',
+    '2025-04-18': '耶穌受難節',
+    '2025-04-19': '耶穌受難節翌日',
+    '2025-04-21': '復活節星期一',
+    '2025-05-01': '勞動節',
+    '2025-05-05': '佛誕',
+    '2025-05-31': '端午節',
+    '2025-07-01': '香港特別行政區成立紀念日',
+    '2025-10-01': '國慶日',
+    '2025-10-07': '中秋節翌日',
+    '2025-10-29': '重陽節',
+    '2025-12-25': '聖誕節',
+    '2025-12-26': '聖誕節後第一個周日',
+    // 2026
+    '2026-01-01': '一月一日',
+    '2026-02-17': '農曆年初一',
+    '2026-02-18': '農曆年初二',
+    '2026-02-19': '農曆年初三',
+    '2026-04-03': '耶穌受難節',
+    '2026-04-04': '耶穌受難節翌日',
+    '2026-04-06': '清明節翌日',
+    '2026-04-07': '復活節星期一翌日',
+    '2026-05-01': '勞動節',
+    '2026-05-25': '佛誕翌日',
+    '2026-06-19': '端午節',
+    '2026-07-01': '香港特別行政區成立紀念日',
+    '2026-09-26': '中秋節翌日',
+    '2026-10-01': '國慶日',
+    '2026-10-19': '重陽節翌日',
+    '2026-12-25': '聖誕節',
+    '2026-12-26': '聖誕節後第一個周日',
+    // 2027
+    '2027-01-01': '一月一日',
+    '2027-02-06': '農曆年初一',
+    '2027-02-08': '農曆年初三',
+    '2027-02-09': '農曆年初四',
+    '2027-03-26': '耶穌受難節',
+    '2027-03-27': '耶穌受難節翌日',
+    '2027-03-29': '復活節星期一',
+    '2027-04-05': '清明節',
+    '2027-05-01': '勞動節',
+    '2027-05-13': '佛誕',
+    '2027-06-09': '端午節',
+    '2027-07-01': '香港特別行政區成立紀念日',
+    '2027-09-16': '中秋節翌日',
+    '2027-10-01': '國慶日',
+    '2027-10-08': '重陽節',
+    '2027-12-25': '聖誕節',
+    '2027-12-27': '聖誕節後第一個周日',
+  };
+
   const DEFAULTS = {
     stdHours: 8,    // 僅供舊資料遷移換算（1 工 = N 小時）；UI 已移除此設定
     showWeekend: true,
+    showHolidays: true,  // 顯示香港公眾假期（紅日：日期轉紅＋假期名）
     showHours: true,
     mondayFirst: true,
     dayPay: 0,      // 日薪（1 工）
@@ -176,6 +237,7 @@
     sheet: $('sheet'),
     sheetBackdrop: $('sheetBackdrop'),
     sheetDate: $('sheetDate'),
+    sheetHol: $('sheetHol'),
     sheetTitle: $('sheetTitle'),
     sheetClose: $('sheetClose'),
     workDesc: $('workDesc'),
@@ -203,6 +265,7 @@
     otPay: $('otPay'),
     nightPay: $('nightPay'),
     optWeekend: $('optWeekend'),
+    optHoliday: $('optHoliday'),
     optShowHours: $('optShowHours'),
     optMondayFirst: $('optMondayFirst'),
     exportCsv: $('exportCsv'),
@@ -931,6 +994,7 @@
         dow,
         isWeekend: dow === 0 || dow === 6,
         isToday: k === tKey,
+        holiday: settings.showHolidays ? (HK_HOLIDAYS[k] || null) : null,
         entry: e,
       });
     }
@@ -959,6 +1023,7 @@
     const classes = ['day'];
     if (c.isWeekend) classes.push('is-weekend');
     if (c.isToday) classes.push('is-today');
+    if (c.holiday) classes.push('is-holiday');
     if (hasEntry) classes.push('has-entry');
 
     // 四組資料，各自「描述在上、時數在下」，但兩者包在**同一個色塊**裡：
@@ -1012,6 +1077,7 @@
     const groupsHtml = groups.length ? `<div class="day-groups">${groups.join('')}</div>` : '';
 
     const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
+    if (c.holiday) labelParts.push(`公眾假期：${c.holiday}`);
     if (hasEntry) {
       if (hasWork) labelParts.push(`工時 ${fmtUnits(wu)} 工`);
       if (hasPart) labelParts.push(`兼職 ${fmtH(ph)} 小時`);
@@ -1026,6 +1092,7 @@
     // 與表頭的 六／日 一致；單靠 .is-weekend 無法區分。
     return `<div class="${classes.join(' ')}" data-key="${c.key}" data-dow="${c.dow}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
       <div class="day-num">${c.day}</div>
+      ${c.holiday ? `<div class="day-hol">${escapeHtml(c.holiday)}</div>` : ''}
       ${groupsHtml}
     </div>`;
   }
@@ -1052,6 +1119,10 @@
     const e = entries[key] || {};
 
     el.sheetDate.textContent = fmtDateLabel(d);
+    // 假期日：日期下方顯示紅日名稱（顯示選項關閉時連面板也不標示）
+    const hol = settings.showHolidays ? (HK_HOLIDAYS[key] || null) : null;
+    el.sheetHol.textContent = hol ? `香港公眾假期・${hol}` : '';
+    el.sheetHol.hidden = !hol;
     el.sheetTitle.textContent = hasContent(e) ? '編輯記錄' : '新增記錄';
     el.workDesc.value = e.workDesc || '';
     el.otDesc.value = e.otDesc || '';
@@ -1465,6 +1536,7 @@
       el.otPay.value = settings.otPay > 0 ? settings.otPay : '';
       el.nightPay.value = settings.nightPay > 0 ? settings.nightPay : '';
       el.optWeekend.checked = settings.showWeekend;
+      el.optHoliday.checked = settings.showHolidays;
       el.optShowHours.checked = settings.showHours;
       el.optMondayFirst.checked = settings.mondayFirst;
       showOverlay(el.drawerBackdrop, el.drawer);
@@ -1501,6 +1573,7 @@
 
     const toggleMap = [
       [el.optWeekend, 'showWeekend'],
+      [el.optHoliday, 'showHolidays'],
       [el.optShowHours, 'showHours'],
       [el.optMondayFirst, 'mondayFirst'],
     ];

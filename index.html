@@ -73,6 +73,7 @@
   <header class="sheet-head">
     <div>
       <p id="sheetDate" class="sheet-date">—</p>
+      <p id="sheetHol" class="sheet-hol" hidden></p>
       <h3 id="sheetTitle" class="sheet-title">新增記錄</h3>
     </div>
     <button id="sheetClose" class="icon-btn" type="button" aria-label="關閉">
@@ -232,6 +233,10 @@
 
   <div class="drawer-section">
     <p class="drawer-label">顯示選項</p>
+    <label class="switch-row">
+      <span>顯示香港公眾假期</span>
+      <input id="optHoliday" type="checkbox" checked>
+    </label>
     <label class="switch-row">
       <span>顯示週末</span>
       <input id="optWeekend" type="checkbox" checked>
