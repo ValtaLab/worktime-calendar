@@ -2416,8 +2416,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.28.2';
-  const APP_BUILD = '20260921-1452';
+  const APP_VERSION = '1.28.3';
+  const APP_BUILD = '20260921-1712';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -4286,6 +4286,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
    * @param {boolean} trusted  true = 已確認有新版本（例如 SW 進入 waiting），不再做版本比較
    */
   function showUpdateBar(remote, trusted) {
+    // 更新進行中（按鈕正顯示「更新中…」）不重繪橫幅，避免輪詢期間被其他偵測蓋掉狀態
+    if (version.updating) return;
     // 有遠端版本資訊就用它；沒有也照樣提示
     const info = remote || version.remote || null;
     const ver = info && info.version;
@@ -4328,26 +4330,42 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     btn.textContent = '更新中…';
     btn.disabled = true;
 
+    // 套用就緒的新 SW：postMessage(skipWaiting) → controllerchange → 重載
+    const applyWaiting = (sw) => {
+      version.waiting = sw;
+      try { sw.postMessage({ type: 'SKIP_WAITING' }); } catch (e) { /* ignore */ }
+      setTimeout(() => hardReload(), 3000);   // 保險：訊息通道失效也會手動刷新
+    };
+
     try {
-      // A) 已有 waiting 的 SW → 請它立即接管，controllerchange 會帶動重載
+      // A) 已有 waiting 的新 SW → 立即套用
       if (version.waiting) {
-        version.waiting.postMessage({ type: 'SKIP_WAITING' });
-        setTimeout(() => hardReload(), 3000);   // 保險：3 秒後仍未重載就手動刷新
+        applyWaiting(version.waiting);
         return;
       }
 
-      // B) 僅偵測到版本差異 → 主動更新註冊，促使瀏覽器抓新檔
+      // B) 偵測到版本差異 → 觸發瀏覽器抓新 SW，輪詢等它安裝完成（進入 waiting）。
+      //    **安裝完成前絕不重載**——重載後仍是舊 SW 控制頁面、app.js 還是舊版，
+      //    啟動時的版本比對會再彈一次提示（「按更新後提示仍在」的根因）。
       if ('serviceWorker' in navigator) {
         const reg = await navigator.serviceWorker.getRegistration();
         if (reg) {
-          await reg.update();
-          await new Promise((r) => setTimeout(r, 800));
-          if (reg.waiting) {
-            version.waiting = reg.waiting;
-            version.waiting.postMessage({ type: 'SKIP_WAITING' });
-            setTimeout(() => hardReload(), 3000);
-            return;
+          await reg.update().catch(() => {});
+          let waited = 0;
+          while (waited < 60000) {
+            if (version.waiting || reg.waiting) {
+              applyWaiting(version.waiting || reg.waiting);
+              return;
+            }
+            await new Promise((r) => setTimeout(r, 500));
+            waited += 500;
           }
+          // 60 秒仍未就緒（網路慢）→ 不重載；全域偵測會在安裝完成時再提示套用
+          version.updating = false;
+          btn.textContent = '下載較慢…';
+          btn.disabled = false;
+          toast('新版本下載中，完成後會自動提示');
+          return;
         }
       }
 
