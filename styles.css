@@ -547,6 +547,8 @@ input, textarea { font-family: inherit; }
   border: 1px solid var(--glass-border-soft);
   box-shadow: inset 0 1px 0 var(--glass-highlight);
 }
+/* hidden 屬性會被上面的 display:flex 蓋掉——兼職卡片按需顯示靠它，必須補回 */
+.field-group[hidden] { display: none; }
 .group-title {
   display: flex;
   align-items: center;

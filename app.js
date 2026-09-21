@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.28.0';
-  const APP_BUILD = '20260919-0953';
+  const APP_VERSION = '1.28.1';
+  const APP_BUILD = '20260921-1225';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -239,6 +239,7 @@
     sheetDate: $('sheetDate'),
     sheetHol: $('sheetHol'),
     sheetTitle: $('sheetTitle'),
+    partGroup: $('partGroup'),
     sheetClose: $('sheetClose'),
     workDesc: $('workDesc'),
     otDesc: $('otDesc'),
@@ -1130,9 +1131,13 @@
     el.tagsInput.value = (e.tags || []).join(', ');
 
     // 工數預設：全新記錄 → 1 工（點開即存的快捷不變）；
-    // 編輯已有記錄但該日無工數（如純兼職日）→ 「不記」，避免誤存 1 工
-    setWorkUnits(num(e.workUnits) > 0 ? num(e.workUnits) : (hasContent(e) ? 0 : 1));
-    el.partHours.value = e.partHours != null ? num(e.partHours) : 0;
+    // 編輯已有記錄但該日無工數（如純兼職日）→ 「兼職時數」，避免誤存 1 工
+    const wu = num(e.workUnits);
+    const ph = e.partHours != null ? num(e.partHours) : 0;
+    setWorkUnits(wu > 0 ? wu : (hasContent(e) ? 0 : 1));
+    // 編輯已有兼職的記錄（工數模式下）→ 仍展開兼職卡片供修改（setWorkUnits 預設收起）
+    if (wu > 0 && ph > 0) el.partGroup.hidden = false;
+    el.partHours.value = ph;
     el.otHours.value = e.otHours != null ? num(e.otHours) : 0;
     el.nightHours.value = e.nightHours != null ? num(e.nightHours) : 0;
 
@@ -1150,10 +1155,11 @@
     setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
   }
 
-  /** 設定工數（不記 0 / 0.5 工 / 1 工 三個選項） */
+  /** 設定工數（兼職時數 0 / 0.5 工 / 1 工 三個選項）
+   *  選「兼職時數」→ 展開兼職小時卡片；選工數 → 收起（編輯保護由 openSheet 覆寫） */
   function setWorkUnits(value) {
     const v = num(value);
-    // 夾到最接近的合法選項（0＝不記是合法值）
+    // 夾到最接近的合法選項（0＝兼職時數是合法值）
     const chosen = v === 0 ? 0
       : WORK_CHOICES.includes(v)
         ? v
@@ -1164,6 +1170,14 @@
       chip.classList.toggle('is-active', on);
       chip.setAttribute('aria-checked', on ? 'true' : 'false');
     });
+
+    // 兼職小時卡片按需顯示：收起時 input 值保留（存檔不變）；
+    // 從收起變展開時滾輪高度才有效，rAF 後同步一次滾輪位置
+    const expand = chosen === 0;
+    if (el.partGroup.hidden !== !expand) {
+      el.partGroup.hidden = !expand;
+      if (expand) requestAnimationFrame(() => syncWheel(el.partHoursWheel));
+    }
   }
 
   function getWorkUnits() {

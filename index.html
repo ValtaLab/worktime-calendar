@@ -95,8 +95,8 @@
         <span class="field-label" id="workUnitsLabel">工數</span>
         <div class="unit-picker unit-picker-3" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
           <button type="button" class="unit-chip unit-chip-lg" data-value="0" role="radio" aria-checked="false">
-            <span class="chip-main">不記</span>
-            <span class="chip-sub">純兼職</span>
+            <span class="chip-main">兼職時數</span>
+            <span class="chip-sub">不記工數</span>
           </button>
           <button type="button" class="unit-chip unit-chip-lg" data-value="0.5" role="radio" aria-checked="false">
             <span class="chip-main">0.5 工</span>
@@ -110,8 +110,10 @@
       </div>
     </section>
 
-    <!-- 兼職小時區塊（時薪制：小時 × 時薪） -->
-    <section class="field-group">
+    <!-- 兼職小時區塊（時薪制：小時 × 時薪）
+         預設收起（hidden）：選「兼職時數」chip 才展開；選 0.5／1 工收起。
+         編輯已有兼職記錄時由 openSheet 自動展開（openSheet 會覆寫 hidden）。 -->
+    <section class="field-group" id="partGroup" hidden>
       <h4 class="group-title"><span class="dot dot-part"></span>兼職小時</h4>
 
       <div class="field">
