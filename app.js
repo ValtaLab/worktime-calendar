@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.28.3';
-  const APP_BUILD = '20260921-1712';
+  const APP_VERSION = '1.28.4';
+  const APP_BUILD = '20260922-0020';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -905,7 +905,8 @@
       e.workDesc || e.otDesc || e.nightDesc).length;
 
     el.monthStats.innerHTML = `
-      <span class="stat-pill"><span class="pill-label">工時 </span><b>${fmtUnits(totalWork)}</b> 工</span>
+      ${totalWork > 0 || (!totalPart && !totalOt && !totalNight)
+        ? `<span class="stat-pill"><span class="pill-label">工時 </span><b>${fmtUnits(totalWork)}</b> 工</span>` : ''}
       ${totalPart > 0 ? `<span class="stat-pill part"><span class="pill-label">兼職 </span><b>${fmtH(totalPart)}</b> h</span>` : ''}
       <span class="stat-pill ot"><span class="pill-label">加班 </span><b>${fmtH(totalOt)}</b> h</span>
       ${totalNight > 0 ? `<span class="stat-pill night"><span class="pill-label">半夜 </span><b>${fmtH(totalNight)}</b> h</span>` : ''}
@@ -1131,12 +1132,12 @@
     el.tagsInput.value = (e.tags || []).join(', ');
 
     // 工數預設：全新記錄 → 1 工（點開即存的快捷不變）；
-    // 編輯已有記錄但該日無工數（如純兼職日）→ 「兼職時數」，避免誤存 1 工
+    // 編輯已有記錄但無工數（純兼職／純加班日）→ 三個都不選，不誤導成「兼職」
     const wu = num(e.workUnits);
     const ph = e.partHours != null ? num(e.partHours) : 0;
-    setWorkUnits(wu > 0 ? wu : (hasContent(e) ? 0 : 1));
-    // 編輯已有兼職的記錄（工數模式下）→ 仍展開兼職卡片供修改（setWorkUnits 預設收起）
-    if (wu > 0 && ph > 0) el.partGroup.hidden = false;
+    setWorkUnits(wu > 0 ? wu : (hasContent(e) ? null : 1));
+    // 已有兼職記錄 → 展開兼職卡片供修改（不論工數模式）
+    if (ph > 0) el.partGroup.hidden = false;
     el.partHours.value = ph;
     el.otHours.value = e.otHours != null ? num(e.otHours) : 0;
     el.nightHours.value = e.nightHours != null ? num(e.nightHours) : 0;
@@ -1155,9 +1156,20 @@
     setTimeout(() => el.workDesc.focus({ preventScroll: true }), 280);
   }
 
-  /** 設定工數（兼職時數 0 / 0.5 工 / 1 工 三個選項）
-   *  選「兼職時數」→ 展開兼職小時卡片；選工數 → 收起（編輯保護由 openSheet 覆寫） */
+  /** 設定工數（兼職時數 0 / 0.5 工 / 1 工 三個選項；null＝三個都不選，純加班／純兼職日用）
+   *  選「兼職時數」→ 展開兼職小時卡片；選工數或全不選 → 收起（編輯保護由 openSheet 覆寫） */
   function setWorkUnits(value) {
+    const chips = el.workUnitPicker.querySelectorAll('.unit-chip');
+    // null / undefined → 全部取消選擇（不記工數，主介面可只顯示加班等記錄）
+    if (value == null) {
+      chips.forEach((chip) => {
+        chip.classList.remove('is-active');
+        chip.setAttribute('aria-checked', 'false');
+      });
+      if (!el.partGroup.hidden) el.partGroup.hidden = true;
+      return;
+    }
+
     const v = num(value);
     // 夾到最接近的合法選項（0＝兼職時數是合法值）
     const chosen = v === 0 ? 0
@@ -1165,7 +1177,7 @@
         ? v
         : WORK_CHOICES.reduce((a, b) => (Math.abs(b - v) < Math.abs(a - v) ? b : a));
 
-    el.workUnitPicker.querySelectorAll('.unit-chip').forEach((chip) => {
+    chips.forEach((chip) => {
       const on = parseFloat(chip.dataset.value) === chosen;
       chip.classList.toggle('is-active', on);
       chip.setAttribute('aria-checked', on ? 'true' : 'false');
@@ -1514,11 +1526,12 @@
       if (ev.key === 'Escape') { ev.preventDefault(); closeSheet(); }
     });
 
-    /* ---- 工數選項（僅 0.5 工 / 1 工）---- */
+    /* ---- 工數選項（兼職時數 / 0.5 工 / 1 工；可全部不選＝純加班日）---- */
     el.workUnitPicker.addEventListener('click', (ev) => {
       const chip = ev.target.closest('.unit-chip');
       if (!chip) return;
-      setWorkUnits(parseFloat(chip.dataset.value));
+      // 再點一次已選中的 chip → 取消選擇（工數可不記，只記加班／半夜）
+      setWorkUnits(chip.classList.contains('is-active') ? null : parseFloat(chip.dataset.value));
     });
 
     /* ---- 滾輪選擇器（加班時數 / 半夜加班時數）----
