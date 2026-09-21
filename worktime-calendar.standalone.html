@@ -937,21 +937,40 @@ input, textarea { font-family: inherit; }
 .sheet-title { margin: 0; font-size: 20.5px; font-weight: 800; letter-spacing: -.3px; }
 
 .sheet-body {
-  /* 兩欄 grid：工時組與標籤跨兩欄，加班／半夜並排——
-     面板全部內容（三組＋標籤）在 844px 高的手機上不需滾動一屏看完。
-     grid 取代 flex 後，min-height: 0 與 overflow-y 仍是面板可捲動的必要條件。 */
+  /* 單欄堆疊：工時組、三張橫向長條卡（兼職／加班／半夜）、標籤由上至下排列。
+     橫條卡內部再左右分欄（描述左、時數滾輪右），見 .fg-row。
+     min-height: 0 與 overflow-y 仍是面板可捲動的必要條件：
+     flex 子項預設 min-height:auto 不會收縮——內容超過面板 max-height 時
+     會把底部儲存列推出視窗外，必須歸零才能讓內部捲動生效、foot 固定底部。 */
   padding: 2px 14px 6px;
   overflow-y: auto;
   flex: 1 1 auto;
-  min-height: 0; /* flex 子項預設 min-height:auto 不會收縮——內容超過面板
-                    max-height 時會把底部儲存列推出視窗外（滾輪加高後實測發生），
-                    必須歸零才能讓內部捲動生效、foot 固定在面板底部。 */
+  min-height: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
 }
-.sheet-body > .field-group:first-child,
 .sheet-body > .field:last-child { grid-column: 1 / -1; }
+
+/* ---- 橫向長條卡片：標題行＋左（描述）右（時數滾輪）兩欄 ---- */
+.fg-row .fg-cols {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;   /* 左右欄等高，描述框與滾輪底線對齊 */
+}
+.fg-row .fg-cols > .field:first-child { flex: 1 1 auto; }
+/* 描述框填滿左欄高度（與滾輪等高）：長描述可見、卡片視覺飽滿 */
+.fg-row .fg-cols > .field:first-child textarea {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* 滾輪欄固定寬：數字＋「小時」色帶在 128px 內完整呈現 */
+.fg-row .field-hours { flex: 0 0 128px; }
+/* 橫條內滾輪行高微縮（28×3＝84px），卡片更扁、面板一屏能看更多 */
+.fg-row .wheel-picker { --wheel-item-h: 28px; }
+/* 兼職卡無描述欄：左側放操作說明，垂直置中 */
+.fg-note { justify-content: center; }
+.fg-note .field-help { margin: 0; }
 
 .field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; min-width: 0; }
 .field-row { display: flex; gap: 12px; }
@@ -2087,64 +2106,66 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     <!-- 兼職小時區塊（時薪制：小時 × 時薪）
          預設收起（hidden）：選「兼職時數」chip 才展開；選 0.5／1 工收起。
-         編輯已有兼職記錄時由 openSheet 自動展開（openSheet 會覆寫 hidden）。 -->
-    <section class="field-group" id="partGroup" hidden>
+         編輯已有兼職記錄時由 openSheet 自動展開（openSheet 會覆寫 hidden）。
+         橫向長條卡片：左側說明、右側時數滾輪（無描述欄）。 -->
+    <section class="field-group fg-row" id="partGroup" hidden>
       <h4 class="group-title"><span class="dot dot-part"></span>兼職小時</h4>
-
-      <div class="field">
-        <span class="field-label" id="partHoursLabel">兼職時數</span>
-        <!-- 與加班滾輪同一套：上下滑動、0–24、每次 0.5；隱藏 input 為資料來源 -->
-        <div class="wheel-picker wheel-part" id="partHoursWheel" data-input="partHours" role="spinbutton"
-             tabindex="0" aria-label="兼職時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
-          <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-          <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+      <div class="fg-cols">
+        <div class="field fg-note">
+          <!-- 與加班滾輪同一套：上下滑動、0–24、每次 0.5；隱藏 input 為資料來源 -->
+          <p class="field-help">上下滑動選擇・按時薪計</p>
         </div>
-        <input id="partHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
-        <p class="field-help">上下滑動選擇・按時薪計</p>
+        <div class="field field-hours">
+          <span class="field-label" id="partHoursLabel">兼職時數</span>
+          <div class="wheel-picker wheel-part" id="partHoursWheel" data-input="partHours" role="spinbutton"
+               tabindex="0" aria-label="兼職時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+            <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+          </div>
+          <input id="partHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
+        </div>
       </div>
     </section>
 
-    <!-- 加班區塊 -->
-    <section class="field-group">
+    <!-- 加班區塊（橫向長條卡片：描述在左、時數滾輪在右） -->
+    <section class="field-group fg-row">
       <h4 class="group-title"><span class="dot dot-ot"></span>加班</h4>
-
-      <div class="field">
-        <label class="field-label" for="otDesc">描述</label>
-        <textarea id="otDesc" rows="1"></textarea>
-      </div>
-
-      <div class="field">
-        <span class="field-label" id="otUnitsLabel">加班時數</span>
-        <!-- iOS 風格滾輪：上下滑動、吸附置中即為選中值。
-             隱藏的 number input 仍是資料來源（開面板寫值、儲存讀值）。 -->
-        <div class="wheel-picker wheel-ot" id="otHoursWheel" data-input="otHours" role="spinbutton"
-             tabindex="0" aria-label="加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
-          <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-          <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+      <div class="fg-cols">
+        <div class="field">
+          <label class="field-label" for="otDesc">描述</label>
+          <textarea id="otDesc" rows="1"></textarea>
         </div>
-        <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
-        <p class="field-help">上下滑動選擇</p>
+        <div class="field field-hours">
+          <span class="field-label" id="otUnitsLabel">加班時數</span>
+          <!-- iOS 風格滾輪：上下滑動、吸附置中即為選中值。
+               隱藏的 number input 仍是資料來源（開面板寫值、儲存讀值）。 -->
+          <div class="wheel-picker wheel-ot" id="otHoursWheel" data-input="otHours" role="spinbutton"
+               tabindex="0" aria-label="加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+            <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+          </div>
+          <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
+        </div>
       </div>
     </section>
 
-    <!-- 半夜加班區塊 -->
-    <section class="field-group">
+    <!-- 半夜加班區塊（橫向長條卡片：描述在左、時數滾輪在右） -->
+    <section class="field-group fg-row">
       <h4 class="group-title"><span class="dot dot-night"></span>半夜加班</h4>
-
-      <div class="field">
-        <label class="field-label" for="nightDesc">描述</label>
-        <textarea id="nightDesc" rows="1"></textarea>
-      </div>
-
-      <div class="field">
-        <span class="field-label" id="nightUnitsLabel">半夜加班時數</span>
-        <div class="wheel-picker wheel-night" id="nightHoursWheel" data-input="nightHours" role="spinbutton"
-             tabindex="0" aria-label="半夜加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
-          <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-          <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+      <div class="fg-cols">
+        <div class="field">
+          <label class="field-label" for="nightDesc">描述</label>
+          <textarea id="nightDesc" rows="1"></textarea>
         </div>
-        <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
-        <p class="field-help">上下滑動選擇</p>
+        <div class="field field-hours">
+          <span class="field-label" id="nightUnitsLabel">半夜加班時數</span>
+          <div class="wheel-picker wheel-night" id="nightHoursWheel" data-input="nightHours" role="spinbutton"
+               tabindex="0" aria-label="半夜加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+            <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+          </div>
+          <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
+        </div>
       </div>
     </section>
 
@@ -2395,8 +2416,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.28.1';
-  const APP_BUILD = '20260921-1225';
+  const APP_VERSION = '1.28.2';
+  const APP_BUILD = '20260921-1452';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';

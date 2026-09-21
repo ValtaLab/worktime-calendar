@@ -923,21 +923,40 @@ input, textarea { font-family: inherit; }
 .sheet-title { margin: 0; font-size: 20.5px; font-weight: 800; letter-spacing: -.3px; }
 
 .sheet-body {
-  /* 兩欄 grid：工時組與標籤跨兩欄，加班／半夜並排——
-     面板全部內容（三組＋標籤）在 844px 高的手機上不需滾動一屏看完。
-     grid 取代 flex 後，min-height: 0 與 overflow-y 仍是面板可捲動的必要條件。 */
+  /* 單欄堆疊：工時組、三張橫向長條卡（兼職／加班／半夜）、標籤由上至下排列。
+     橫條卡內部再左右分欄（描述左、時數滾輪右），見 .fg-row。
+     min-height: 0 與 overflow-y 仍是面板可捲動的必要條件：
+     flex 子項預設 min-height:auto 不會收縮——內容超過面板 max-height 時
+     會把底部儲存列推出視窗外，必須歸零才能讓內部捲動生效、foot 固定底部。 */
   padding: 2px 14px 6px;
   overflow-y: auto;
   flex: 1 1 auto;
-  min-height: 0; /* flex 子項預設 min-height:auto 不會收縮——內容超過面板
-                    max-height 時會把底部儲存列推出視窗外（滾輪加高後實測發生），
-                    必須歸零才能讓內部捲動生效、foot 固定在面板底部。 */
+  min-height: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
 }
-.sheet-body > .field-group:first-child,
 .sheet-body > .field:last-child { grid-column: 1 / -1; }
+
+/* ---- 橫向長條卡片：標題行＋左（描述）右（時數滾輪）兩欄 ---- */
+.fg-row .fg-cols {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;   /* 左右欄等高，描述框與滾輪底線對齊 */
+}
+.fg-row .fg-cols > .field:first-child { flex: 1 1 auto; }
+/* 描述框填滿左欄高度（與滾輪等高）：長描述可見、卡片視覺飽滿 */
+.fg-row .fg-cols > .field:first-child textarea {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+/* 滾輪欄固定寬：數字＋「小時」色帶在 128px 內完整呈現 */
+.fg-row .field-hours { flex: 0 0 128px; }
+/* 橫條內滾輪行高微縮（28×3＝84px），卡片更扁、面板一屏能看更多 */
+.fg-row .wheel-picker { --wheel-item-h: 28px; }
+/* 兼職卡無描述欄：左側放操作說明，垂直置中 */
+.fg-note { justify-content: center; }
+.fg-note .field-help { margin: 0; }
 
 .field { display: flex; flex-direction: column; gap: 4px; flex: 1 1 0; min-width: 0; }
 .field-row { display: flex; gap: 12px; }
