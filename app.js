@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.28.4';
-  const APP_BUILD = '20260922-0020';
+  const APP_VERSION = '1.29.0';
+  const APP_BUILD = '20260922-0116';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -75,6 +75,7 @@
 
   const DEFAULTS = {
     stdHours: 8,    // 僅供舊資料遷移換算（1 工 = N 小時）；UI 已移除此設定
+    theme: 'auto',  // 主題：auto＝跟隨系統光暗模式；light／dark＝固定
     showWeekend: true,
     showHolidays: true,  // 顯示香港公眾假期（紅日：日期轉紅＋假期名）
     showHours: true,
@@ -214,6 +215,31 @@
     scheduleCfBackup();  // 費率等設定變更也納入自動備份（內容沒變會自動跳過）
   }
 
+  /* ---------------- 主題（光暗模式） ----------------
+     settings.theme: 'auto' | 'light' | 'dark'。
+     auto 依 matchMedia 即時解析，並監聽系統切換；實際主題寫在
+     <html data-theme>，CSS 由此屬性切換（head inline script 負責首幀前設好）。 */
+  const themeMql = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+  const THEME_META = { light: '#f4f6fb', dark: '#0d1117' };   // 瀏覽器 UI（地址欄）跟著主題走
+
+  function applyTheme() {
+    const t = settings.theme === 'light' || settings.theme === 'dark'
+      ? settings.theme
+      : (themeMql && themeMql.matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', t);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', THEME_META[t]);
+    return t;
+  }
+
+  function syncThemeSeg() {
+    if (!el.themeSeg) return;
+    const cur = settings.theme || 'auto';
+    el.themeSeg.querySelectorAll('.seg-btn').forEach((btn) => {
+      btn.classList.toggle('is-active', (btn.dataset.themeOpt || 'auto') === cur);
+    });
+  }
+
   /* ---------------- 畫面元素 ---------------- */
   const $ = (id) => document.getElementById(id);
   const el = {
@@ -269,6 +295,7 @@
     optHoliday: $('optHoliday'),
     optShowHours: $('optShowHours'),
     optMondayFirst: $('optMondayFirst'),
+    themeSeg: $('themeSeg'),
     exportCsv: $('exportCsv'),
     exportJson: $('exportJson'),
     importJson: $('importJson'),
@@ -1566,6 +1593,7 @@
       el.optHoliday.checked = settings.showHolidays;
       el.optShowHours.checked = settings.showHours;
       el.optMondayFirst.checked = settings.mondayFirst;
+      syncThemeSeg();
       showOverlay(el.drawerBackdrop, el.drawer);
     });
     const closeDrawer = () => hideOverlay(el.drawerBackdrop, el.drawer);
@@ -1611,6 +1639,25 @@
         render();
       });
     });
+
+    /* ---- 主題三段選擇（跟隨系統／淺色／深色） ---- */
+    if (el.themeSeg) {
+      el.themeSeg.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.seg-btn');
+        if (!btn) return;
+        settings.theme = btn.dataset.themeOpt || 'auto';
+        saveSettings();
+        applyTheme();
+        syncThemeSeg();
+      });
+    }
+    if (themeMql) {
+      const onSchemeChange = () => {
+        if (settings.theme !== 'light' && settings.theme !== 'dark') applyTheme();
+      };
+      if (themeMql.addEventListener) themeMql.addEventListener('change', onSchemeChange);
+      else if (themeMql.addListener) themeMql.addListener(onSchemeChange);   // 舊 Safari
+    }
 
     /* ---- 收入金額：點一下切換顯示 / 遮蔽 ----
        按鈕本身每次 renderIncome() 都會重建，所以用委派綁在容器上。 */
@@ -2100,6 +2147,7 @@
 
   function init() {
     load();
+    applyTheme();   // 重設 meta theme-color 為目前主題（首幀由 inline script 設好）
     view = new Date();
     view.setDate(1);
     if (settings.pinHash) openLock('unlock');   // 先蓋鎖屏再渲染，內容不閃現
