@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.29.0';
-  const APP_BUILD = '20260922-0116';
+  const APP_VERSION = '1.29.1';
+  const APP_BUILD = '20260922-1509';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1440,6 +1440,12 @@
       parent.appendChild(clone);
 
       render();   // grid 換上新月份內容
+      // 左上角月份標題：與格子同方向滑入淡入，明確提示已切換月份
+      const title = el.monthTitle;
+      title.classList.remove('slide-next', 'slide-prev');
+      void title.offsetWidth;   // 強制 reflow：連滑時也能重啟動畫
+      title.classList.add(dir > 0 ? 'slide-next' : 'slide-prev');
+      title.addEventListener('animationend', () => title.classList.remove('slide-next', 'slide-prev'), { once: true });
       grid.style.transform = `translateX(${dir * 56}px)`;
       grid.style.opacity = '0';
       requestAnimationFrame(() => requestAnimationFrame(() => {

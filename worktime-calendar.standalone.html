@@ -348,6 +348,20 @@ input, textarea { font-family: inherit; }
   will-change: transform, opacity;
 }
 
+/* ---- 月份標題切月動畫 ----
+   與格子滑動同方向：下個月從右滑入、上個月從左滑入，
+   讓左上角「YYYY 年 M 月」的替換也有方向感，明確提示已切換月份。 */
+.month-title.slide-next { animation: titleInNext .26s ease-out both; }
+.month-title.slide-prev { animation: titleInPrev .26s ease-out both; }
+@keyframes titleInNext {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes titleInPrev {
+  from { opacity: 0; transform: translateX(-16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 .calendar-grid {
   display: grid;
   /* 同 .weekday-row：minmax(0, 1fr) 保證七欄絕對等寬，
@@ -2475,8 +2489,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.29.0';
-  const APP_BUILD = '20260922-0116';
+  const APP_VERSION = '1.29.1';
+  const APP_BUILD = '20260922-1509';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -3908,6 +3922,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       parent.appendChild(clone);
 
       render();   // grid 換上新月份內容
+      // 左上角月份標題：與格子同方向滑入淡入，明確提示已切換月份
+      const title = el.monthTitle;
+      title.classList.remove('slide-next', 'slide-prev');
+      void title.offsetWidth;   // 強制 reflow：連滑時也能重啟動畫
+      title.classList.add(dir > 0 ? 'slide-next' : 'slide-prev');
+      title.addEventListener('animationend', () => title.classList.remove('slide-next', 'slide-prev'), { once: true });
       grid.style.transform = `translateX(${dir * 56}px)`;
       grid.style.opacity = '0';
       requestAnimationFrame(() => requestAnimationFrame(() => {
