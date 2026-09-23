@@ -776,6 +776,39 @@ input, textarea { font-family: inherit; }
   line-height: 1.3;
 }
 
+/* ---- 描述記憶建議 ----
+   點擊（聚焦）描述框時，下方顯示最近儲存過的描述（最新在前、最多 3 條），
+   點一下即填入。玻璃 chips 與面板其他按鈕同一套語彙。 */
+.desc-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+.desc-suggest[hidden] { display: none; }
+.suggest-chip {
+  max-width: 100%;
+  border: 1px solid var(--glass-border-soft);
+  background: var(--glass-input);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1;
+  padding: 6px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  transition: background .15s ease, color .15s ease, transform .12s ease;
+}
+.suggest-chip:hover {
+  background: color-mix(in srgb, var(--work) 8%, var(--glass-bg-strong));
+  color: var(--text);
+}
+.suggest-chip:active { transform: scale(.96); }
+
 /* 每組的色塊：描述與數字「上下排列，但同屬一個色塊」。
    .day-groups ─┬─ .day-group.work-group （工時描述 ＋ 工數）
                 ├─ .day-group.part-group （兼職時數，時薪制）
@@ -2146,6 +2179,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       <div class="field">
         <label class="field-label" for="workDesc">描述</label>
         <textarea id="workDesc" rows="1"></textarea>
+        <div class="desc-suggest" id="suggestWork" hidden><!-- 最近描述建議由 JS 產生 --></div>
       </div>
 
       <div class="field">
@@ -2197,6 +2231,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         <div class="field">
           <label class="field-label" for="otDesc">描述</label>
           <textarea id="otDesc" rows="1"></textarea>
+          <div class="desc-suggest" id="suggestOt" hidden><!-- 最近描述建議由 JS 產生 --></div>
         </div>
         <div class="field field-hours">
           <span class="field-label" id="otUnitsLabel">加班時數</span>
@@ -2219,6 +2254,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         <div class="field">
           <label class="field-label" for="nightDesc">描述</label>
           <textarea id="nightDesc" rows="1"></textarea>
+          <div class="desc-suggest" id="suggestNight" hidden><!-- 最近描述建議由 JS 產生 --></div>
         </div>
         <div class="field field-hours">
           <span class="field-label" id="nightUnitsLabel">半夜加班時數</span>
@@ -2489,8 +2525,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.29.1';
-  const APP_BUILD = '20260922-1509';
+  const APP_VERSION = '1.30.0';
+  const APP_BUILD = '20260923-1324';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2567,6 +2603,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     otPay: 0,       // 加班時薪
     nightPay: 0,    // 半夜加班時薪
     pinHash: '',    // 螢幕鎖定密碼（SHA-256 雜湊）；空字串＝未啟用
+    descHistory: { work: [], ot: [], night: [] },  // 描述記憶：各欄最近輸入（新在前，存 10 顯 3）
     cfEndpoint: '', // 雲端備份 Worker 網址
     cfCode: '',     // 恢復碼（8 位，重裝找回資料的唯一憑證）
     cfAt: '',       // 上次成功備份時間（ISO）
@@ -2752,6 +2789,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     workDesc: $('workDesc'),
     otDesc: $('otDesc'),
     nightDesc: $('nightDesc'),
+    suggestWork: $('suggestWork'),
+    suggestOt: $('suggestOt'),
+    suggestNight: $('suggestNight'),
     tagsInput: $('tagsInput'),
     saveBtn: $('saveBtn'),
     cancelBtn: $('cancelBtn'),
@@ -3638,6 +3678,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.workDesc.value = e.workDesc || '';
     el.otDesc.value = e.otDesc || '';
     el.nightDesc.value = e.nightDesc || '';
+    el.suggestWork.hidden = true;   // 開面板先收起描述建議（聚焦時才顯示）
+    el.suggestOt.hidden = true;
+    el.suggestNight.hidden = true;
     el.tagsInput.value = (e.tags || []).join(', ');
 
     // 工數預設：全新記錄 → 1 工（點開即存的快捷不變）；
@@ -3845,6 +3888,47 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   }
 
   /* ---------------- 儲存 / 刪除 ---------------- */
+  /* ---------------- 描述記憶 ----------------
+     儲存記錄時把非空描述記入 settings.descHistory（work／ot／night 各自獨立）：
+     最新在前、去重（重複輸入提到首位）、最多存 10 條。
+     描述框聚焦時顯示最近 3 條建議 chips，點一下即填入。
+     放在 settings 裡：隨一般設定持久化，也自動納入雲端備份。 */
+  const DESC_HIST_MAX = 10;   // 儲存上限；面板內只顯示最近 3 條
+  const DESC_SUGGEST_SHOW = 3;
+
+  function rememberDesc(kind, text) {
+    const t = (text || '').trim();
+    if (!t) return;
+    const h = (settings.descHistory = settings.descHistory || DEFAULTS.descHistory);
+    const list = h[kind] = h[kind] || [];
+    const i = list.indexOf(t);
+    if (i > -1) list.splice(i, 1);
+    list.unshift(t);
+    if (list.length > DESC_HIST_MAX) list.length = DESC_HIST_MAX;
+    saveSettings();
+  }
+
+  function renderDescSuggest(ta, box, kind) {
+    const list = (settings.descHistory && settings.descHistory[kind]) || [];
+    box.innerHTML = '';
+    list.slice(0, DESC_SUGGEST_SHOW).forEach((t) => {
+      const chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'suggest-chip';
+      chip.textContent = t;
+      chip.title = t;
+      // pointerdown 在 blur 前觸發：先攔下填入，避免建議被 blur 提前收起
+      chip.addEventListener('pointerdown', (ev) => {
+        ev.preventDefault();
+        ta.value = t;
+        ta.dispatchEvent(new Event('input', { bubbles: true }));
+        box.hidden = true;
+      });
+      box.appendChild(chip);
+    });
+    box.hidden = box.children.length === 0;
+  }
+
   function saveEntry() {
     if (!editingKey) return;
     const workDesc = el.workDesc.value.trim();
@@ -3865,6 +3949,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         workDesc, workUnits, partHours, otDesc, otHours, nightDesc, nightHours, tags,
         updatedAt: Date.now(),
       };
+      // 描述記憶：儲存時把非空描述記入各自歷史（最新在前、去重）
+      rememberDesc('work', workDesc);
+      rememberDesc('ot', otDesc);
+      rememberDesc('night', nightDesc);
     }
 
     save();
@@ -4146,6 +4234,16 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       if (themeMql.addEventListener) themeMql.addEventListener('change', onSchemeChange);
       else if (themeMql.addListener) themeMql.addListener(onSchemeChange);   // 舊 Safari
     }
+
+    /* ---- 描述記憶：聚焦顯示最近描述建議、失焦收起 ---- */
+    [[el.workDesc, el.suggestWork, 'work'],
+     [el.otDesc, el.suggestOt, 'ot'],
+     [el.nightDesc, el.suggestNight, 'night'],
+    ].forEach(([ta, box, kind]) => {
+      if (!ta || !box) return;
+      ta.addEventListener('focus', () => renderDescSuggest(ta, box, kind));
+      ta.addEventListener('blur', () => { box.hidden = true; });
+    });
 
     /* ---- 收入金額：點一下切換顯示 / 遮蔽 ----
        按鈕本身每次 renderIncome() 都會重建，所以用委派綁在容器上。 */

@@ -750,6 +750,39 @@ input, textarea { font-family: inherit; }
   line-height: 1.3;
 }
 
+/* ---- 描述記憶建議 ----
+   點擊（聚焦）描述框時，下方顯示最近儲存過的描述（最新在前、最多 3 條），
+   點一下即填入。玻璃 chips 與面板其他按鈕同一套語彙。 */
+.desc-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+}
+.desc-suggest[hidden] { display: none; }
+.suggest-chip {
+  max-width: 100%;
+  border: 1px solid var(--glass-border-soft);
+  background: var(--glass-input);
+  color: var(--text-2);
+  font: inherit;
+  font-size: 12.5px;
+  line-height: 1;
+  padding: 6px 11px;
+  border-radius: 999px;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  box-shadow: inset 0 1px 0 var(--glass-highlight);
+  transition: background .15s ease, color .15s ease, transform .12s ease;
+}
+.suggest-chip:hover {
+  background: color-mix(in srgb, var(--work) 8%, var(--glass-bg-strong));
+  color: var(--text);
+}
+.suggest-chip:active { transform: scale(.96); }
+
 /* 每組的色塊：描述與數字「上下排列，但同屬一個色塊」。
    .day-groups ─┬─ .day-group.work-group （工時描述 ＋ 工數）
                 ├─ .day-group.part-group （兼職時數，時薪制）
