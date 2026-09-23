@@ -2525,8 +2525,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.30.1';
-  const APP_BUILD = '20260923-1354';
+  const APP_VERSION = '1.30.2';
+  const APP_BUILD = '20260923-1850';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -3306,6 +3306,40 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     return 'fb' + h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
   }
 
+  /* ---------------- 觸覺回饋（震動） ----------------
+     Android：navigator.vibrate（支援長短 pattern）。
+     iOS：Safari 至今不提供 Vibration API，但 iOS 18.0+ 的 WebKit 會對
+     <input type="checkbox" switch>（原生開關）的互動產生系統觸覺——
+     放一個隱形 switch＋label，由 label.click() 間接翻轉即可觸發
+     （必須經 label 轉發；用 script 直接 click input 不會震）。
+     兩者都不可用時靜默略過，不影響任何功能。 */
+  let hapticLabel = null;
+  function haptic(pattern) {
+    try {
+      if (typeof navigator.vibrate === 'function') {
+        navigator.vibrate(pattern);
+      } else {
+        if (!hapticLabel) {
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.id = 'haptic-switch';
+          input.setAttribute('switch', '');
+          input.style.display = 'none';
+          const label = document.createElement('label');
+          label.htmlFor = 'haptic-switch';
+          label.style.display = 'none';
+          document.body.appendChild(input);
+          document.body.appendChild(label);
+          hapticLabel = label;
+        }
+        hapticLabel.click();
+      }
+    } catch (e) { /* 不支援的環境靜默略過 */ }
+  }
+  const HAPTIC_TAP = 12;            // 按鍵：輕點一下
+  const HAPTIC_OK = [28, 45, 28];   // 成功：兩短
+  const HAPTIC_ERR = [55, 45, 55];  // 錯誤：兩重
+
   function lockRenderDots() {
     [...el.lockDots.children].forEach((d, i) => d.classList.toggle('on', i < lockBuf.length));
   }
@@ -3327,11 +3361,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   }
   function closeLock() {
     lockMode = ''; lockBuf = ''; lockTemp = '';
+    haptic(HAPTIC_OK);   // 解鎖／設定成功：兩短震
     el.lockScreen.classList.add('unlocked');
     setTimeout(() => { el.lockScreen.hidden = true; }, 300);
   }
   function lockFail(msg) {
     lockWrong++;
+    haptic(HAPTIC_ERR);   // 密碼錯誤：兩重震
     el.lockScreen.classList.remove('shake');
     void el.lockScreen.offsetWidth;   // 重觸發抖動動畫
     el.lockScreen.classList.add('shake');
@@ -3366,7 +3402,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         settings.pinHash = await sha256Hex(pin);
         saveSettings(); syncLockUI();
         closeLock(); toast('螢幕鎖定已啟用');
-      } else { openLock('set1'); lockMsg('兩次輸入不一致，請重新設定'); }
+      } else { haptic(HAPTIC_ERR); openLock('set1'); lockMsg('兩次輸入不一致，請重新設定'); }
     } else if (lockMode === 'off') {
       if (pin && await sha256Hex(pin) === settings.pinHash) {
         settings.pinHash = '';
@@ -3377,6 +3413,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   }
   function lockKey(k) {
     if (!lockMode || Date.now() < lockCooldown) return;
+    haptic(HAPTIC_TAP);   // 每次按鍵輕震回饋
     if (k === 'clear') lockBuf = '';
     else if (k === 'back') lockBuf = lockBuf.slice(0, -1);
     else if (lockBuf.length < LOCK_MAX) lockBuf += k;
