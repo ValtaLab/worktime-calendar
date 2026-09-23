@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.30.0';
-  const APP_BUILD = '20260923-1324';
+  const APP_VERSION = '1.30.1';
+  const APP_BUILD = '20260923-1354';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1254,6 +1254,9 @@
   function closeSheet() {
     hideOverlay(el.sheetBackdrop, el.sheet);
     editingKey = null;
+    el.suggestWork.hidden = true;   // 關面板統一收起描述建議
+    el.suggestOt.hidden = true;
+    el.suggestNight.hidden = true;
     if (lastFocused && lastFocused.focus) lastFocused.focus({ preventScroll: true });
   }
 
@@ -1399,12 +1402,11 @@
       chip.className = 'suggest-chip';
       chip.textContent = t;
       chip.title = t;
-      // pointerdown 在 blur 前觸發：先攔下填入，避免建議被 blur 提前收起
+      // pointerdown 在 blur 前觸發：先攔下填入並保持 textarea 焦點
       chip.addEventListener('pointerdown', (ev) => {
         ev.preventDefault();
         ta.value = t;
         ta.dispatchEvent(new Event('input', { bubbles: true }));
-        box.hidden = true;
       });
       box.appendChild(chip);
     });
@@ -1717,14 +1719,17 @@
       else if (themeMql.addListener) themeMql.addListener(onSchemeChange);   // 舊 Safari
     }
 
-    /* ---- 描述記憶：聚焦顯示最近描述建議、失焦收起 ---- */
+    /* ---- 描述記憶：聚焦顯示最近描述建議 ----
+       建議顯示後**保持到面板關閉**（失焦不收起）：面板底部對齊、高度隨內容
+       變化，若 blur 時收起，點右上角 X 的瞬間面板頂邊會下移，瀏覽器把
+       touchstart→touchend 的位移判定為手勢而取消 click，變成要按兩次才關。
+       開／關面板時統一收起（openSheet／closeSheet）。 */
     [[el.workDesc, el.suggestWork, 'work'],
      [el.otDesc, el.suggestOt, 'ot'],
      [el.nightDesc, el.suggestNight, 'night'],
     ].forEach(([ta, box, kind]) => {
       if (!ta || !box) return;
       ta.addEventListener('focus', () => renderDescSuggest(ta, box, kind));
-      ta.addEventListener('blur', () => { box.hidden = true; });
     });
 
     /* ---- 收入金額：點一下切換顯示 / 遮蔽 ----
