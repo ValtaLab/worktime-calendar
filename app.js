@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.30.2';
-  const APP_BUILD = '20260923-1850';
+  const APP_VERSION = '1.30.3';
+  const APP_BUILD = '20260925-0758';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -844,6 +844,8 @@
   function closeLock() {
     lockMode = ''; lockBuf = ''; lockTemp = '';
     haptic(HAPTIC_OK);   // 解鎖／設定成功：兩短震
+    clearTimeout(lockPressTimer);
+    el.lockScreen.classList.remove('pressing');
     el.lockScreen.classList.add('unlocked');
     setTimeout(() => { el.lockScreen.hidden = true; }, 300);
   }
@@ -896,6 +898,7 @@
   function lockKey(k) {
     if (!lockMode || Date.now() < lockCooldown) return;
     haptic(HAPTIC_TAP);   // 每次按鍵輕震回饋
+    lockPressEffect();    // 每次按鍵：介面下沉＋邊緣發光
     if (k === 'clear') lockBuf = '';
     else if (k === 'back') lockBuf = lockBuf.slice(0, -1);
     else if (lockBuf.length < LOCK_MAX) lockBuf += k;
@@ -903,6 +906,19 @@
     lockMsg('');
     if (lockBuf.length === LOCK_MAX) setTimeout(lockSubmit, 120);  // 輸滿自動驗證
   }
+  /* 按鍵視覺回饋：鎖屏加 .pressing → 卡片下沉（CSS transform）＋
+     畫面邊緣內發光（::after inset shadow）。130ms 後自動移除；
+     連按時先移除再重加並強制 reflow，確保每次都有完整一下。 */
+  let lockPressTimer = null;
+  function lockPressEffect() {
+    const s = el.lockScreen;
+    s.classList.remove('pressing');
+    void s.offsetWidth;   // 重觸發（連按時每次都能重新播）
+    s.classList.add('pressing');
+    clearTimeout(lockPressTimer);
+    lockPressTimer = setTimeout(() => s.classList.remove('pressing'), 130);
+  }
+
   function syncLockUI() {
     const on = !!settings.pinHash;
     el.lockState.textContent = on ? '已啟用' : '未啟用';

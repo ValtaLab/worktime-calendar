@@ -1981,6 +1981,35 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
    必須顯式聲明，否則「關閉」的鎖屏仍攔截全頁點擊（同 .income-bar[hidden] 慣例）。 */
 .lock-screen[hidden] { display: none; }
 
+/* 邊緣發光：獨立層疊在鎖屏上，press 時亮起。
+   用 inset box-shadow 沿著畫面四邊描一圈光暈（不影響版面、可獨立淡入淡出），
+   顏色取 --work（與鎖頭圖示同色），暗色模式下自動跟著變亮。
+   三層疊加：1.5px 亮邊 ＋ 近距離光暈 ＋ 大範圍擴散，淺色底也看得清楚。 */
+.lock-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--work) 85%, transparent),
+    inset 0 0 22px 2px color-mix(in srgb, var(--work) 60%, transparent),
+    inset 0 0 64px 18px color-mix(in srgb, var(--work) 32%, transparent);
+  transition: opacity .16s ease;
+}
+.lock-screen.pressing::after { opacity: 1; }
+
+/* 按下時整體介面「下沉」：卡片微微縮小並往下沉，
+   與邊緣發光、按鍵自身的 .lock-key:active 一起構成按壓的物理感。 */
+.lock-card {
+  position: relative;
+  z-index: 1;   /* 蓋在 ::after 光暈之上 */
+  transition: transform .13s cubic-bezier(.3, .9, .4, 1);
+  will-change: transform;
+}
+.lock-screen.pressing .lock-card { transform: scale(.978) translateY(3px); }
+
 .lock-card {
   width: min(320px, 92vw);
   display: flex;

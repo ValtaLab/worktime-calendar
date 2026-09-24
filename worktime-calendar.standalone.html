@@ -2007,6 +2007,35 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
    必須顯式聲明，否則「關閉」的鎖屏仍攔截全頁點擊（同 .income-bar[hidden] 慣例）。 */
 .lock-screen[hidden] { display: none; }
 
+/* 邊緣發光：獨立層疊在鎖屏上，press 時亮起。
+   用 inset box-shadow 沿著畫面四邊描一圈光暈（不影響版面、可獨立淡入淡出），
+   顏色取 --work（與鎖頭圖示同色），暗色模式下自動跟著變亮。
+   三層疊加：1.5px 亮邊 ＋ 近距離光暈 ＋ 大範圍擴散，淺色底也看得清楚。 */
+.lock-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  box-shadow:
+    inset 0 0 0 2px color-mix(in srgb, var(--work) 85%, transparent),
+    inset 0 0 22px 2px color-mix(in srgb, var(--work) 60%, transparent),
+    inset 0 0 64px 18px color-mix(in srgb, var(--work) 32%, transparent);
+  transition: opacity .16s ease;
+}
+.lock-screen.pressing::after { opacity: 1; }
+
+/* 按下時整體介面「下沉」：卡片微微縮小並往下沉，
+   與邊緣發光、按鍵自身的 .lock-key:active 一起構成按壓的物理感。 */
+.lock-card {
+  position: relative;
+  z-index: 1;   /* 蓋在 ::after 光暈之上 */
+  transition: transform .13s cubic-bezier(.3, .9, .4, 1);
+  will-change: transform;
+}
+.lock-screen.pressing .lock-card { transform: scale(.978) translateY(3px); }
+
 .lock-card {
   width: min(320px, 92vw);
   display: flex;
@@ -2525,8 +2554,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.30.2';
-  const APP_BUILD = '20260923-1850';
+  const APP_VERSION = '1.30.3';
+  const APP_BUILD = '20260925-0758';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -3362,6 +3391,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   function closeLock() {
     lockMode = ''; lockBuf = ''; lockTemp = '';
     haptic(HAPTIC_OK);   // 解鎖／設定成功：兩短震
+    clearTimeout(lockPressTimer);
+    el.lockScreen.classList.remove('pressing');
     el.lockScreen.classList.add('unlocked');
     setTimeout(() => { el.lockScreen.hidden = true; }, 300);
   }
@@ -3414,6 +3445,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   function lockKey(k) {
     if (!lockMode || Date.now() < lockCooldown) return;
     haptic(HAPTIC_TAP);   // 每次按鍵輕震回饋
+    lockPressEffect();    // 每次按鍵：介面下沉＋邊緣發光
     if (k === 'clear') lockBuf = '';
     else if (k === 'back') lockBuf = lockBuf.slice(0, -1);
     else if (lockBuf.length < LOCK_MAX) lockBuf += k;
@@ -3421,6 +3453,19 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     lockMsg('');
     if (lockBuf.length === LOCK_MAX) setTimeout(lockSubmit, 120);  // 輸滿自動驗證
   }
+  /* 按鍵視覺回饋：鎖屏加 .pressing → 卡片下沉（CSS transform）＋
+     畫面邊緣內發光（::after inset shadow）。130ms 後自動移除；
+     連按時先移除再重加並強制 reflow，確保每次都有完整一下。 */
+  let lockPressTimer = null;
+  function lockPressEffect() {
+    const s = el.lockScreen;
+    s.classList.remove('pressing');
+    void s.offsetWidth;   // 重觸發（連按時每次都能重新播）
+    s.classList.add('pressing');
+    clearTimeout(lockPressTimer);
+    lockPressTimer = setTimeout(() => s.classList.remove('pressing'), 130);
+  }
+
   function syncLockUI() {
     const on = !!settings.pinHash;
     el.lockState.textContent = on ? '已啟用' : '未啟用';
