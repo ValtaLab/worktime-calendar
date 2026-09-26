@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.30.3';
-  const APP_BUILD = '20260925-0758';
+  const APP_VERSION = '1.30.4';
+  const APP_BUILD = '20260926-1152';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -906,9 +906,8 @@
     lockMsg('');
     if (lockBuf.length === LOCK_MAX) setTimeout(lockSubmit, 120);  // 輸滿自動驗證
   }
-  /* 按鍵視覺回饋：鎖屏加 .pressing → 卡片下沉（CSS transform）＋
-     畫面邊緣內發光（::after inset shadow）。130ms 後自動移除；
-     連按時先移除再重加並強制 reflow，確保每次都有完整一下。 */
+  /* 按鍵視覺回饋：鎖屏加 .pressing → 畫面邊緣內發光（::after inset shadow）。
+     130ms 後自動移除；連按時先移除再重加並強制 reflow，確保每次都有完整一下。 */
   let lockPressTimer = null;
   function lockPressEffect() {
     const s = el.lockScreen;

@@ -2026,15 +2026,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 }
 .lock-screen.pressing::after { opacity: 1; }
 
-/* 按下時整體介面「下沉」：卡片微微縮小並往下沉，
-   與邊緣發光、按鍵自身的 .lock-key:active 一起構成按壓的物理感。 */
+/* 按下時只做邊緣發光（不做介面下沉）：卡片本身保持不動，
+   只由 ::after 的內陰影在畫面四邊亮起，回饋集中在外緣、不晃動內容。 */
 .lock-card {
   position: relative;
   z-index: 1;   /* 蓋在 ::after 光暈之上 */
-  transition: transform .13s cubic-bezier(.3, .9, .4, 1);
-  will-change: transform;
 }
-.lock-screen.pressing .lock-card { transform: scale(.978) translateY(3px); }
 
 .lock-card {
   width: min(320px, 92vw);
@@ -2554,8 +2551,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.30.3';
-  const APP_BUILD = '20260925-0758';
+  const APP_VERSION = '1.30.4';
+  const APP_BUILD = '20260926-1152';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -3453,9 +3450,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     lockMsg('');
     if (lockBuf.length === LOCK_MAX) setTimeout(lockSubmit, 120);  // 輸滿自動驗證
   }
-  /* 按鍵視覺回饋：鎖屏加 .pressing → 卡片下沉（CSS transform）＋
-     畫面邊緣內發光（::after inset shadow）。130ms 後自動移除；
-     連按時先移除再重加並強制 reflow，確保每次都有完整一下。 */
+  /* 按鍵視覺回饋：鎖屏加 .pressing → 畫面邊緣內發光（::after inset shadow）。
+     130ms 後自動移除；連按時先移除再重加並強制 reflow，確保每次都有完整一下。 */
   let lockPressTimer = null;
   function lockPressEffect() {
     const s = el.lockScreen;

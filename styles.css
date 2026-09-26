@@ -2000,15 +2000,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 }
 .lock-screen.pressing::after { opacity: 1; }
 
-/* 按下時整體介面「下沉」：卡片微微縮小並往下沉，
-   與邊緣發光、按鍵自身的 .lock-key:active 一起構成按壓的物理感。 */
+/* 按下時只做邊緣發光（不做介面下沉）：卡片本身保持不動，
+   只由 ::after 的內陰影在畫面四邊亮起，回饋集中在外緣、不晃動內容。 */
 .lock-card {
   position: relative;
   z-index: 1;   /* 蓋在 ::after 光暈之上 */
-  transition: transform .13s cubic-bezier(.3, .9, .4, 1);
-  will-change: transform;
 }
-.lock-screen.pressing .lock-card { transform: scale(.978) translateY(3px); }
 
 .lock-card {
   width: min(320px, 92vw);
