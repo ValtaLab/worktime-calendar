@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.30.4';
-  const APP_BUILD = '20260926-1152';
+  const APP_VERSION = '1.31.0';
+  const APP_BUILD = '20260928-1809';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -390,6 +390,25 @@
       workIncome, partIncome, otIncome, nightIncome,
       total: workIncome + partIncome + otIncome + nightIncome,
     };
+  }
+
+  /* 單日收入：與 incomeOfMonth 同一套費率逐項計算。
+     沒有任何費率、或該日完全沒有可計價時數 → 回 null（格子不顯示）。 */
+  function incomeOfDay(e) {
+    if (!e) return null;
+    const dayPay = num(settings.dayPay);
+    const hourlyPay = num(settings.hourlyPay);
+    const otPay = num(settings.otPay);
+    const nightPay = num(settings.nightPay);
+    if (dayPay <= 0 && hourlyPay <= 0 && otPay <= 0 && nightPay <= 0) return null;
+
+    const wu = num(e.workUnits);
+    const ph = num(e.partHours);
+    const oh = num(e.otHours);
+    const nh = num(e.nightHours);
+    const total = wu * dayPay + ph * hourlyPay + oh * otPay + nh * nightPay;
+    if (total <= 0) return null;
+    return total;
   }
 
   /* ===================== 雲端備份（Cloudflare Worker） =====================
@@ -1161,6 +1180,15 @@
     }
     const groupsHtml = groups.length ? `<div class="day-groups">${groups.join('')}</div>` : '';
 
+    /* 每日收入（小字）：只在「設定了費率」且該日有可計價時數時顯示，
+       與收入總計同一套遮蔽機制——沒按「顯示」時只出現 •••，旁人看不到金額。 */
+    const dayInc = incomeOfDay(e);
+    const incHtml = dayInc != null
+      ? `<div class="day-income" aria-hidden="true">${
+          incomeShown ? `$${fmtMoney(dayInc)}` : '•••'
+        }</div>`
+      : '';
+
     const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
     if (c.holiday) labelParts.push(`公眾假期：${c.holiday}`);
     if (hasEntry) {
@@ -1171,6 +1199,10 @@
     } else {
       labelParts.push('尚無記錄');
     }
+    // 無障礙：每日收入也唸出來（金額被遮蔽時只說明有收入，不唸數字）
+    if (dayInc != null) {
+      labelParts.push(incomeShown ? `當日收入 ${fmtMoney(dayInc)} 元` : '當日有收入（金額已遮蔽）');
+    }
 
     // data-dow：讓 CSS 能分辨「六」與「日」。
     // 兩者都是週末（.is-weekend），但配色不同（星期六藍、星期日橘），
@@ -1179,6 +1211,7 @@
       <div class="day-num">${c.day}</div>
       ${c.holiday ? `<div class="day-hol">${escapeHtml(c.holiday)}</div>` : ''}
       ${groupsHtml}
+      ${incHtml}
     </div>`;
   }
 
@@ -1790,6 +1823,7 @@
       if (!ev.target.closest('#incomeToggle')) return;
       incomeShown = !incomeShown;   // 只記在記憶體：重載 App 回到預設隱藏
       renderIncome();
+      renderCalendar();   // 格子底部的每日收入同步顯示／遮蔽
     });
 
     /* ---- 螢幕鎖定：鍵盤（點擊委派）、選單入口、回前台重鎖 ---- */

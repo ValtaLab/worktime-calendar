@@ -814,6 +814,26 @@ input, textarea { font-family: inherit; }
   background: color-mix(in srgb, var(--work) 11%, transparent);
 }
 
+/* ---- 每日收入（格子底部小字）----
+   只在設定費率且該日有可計價時數時出現；金額未「顯示」時是 •••（與收入總計同一套遮蔽）。
+   margin-top: auto 把它推到格子底部，但不搶資料色塊的位置。 */
+.day-income {
+  margin-top: auto;
+  padding-top: 3px;
+  align-self: flex-end;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -.2px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+/* 手機：格子窄，縮到 9px 並允許更貼邊 */
+@media (max-width: 560px) {
+  .day-income { font-size: 9px; padding-top: 2px; }
+}
+
 .day-desc {
   font-size: 12.5px;
   line-height: 1.32;
