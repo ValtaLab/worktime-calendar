@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.31.0';
-  const APP_BUILD = '20260928-1809';
+  const APP_VERSION = '1.31.1';
+  const APP_BUILD = '20260928-1815';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1180,13 +1180,12 @@
     }
     const groupsHtml = groups.length ? `<div class="day-groups">${groups.join('')}</div>` : '';
 
-    /* 每日收入（小字）：只在「設定了費率」且該日有可計價時數時顯示，
-       與收入總計同一套遮蔽機制——沒按「顯示」時只出現 •••，旁人看不到金額。 */
+    /* 每日收入（小字）：只在「已按顯示金額」且該日有可計價時數時才出現。
+       未顯示金額時**整塊不渲染**（不留 ••• 佔位）——格子保持乾淨，
+       避免每格都掛著三個點反而干擾閱讀；總計那顆按鈕仍保留 ••• 提示可點。 */
     const dayInc = incomeOfDay(e);
-    const incHtml = dayInc != null
-      ? `<div class="day-income" aria-hidden="true">${
-          incomeShown ? `$${fmtMoney(dayInc)}` : '•••'
-        }</div>`
+    const incHtml = (dayInc != null && incomeShown)
+      ? `<div class="day-income" aria-hidden="true">$${fmtMoney(dayInc)}</div>`
       : '';
 
     const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
@@ -1199,9 +1198,9 @@
     } else {
       labelParts.push('尚無記錄');
     }
-    // 無障礙：每日收入也唸出來（金額被遮蔽時只說明有收入，不唸數字）
-    if (dayInc != null) {
-      labelParts.push(incomeShown ? `當日收入 ${fmtMoney(dayInc)} 元` : '當日有收入（金額已遮蔽）');
+    // 無障礙：只在金額可見時唸出每日收入（隱藏狀態不提示，維持格子靜默）
+    if (dayInc != null && incomeShown) {
+      labelParts.push(`當日收入 ${fmtMoney(dayInc)} 元`);
     }
 
     // data-dow：讓 CSS 能分辨「六」與「日」。
