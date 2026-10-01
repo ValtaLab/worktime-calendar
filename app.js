@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.31.1';
-  const APP_BUILD = '20260928-1815';
+  const APP_VERSION = '1.32.0';
+  const APP_BUILD = '20261001-2303';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -16,66 +16,68 @@
   // 香港公眾假期（紅日）——資料來源：1823 官方 iCal（www.1823.gov.hk）
   // 2025–2027 已由政府憲報公布；新一年公布後於年末更新此表。
   // 無資料的年份照常運作（只是不顯示假期標示）。
+  // 值為 HOLIDAY_NAMES 的鍵（顯示時才依語言取名），見 i18n 區塊。
   const HK_HOLIDAYS = {
     // 2025
-    '2025-01-01': '一月一日',
-    '2025-01-29': '農曆年初一',
-    '2025-01-30': '農曆年初二',
-    '2025-01-31': '農曆年初三',
-    '2025-04-04': '清明節',
-    '2025-04-18': '耶穌受難節',
-    '2025-04-19': '耶穌受難節翌日',
-    '2025-04-21': '復活節星期一',
-    '2025-05-01': '勞動節',
-    '2025-05-05': '佛誕',
-    '2025-05-31': '端午節',
-    '2025-07-01': '香港特別行政區成立紀念日',
-    '2025-10-01': '國慶日',
-    '2025-10-07': '中秋節翌日',
-    '2025-10-29': '重陽節',
-    '2025-12-25': '聖誕節',
-    '2025-12-26': '聖誕節後第一個周日',
+    '2025-01-01': 'newYear',
+    '2025-01-29': 'lunarNewYear1',
+    '2025-01-30': 'lunarNewYear2',
+    '2025-01-31': 'lunarNewYear3',
+    '2025-04-04': 'chingMing',
+    '2025-04-18': 'goodFriday',
+    '2025-04-19': 'goodFridayNext',
+    '2025-04-21': 'easterMonday',
+    '2025-05-01': 'labourDay',
+    '2025-05-05': 'buddha',
+    '2025-05-31': 'tsuenWan',
+    '2025-07-01': 'hksar',
+    '2025-10-01': 'nationalDay',
+    '2025-10-07': 'midAutumnNext',
+    '2025-10-29': 'chungYeung',
+    '2025-12-25': 'christmas',
+    '2025-12-26': 'boxingDay',
     // 2026
-    '2026-01-01': '一月一日',
-    '2026-02-17': '農曆年初一',
-    '2026-02-18': '農曆年初二',
-    '2026-02-19': '農曆年初三',
-    '2026-04-03': '耶穌受難節',
-    '2026-04-04': '耶穌受難節翌日',
-    '2026-04-06': '清明節翌日',
-    '2026-04-07': '復活節星期一翌日',
-    '2026-05-01': '勞動節',
-    '2026-05-25': '佛誕翌日',
-    '2026-06-19': '端午節',
-    '2026-07-01': '香港特別行政區成立紀念日',
-    '2026-09-26': '中秋節翌日',
-    '2026-10-01': '國慶日',
-    '2026-10-19': '重陽節翌日',
-    '2026-12-25': '聖誕節',
-    '2026-12-26': '聖誕節後第一個周日',
+    '2026-01-01': 'newYear',
+    '2026-02-17': 'lunarNewYear1',
+    '2026-02-18': 'lunarNewYear2',
+    '2026-02-19': 'lunarNewYear3',
+    '2026-04-03': 'goodFriday',
+    '2026-04-04': 'goodFridayNext',
+    '2026-04-06': 'chingMingNext',
+    '2026-04-07': 'easterMondayNext',
+    '2026-05-01': 'labourDay',
+    '2026-05-25': 'buddhaNext',
+    '2026-06-19': 'tsuenWan',
+    '2026-07-01': 'hksar',
+    '2026-09-26': 'midAutumnNext',
+    '2026-10-01': 'nationalDay',
+    '2026-10-19': 'chungYeungNext',
+    '2026-12-25': 'christmas',
+    '2026-12-26': 'boxingDay',
     // 2027
-    '2027-01-01': '一月一日',
-    '2027-02-06': '農曆年初一',
-    '2027-02-08': '農曆年初三',
-    '2027-02-09': '農曆年初四',
-    '2027-03-26': '耶穌受難節',
-    '2027-03-27': '耶穌受難節翌日',
-    '2027-03-29': '復活節星期一',
-    '2027-04-05': '清明節',
-    '2027-05-01': '勞動節',
-    '2027-05-13': '佛誕',
-    '2027-06-09': '端午節',
-    '2027-07-01': '香港特別行政區成立紀念日',
-    '2027-09-16': '中秋節翌日',
-    '2027-10-01': '國慶日',
-    '2027-10-08': '重陽節',
-    '2027-12-25': '聖誕節',
-    '2027-12-27': '聖誕節後第一個周日',
+    '2027-01-01': 'newYear',
+    '2027-02-06': 'lunarNewYear1',
+    '2027-02-08': 'lunarNewYear3',
+    '2027-02-09': 'lunarNewYear4',
+    '2027-03-26': 'goodFriday',
+    '2027-03-27': 'goodFridayNext',
+    '2027-03-29': 'easterMonday',
+    '2027-04-05': 'chingMing',
+    '2027-05-01': 'labourDay',
+    '2027-05-13': 'buddha',
+    '2027-06-09': 'tsuenWan',
+    '2027-07-01': 'hksar',
+    '2027-09-16': 'midAutumnNext',
+    '2027-10-01': 'nationalDay',
+    '2027-10-08': 'chungYeung',
+    '2027-12-25': 'christmas',
+    '2027-12-27': 'boxingDay',
   };
 
   const DEFAULTS = {
     stdHours: 8,    // 僅供舊資料遷移換算（1 工 = N 小時）；UI 已移除此設定
     theme: 'auto',  // 主題：auto＝跟隨系統光暗模式；light／dark＝固定
+    lang: 'zh-Hant', // 介面語言：'zh-Hant'（繁中）| 'en'（English）
     showWeekend: true,
     showHolidays: true,  // 顯示香港公眾假期（紅日：日期轉紅＋假期名）
     showHours: true,
@@ -91,6 +93,559 @@
     cfAt: '',       // 上次成功備份時間（ISO）
     cfHash: '',     // 上次成功備份的內容指紋（沒變不重推）
   };
+
+  /* ===================== i18n（繁體中文 / English） =====================
+     語言設定存於 settings.lang（'zh-Hant' | 'en'），在側邊選單「語言」切換。
+     靜態文案在 index.html 以 data-i18n / data-i18n-ph / data-i18n-aria 標記，
+     由 applyLang() 一次套用；動態文案一律走 t(key, vars)。
+     假期名稱 HK_HOLIDAYS 只存鍵（HOLIDAY_NAMES 的 key），顯示時才依語言取名。 */
+  const LANGS = ['zh-Hant', 'en'];
+
+  const I18N = {
+    'zh-Hant': {
+      appName: '工時月曆',
+      metaDesc: '工時月曆 — 快速記錄每日工時與加班，月曆一目了然',
+      today: '今天',
+      monthNav: '月份切換',
+      prevMonth: '上一個月',
+      nextMonth: '下一個月',
+      menu: '更多操作',
+      calendar: '月曆',
+      close: '關閉',
+      drawerMenu: '選單',
+
+      // 底部提示
+      hintTouch: '點一下日期可新增或編輯工時／兼職／加班／半夜記錄',
+      hintMouse: '雙擊日期可新增或編輯工時／兼職／加班／半夜記錄',
+
+      // 面板
+      sheetNew: '新增記錄',
+      sheetEdit: '編輯記錄',
+      workSection: '工時',
+      partSection: '兼職小時',
+      otSection: '加班',
+      nightSection: '半夜加班',
+      desc: '描述',
+      workUnits: '工數',
+      partHours: '兼職時數',
+      otHours: '加班時數',
+      nightHours: '半夜加班時數',
+      chipPart: '兼職時數',
+      chipPartSub: '不記工數',
+      chipHalf: '0.5 工',
+      chipHalfSub: '半日',
+      chipFull: '1 工',
+      chipFullSub: '全日',
+      hourWord: '小時',
+      scrollHelp: '上下滑動選擇・按時薪計',
+      tagsLabel: '標籤（選填）',
+      tagsPlaceholder: '以逗號分隔，例：出差, 遠端',
+      delete: '刪除',
+      cancel: '取消',
+      save: '儲存',
+      hkHolidayPrefix: '香港公眾假期・',
+
+      // 收入
+      incomeLabel: '本月收入總計',
+      incomeShowAria: '本月收入總計，點擊隱藏金額',
+      incomeHideAria: '本月收入總計已隱藏，點擊顯示金額',
+      incomeHideTip: '點擊隱藏金額',
+      incomeShowTip: '點擊顯示金額',
+      incomeHideWord: '隱藏',
+      incomeShowWord: '顯示',
+
+      // 統計膠囊
+      statWork: '工時 ',
+      statPart: '兼職 ',
+      statOt: '加班 ',
+      statNight: '半夜 ',
+      statDays: '記錄 ',
+      unitWork: '工',
+      unitDays: '天',
+
+      // 格子
+      holPrefix: '公眾假期：',
+      cellWork: '工時',
+      cellPart: '兼職',
+      cellOt: '加班',
+      cellNight: '半夜加班',
+      cellNoRecord: '尚無記錄',
+      cellIncome: '當日收入',
+
+      // 側邊選單
+      secAppearance: '外觀',
+      themeGroup: '主題模式',
+      themeAuto: '跟隨系統',
+      themeLight: '淺色',
+      themeDark: '深色',
+      themeHelp: '「跟隨系統」會自動配合手機的光暗模式設定；選淺色或深色則固定不變。',
+      secLanguage: '語言',
+      langHelp: '介面語言會立即切換，設定會記在此裝置。',
+      secPay: '薪資設定',
+      payDay: '日薪（1 工）',
+      payHourly: '時薪（兼職）',
+      payOt: '加班時薪',
+      payNight: '半夜加班時薪',
+      payHelp: '設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。',
+      secDisplay: '顯示選項',
+      optHoliday: '顯示香港公眾假期',
+      optWeekend: '顯示週末',
+      optHours: '月曆上顯示工數',
+      optMonday: '週一為每週第一天',
+      secLock: '螢幕鎖定',
+      lockOn: '已啟用',
+      lockOff: '未啟用',
+      lockSet: '設定密碼',
+      lockDisable: '關閉鎖定',
+      lockHelp: '啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。',
+      secData: '資料',
+      exportCsv: '匯出 CSV（本月）',
+      exportJson: '匯出備份 JSON',
+      importJson: '匯入備份 JSON',
+      clearAll: '清除全部資料',
+      secCloud: '雲端備份（Cloudflare）',
+      cfEndpointLabel: 'Worker 網址（可留空）',
+      cfEndpointPh: '留空＝使用預設雲端',
+      cfCodeLabel: '恢復碼（重裝找回資料用；留空＝自動生成）',
+      cfCodePh: '留空自動生成',
+      cfConnect: '連接雲端備份',
+      cfConnecting: '連接中…',
+      cfRestore: '從雲端還原',
+      cfBackupNow: '立即備份',
+      cfShowCode: '查看恢復碼',
+      cfDisconnect: '斷開',
+      cfCodeHint: '這組恢復碼是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：',
+      cfCodeHintSheet: '這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：',
+      cfSaved: '已保存好',
+      cfHelp: '連接後，每次修改會自動加密備份（伺服器只有密文）。<b>刪除 App 重裝後</b>：填回同一個 Worker 網址＋恢復碼即可自動找回資料。恢復碼務必截圖保管。',
+      dataLocalHelp: '資料儲存在此裝置的瀏覽器中，離線可用。',
+      secVersion: '版本',
+      checkUpdate: '檢查更新',
+
+      // 雲端備份橫幅／面板
+      cfBannerText: '<b>雲端備份</b>　刪除 App 也不怕資料消失',
+      cfBannerGo: '開啟／找回',
+      cfAutoBackup: '自動備份',
+      cfSheetTitle: '雲端備份',
+      cfIntro1: '開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。',
+      cfIntro2: '第一次使用 → 點<b>一鍵開啟</b>，會生成一組<b>恢復碼</b>，請截圖保存。',
+      cfIntro3: '曾經開啟過（例如<b>刪除 App 後重裝</b>）→ 點<b>輸入恢復碼找回</b>，資料會自動回來，並<b>沿用原本的碼</b>，不需要新碼。',
+      cfOneTap: '一鍵開啟自動備份',
+      cfOpening: '開啟中…',
+      cfHaveToggle: '我已有恢復碼，輸入找回',
+      cfHaveGo: '用此碼找回並沿用',
+      cfFinding: '找家中…',
+      cfHaveAria: '恢復碼',
+      cfDone: '已截圖保存，完成',
+
+      // 更新橫幅
+      updateTitle: '有新版本可用',
+      updateDesc: '更新後即可使用最新功能',
+      updateNow: '立即更新',
+      updateLater: '稍後再說',
+
+      // 鎖屏
+      lockTitleUnlock: '輸入密碼',
+      lockTitleSet: '設定新密碼',
+      lockTitleConfirm: '再輸入一次確認',
+      lockTitleOff: '關閉鎖定',
+      lockPrompt4: '請輸入 4 位數字',
+      lockPromptCurrent: '輸入目前密碼以確認',
+      lockClear: '清除',
+      lockBackspace: '刪除最後一位',
+      lockWrong: '密碼錯誤，請重試',
+      lockEnabled: '螢幕鎖定已啟用',
+      lockDisabled: '螢幕鎖定已關閉',
+      lockMismatch: '兩次輸入不一致，請重新設定',
+      lockCooldown: '嘗試次數過多，{n} 秒後可再試',
+      lockAria: '螢幕鎖定',
+
+      // Toast
+      toastSaved: '已儲存',
+      toastCleared: '已清空此日記錄',
+      toastDeleted: '已刪除記錄',
+      toastBackToday: '已回到本月',
+      toastStorageFull: '儲存失敗，瀏覽器空間可能已滿',
+      toastExportedCsv: '已匯出 CSV',
+      toastNoExport: '本月尚無記錄可匯出',
+      toastExportedJson: '已匯出備份',
+      toastImported: '已匯入 {n} 筆記錄',
+      toastImportFail: '匯入失敗：檔案格式不正確',
+      toastClearedAll: '已清除全部資料',
+      toastLatest: '已是最新版本',
+      toastUpdateLater: '已稍後提醒，可隨時在選單檢查更新',
+      toastUpdateFound: '發現新版本，請點上方提示更新',
+      toastUpdateSlow: '新版本下載中，完成後會自動提示',
+      toastUpdateFail: '更新失敗，請稍後再試',
+      toastCfScheme: 'Worker 網址必須是 https:// 開頭',
+      toastCfRestored: '已從雲端找回資料',
+      toastCfPushed: '已把本機資料備份到雲端',
+      toastCfNoBackup: '這個碼在雲端沒有備份，將以本機資料開始',
+      toastCfCreated: '已建立雲端備份',
+      toastCfFail: '連接失敗：',
+      toastCfNotConnected: '尚未連接雲端',
+      toastCfBackedUp: '已備份到雲端',
+      toastCfBackupFail: '備份失敗：',
+      toastCfDisconnected: '已斷開雲端備份',
+      toastCfOpenFail: '開啟失敗：',
+      toastCfCodeInvalid: '請輸入 8 位恢復碼（格式 XXXX-XXXX）',
+      toastCfCodeMissing: '雲端沒有這組恢復碼的備份，請確認有沒有打錯',
+      toastCfRestoreFail: '還原失敗：',
+      msgCfBadEndpoint: 'Worker 網址必須是 https://',
+      msgCfPushFail: '備份失敗（{n}）',
+      msgCfBadResponse: 'Worker 回應異常（{n}）',
+      msgCfNoBackup: '雲端沒有這個碼的備份',
+      msgCfBadFormat: '備份格式不符',
+      cfUnknownTime: '時間不明',
+      cfStatusAt: '已連接・上次備份：{t}',
+      cfStatusNever: '已連接・尚未備份過',
+
+      // Confirm
+      confirmDeleteEntry: '確定要刪除此日記錄嗎？',
+      confirmCfConflict: '雲端已有這個碼的備份（{t}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝把本機推上雲端',
+      confirmCfConflictKeep: '雲端已有這個碼的備份（{t}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝保留本機，把本機推上雲端',
+      confirmCfRestore: '用雲端備份覆蓋本機資料？\n本機目前的記錄會被取代。',
+      confirmCfDisconnect: '斷開雲端備份？\n本機資料不受影響，之後不再自動備份。\n（恢復碼若要繼續使用，請保留截圖）',
+      confirmImport: '將匯入 {n} 筆記錄，同名日期會被覆蓋。確定繼續？',
+      confirmClearAll: '確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。',
+
+      // 版本
+      verBuildAt: '建置於 {t}',
+      verChecking: '檢查中…',
+      verFoundNow: '發現新版本，可立即更新',
+      verFileMode: '單檔版不支援線上檢查更新',
+      verOffline: '目前離線，無法檢查更新',
+      verFound: '發現新版本 v{v}',
+      verLatest: '已是最新版本',
+      verUpdating: '更新中…',
+      verSlow: '下載較慢…',
+      updateBarNotes: 'v{v}：{notes}',
+      updateBarVersion: '更新至 v{v}',
+      updateBarDownloaded: '已下載新版本，點此套用',
+
+      // 安裝提示
+      installBefore: '此應用可安裝到主畫面：點右上角選單 → 安裝應用程式。',
+      installDone: '已安裝到裝置，可離線使用。',
+      installStandalone: '已以獨立應用模式執行，離線可用。',
+      installIOS: 'iOS：點「分享」→「加入主畫面」即可安裝。',
+      installGeneric: '可安裝為 App：瀏覽器選單 → 安裝／加到主畫面。',
+
+      // CSV / 檔案
+      csvWeekPrefix: '週',
+      csvHeaders: ['日期', '星期', '工數(工)', '工時描述', '兼職(小時)', '加班(小時)', '加班描述',
+        '半夜加班(小時)', '半夜加班描述', '標籤'],
+      csvFilename: '工時月曆_{ym}.csv',
+      jsonFilename: '工時月曆_備份_{date}.json',
+    },
+
+    en: {
+      appName: 'Worktime Calendar',
+      metaDesc: 'Worktime Calendar — log daily work hours and overtime at a glance',
+      today: 'Today',
+      monthNav: 'Month navigation',
+      prevMonth: 'Previous month',
+      nextMonth: 'Next month',
+      menu: 'More actions',
+      calendar: 'Calendar',
+      close: 'Close',
+      drawerMenu: 'Menu',
+
+      hintTouch: 'Tap a date to add or edit work, part-time, overtime or night records',
+      hintMouse: 'Double-click a date to add or edit work, part-time, overtime or night records',
+
+      sheetNew: 'New Record',
+      sheetEdit: 'Edit Record',
+      workSection: 'Work',
+      partSection: 'Part-time Hours',
+      otSection: 'Overtime',
+      nightSection: 'Night Overtime',
+      desc: 'Description',
+      workUnits: 'Day Units',
+      partHours: 'Part-time Hours',
+      otHours: 'Overtime Hours',
+      nightHours: 'Night Overtime Hours',
+      chipPart: 'Part-time',
+      chipPartSub: 'No day units',
+      chipHalf: '0.5 unit',
+      chipHalfSub: 'Half day',
+      chipFull: '1 unit',
+      chipFullSub: 'Full day',
+      hourWord: 'hr',
+      scrollHelp: 'Scroll to choose · paid at hourly rate',
+      tagsLabel: 'Tags (optional)',
+      tagsPlaceholder: 'Comma separated, e.g. trip, remote',
+      delete: 'Delete',
+      cancel: 'Cancel',
+      save: 'Save',
+      hkHolidayPrefix: 'HK public holiday · ',
+
+      incomeLabel: 'Monthly Income',
+      incomeShowAria: 'Monthly income total, tap to hide amounts',
+      incomeHideAria: 'Monthly income total hidden, tap to show amounts',
+      incomeHideTip: 'Tap to hide amounts',
+      incomeShowTip: 'Tap to show amounts',
+      incomeHideWord: 'Hide',
+      incomeShowWord: 'Show',
+
+      statWork: 'Days ',
+      statPart: 'Part-time ',
+      statOt: 'OT ',
+      statNight: 'Night ',
+      statDays: 'Records ',
+      unitWork: 'd',
+      unitDays: 'd',
+
+      holPrefix: 'Public holiday: ',
+      cellWork: 'Work',
+      cellPart: 'Part-time',
+      cellOt: 'Overtime',
+      cellNight: 'Night overtime',
+      cellNoRecord: 'No record',
+      cellIncome: 'Daily income',
+
+      secAppearance: 'Appearance',
+      themeGroup: 'Theme',
+      themeAuto: 'System',
+      themeLight: 'Light',
+      themeDark: 'Dark',
+      themeHelp: '“System” follows your phone’s light/dark setting; Light or Dark stays fixed.',
+      secLanguage: 'Language',
+      langHelp: 'The interface switches instantly. The choice is saved on this device.',
+      secPay: 'Pay Settings',
+      payDay: 'Daily rate (1 unit)',
+      payHourly: 'Hourly rate (part-time)',
+      payOt: 'Overtime hourly rate',
+      payNight: 'Night overtime hourly rate',
+      payHelp: 'Once set, the monthly income total appears below the calendar (day units × daily rate + part-time hours × hourly rate + overtime hours × overtime rate + night hours × night rate). Leave blank or 0 to hide.',
+      secDisplay: 'Display Options',
+      optHoliday: 'Show Hong Kong public holidays',
+      optWeekend: 'Show weekends',
+      optHours: 'Show day units on calendar',
+      optMonday: 'Start week on Monday',
+      secLock: 'Screen Lock',
+      lockOn: 'Enabled',
+      lockOff: 'Not enabled',
+      lockSet: 'Set Passcode',
+      lockDisable: 'Turn Off Lock',
+      lockHelp: 'Once enabled, you must enter a 4-digit passcode each time you open the app or return to it. The passcode is stored only as a hash and never leaves this device.',
+      secData: 'Data',
+      exportCsv: 'Export CSV (this month)',
+      exportJson: 'Export Backup JSON',
+      importJson: 'Import Backup JSON',
+      clearAll: 'Clear All Data',
+      secCloud: 'Cloud Backup (Cloudflare)',
+      cfEndpointLabel: 'Worker URL (optional)',
+      cfEndpointPh: 'Blank = use default cloud',
+      cfCodeLabel: 'Recovery code (for restoring after reinstall; blank = auto-generate)',
+      cfCodePh: 'Blank = auto-generate',
+      cfConnect: 'Connect Cloud Backup',
+      cfConnecting: 'Connecting…',
+      cfRestore: 'Restore from Cloud',
+      cfBackupNow: 'Back Up Now',
+      cfShowCode: 'View Recovery Code',
+      cfDisconnect: 'Disconnect',
+      cfCodeHint: 'This recovery code is the only proof of ownership, <b>screenshot it now</b> (send it to yourself / keep it in Photos):',
+      cfCodeHintSheet: 'This <b>recovery code</b> is the only proof of ownership, <b>screenshot it now</b> (send it to yourself / keep it in Photos):',
+      cfSaved: 'Saved',
+      cfHelp: 'Once connected, every change is encrypted and backed up automatically (the server only holds ciphertext). <b>After reinstalling the app</b>, enter the same Worker URL and recovery code to restore everything. Always keep a screenshot of the code.',
+      dataLocalHelp: 'Data is stored in this device’s browser and works offline.',
+      secVersion: 'Version',
+      checkUpdate: 'Check for Updates',
+
+      cfBannerText: '<b>Cloud backup</b>　Keep your data safe',
+      cfBannerGo: 'Set up',
+      cfAutoBackup: 'Auto backup',
+      cfSheetTitle: 'Cloud Backup',
+      cfIntro1: 'Once enabled, every change is <b>encrypted and backed up</b> automatically (AES-GCM end-to-end encryption — the server only holds ciphertext and even the developer cannot read it).',
+      cfIntro2: 'First time → tap <b>Enable</b>. A <b>recovery code</b> is generated — screenshot it.',
+      cfIntro3: 'Used before (e.g. <b>after reinstalling the app</b>) → tap <b>Enter recovery code</b>. Your data comes back and <b>keeps the same code</b> — no new code needed.',
+      cfOneTap: 'Enable Auto Backup',
+      cfOpening: 'Enabling…',
+      cfHaveToggle: 'I already have a recovery code',
+      cfHaveGo: 'Restore with this code',
+      cfFinding: 'Searching…',
+      cfHaveAria: 'Recovery code',
+      cfDone: 'Saved, done',
+
+      updateTitle: 'New version available',
+      updateDesc: 'Update to get the latest features',
+      updateNow: 'Update Now',
+      updateLater: 'Later',
+
+      lockTitleUnlock: 'Enter Passcode',
+      lockTitleSet: 'Set New Passcode',
+      lockTitleConfirm: 'Enter Again to Confirm',
+      lockTitleOff: 'Turn Off Lock',
+      lockPrompt4: 'Enter 4 digits',
+      lockPromptCurrent: 'Enter current passcode to confirm',
+      lockClear: 'Clear',
+      lockBackspace: 'Delete last digit',
+      lockWrong: 'Wrong passcode, try again',
+      lockEnabled: 'Screen lock enabled',
+      lockDisabled: 'Screen lock turned off',
+      lockMismatch: 'The two entries differ, please set again',
+      lockCooldown: 'Too many attempts, try again in {n}s',
+      lockAria: 'Screen lock',
+
+      toastSaved: 'Saved',
+      toastCleared: 'Record cleared for this day',
+      toastDeleted: 'Record deleted',
+      toastBackToday: 'Back to this month',
+      toastStorageFull: 'Save failed — browser storage may be full',
+      toastExportedCsv: 'CSV exported',
+      toastNoExport: 'No records this month to export',
+      toastExportedJson: 'Backup exported',
+      toastImported: 'Imported {n} records',
+      toastImportFail: 'Import failed: invalid file format',
+      toastClearedAll: 'All data cleared',
+      toastLatest: 'You are on the latest version',
+      toastUpdateLater: 'Reminder dismissed — check for updates anytime in the menu',
+      toastUpdateFound: 'New version found, tap the banner above to update',
+      toastUpdateSlow: 'Downloading the new version — you will be notified when it is ready',
+      toastUpdateFail: 'Update failed, please try again later',
+      toastCfScheme: 'Worker URL must start with https://',
+      toastCfRestored: 'Data restored from the cloud',
+      toastCfPushed: 'Local data backed up to the cloud',
+      toastCfNoBackup: 'No cloud backup for this code — starting with your local data',
+      toastCfCreated: 'Cloud backup created',
+      toastCfFail: 'Connection failed: ',
+      toastCfNotConnected: 'Not connected to the cloud',
+      toastCfBackedUp: 'Backed up to the cloud',
+      toastCfBackupFail: 'Backup failed: ',
+      toastCfDisconnected: 'Cloud backup disconnected',
+      toastCfOpenFail: 'Could not enable: ',
+      toastCfCodeInvalid: 'Enter an 8-character recovery code (XXXX-XXXX)',
+      toastCfCodeMissing: 'No cloud backup for this code — please check for typos',
+      toastCfRestoreFail: 'Restore failed: ',
+      msgCfBadEndpoint: 'Worker URL must start with https://',
+      msgCfPushFail: 'Backup failed ({n})',
+      msgCfBadResponse: 'Unexpected worker response ({n})',
+      msgCfNoBackup: 'No cloud backup for this code',
+      msgCfBadFormat: 'Backup format is invalid',
+      cfUnknownTime: 'unknown time',
+      cfStatusAt: 'Connected · last backup: {t}',
+      cfStatusNever: 'Connected · no backup yet',
+
+      confirmDeleteEntry: 'Delete this day’s record?',
+      confirmCfConflict: 'A cloud backup for this code already exists ({t}).\n\nOK = overwrite this device with the cloud copy\nCancel = push this device to the cloud',
+      confirmCfConflictKeep: 'A cloud backup for this code already exists ({t}).\n\nOK = overwrite this device with the cloud copy\nCancel = keep this device and push it to the cloud',
+      confirmCfRestore: 'Overwrite this device with the cloud backup?\nYour current records will be replaced.',
+      confirmCfDisconnect: 'Disconnect cloud backup?\nYour local data is unaffected; auto backup will stop.\n(Keep a screenshot of the recovery code if you still need it)',
+      confirmImport: 'Import {n} records? Existing dates with the same name will be overwritten.',
+      confirmClearAll: 'Clear all work records? This cannot be undone. Export a backup first.',
+
+      verBuildAt: 'Built {t}',
+      verChecking: 'Checking…',
+      verFoundNow: 'New version found — update now',
+      verFileMode: 'Update check is unavailable in single-file mode',
+      verOffline: 'Offline — cannot check for updates',
+      verFound: 'New version v{v} found',
+      verLatest: 'You are on the latest version',
+      verUpdating: 'Updating…',
+      verSlow: 'Still downloading…',
+      updateBarNotes: 'v{v}: {notes}',
+      updateBarVersion: 'Update to v{v}',
+      updateBarDownloaded: 'New version downloaded, tap to apply',
+
+      installBefore: 'This app can be installed: open the browser menu → Install app.',
+      installDone: 'Installed on this device and available offline.',
+      installStandalone: 'Running as a standalone app — available offline.',
+      installIOS: 'iOS: tap Share → Add to Home Screen to install.',
+      installGeneric: 'Install as an app: browser menu → Install / Add to Home Screen.',
+
+      csvWeekPrefix: '',
+      csvHeaders: ['Date', 'Day', 'Day Units', 'Work Description', 'Part-time (h)', 'Overtime (h)', 'Overtime Description',
+        'Night OT (h)', 'Night OT Description', 'Tags'],
+      csvFilename: 'worktime-calendar_{ym}.csv',
+      jsonFilename: 'worktime-calendar_backup_{date}.json',
+    },
+  };
+
+  /* 香港公眾假期名稱（中英對照）。HK_HOLIDAYS 只存鍵，顯示時才取名。 */
+  const HOLIDAY_NAMES = {
+    zh: {
+      newYear: '一月一日',
+      lunarNewYear1: '農曆年初一',
+      lunarNewYear2: '農曆年初二',
+      lunarNewYear3: '農曆年初三',
+      lunarNewYear4: '農曆年初四',
+      chingMing: '清明節',
+      chingMingNext: '清明節翌日',
+      goodFriday: '耶穌受難節',
+      goodFridayNext: '耶穌受難節翌日',
+      easterMonday: '復活節星期一',
+      easterMondayNext: '復活節星期一翌日',
+      labourDay: '勞動節',
+      buddha: '佛誕',
+      buddhaNext: '佛誕翌日',
+      tsuenWan: '端午節',
+      hksar: '香港特別行政區成立紀念日',
+      nationalDay: '國慶日',
+      midAutumnNext: '中秋節翌日',
+      chungYeung: '重陽節',
+      chungYeungNext: '重陽節翌日',
+      christmas: '聖誕節',
+      boxingDay: '聖誕節後第一個周日',
+    },
+    en: {
+      newYear: 'New Year’s Day',
+      lunarNewYear1: 'Lunar New Year’s Day',
+      lunarNewYear2: 'The second day of Lunar New Year',
+      lunarNewYear3: 'The third day of Lunar New Year',
+      lunarNewYear4: 'The fourth day of Lunar New Year',
+      chingMing: 'Ching Ming Festival',
+      chingMingNext: 'The day following Ching Ming Festival',
+      goodFriday: 'Good Friday',
+      goodFridayNext: 'The day following Good Friday',
+      easterMonday: 'Easter Monday',
+      easterMondayNext: 'The day following Easter Monday',
+      labourDay: 'Labour Day',
+      buddha: 'The Birthday of the Buddha',
+      buddhaNext: 'The day following the Birthday of the Buddha',
+      tsuenWan: 'Tuen Ng Festival',
+      hksar: 'Hong Kong Special Administrative Region Establishment Day',
+      nationalDay: 'National Day',
+      midAutumnNext: 'The day following the Chinese Mid-Autumn Festival',
+      chungYeung: 'Chung Yeung Festival',
+      chungYeungNext: 'The day following Chung Yeung Festival',
+      christmas: 'Christmas Day',
+      boxingDay: 'The first weekday after Christmas Day',
+    },
+  };
+
+  /* 英文假期名有兩套：
+     - HOLIDAY_NAMES.en  → 完整官方名稱，用於面板與 aria-label（唸出來要正確）
+     - HOLIDAY_SHORT_EN  → 格子內短名，10px 小字塞不進 30 幾個字母
+       兩者沒有短版的（例如 National Day）就沿用長名。 */
+  const HOLIDAY_SHORT_EN = {
+    nationalDay: 'National Day',
+    christmas: 'Christmas',
+    boxingDay: 'Boxing Day',
+    hksar: 'HKSAR Day',
+    newYear: 'New Year',
+    lunarNewYear1: 'LNY Day 1',
+    lunarNewYear2: 'LNY Day 2',
+    lunarNewYear3: 'LNY Day 3',
+    lunarNewYear4: 'LNY Day 4',
+    chingMing: 'Ching Ming',
+    chingMingNext: 'Ching Ming +1',
+    goodFriday: 'Good Friday',
+    goodFridayNext: 'Good Friday +1',
+    easterMonday: 'Easter Mon',
+    easterMondayNext: 'Easter Mon +1',
+    labourDay: 'Labour Day',
+    buddha: 'Buddha’s Birthday',
+    buddhaNext: 'Buddha’s Birthday +1',
+    tsuenWan: 'Tuen Ng',
+    midAutumnNext: 'Mid-Autumn +1',
+    chungYeung: 'Chung Yeung',
+    chungYeungNext: 'Chung Yeung +1',
+  };
+
+  const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  const WEEK_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const WEEK_EN_MIN = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   /* ---------------- 狀態 ---------------- */
   let entries = {};              // { 'YYYY-MM-DD': {workDesc, workUnits, partHours, otDesc, otHours, nightDesc, nightHours, tags, updatedAt} }
@@ -109,11 +664,61 @@
   // 工數顯示：整數不帶小數，半工保留 .5
   const fmtUnits = (u) => round1(u).toString().replace(/\.0$/, '');
 
+  /* ---------------- 語言（i18n）執行環境 ----------------
+     lang 為目前語言；t(key, vars) 取詞並代換 {name} 變數（{n}／{t}／{v}／{notes}）。
+     缺鍵一律回退繁中、再回退鍵名本身，避免任何一處漏翻就整句空白。 */
+  let lang = DEFAULTS.lang;
+
+  function normalizeLang(v) {
+    return LANGS.includes(v) ? v : DEFAULTS.lang;
+  }
+
+  function t(key, vars) {
+    let s = I18N[lang] && I18N[lang][key];
+    if (s === undefined) s = I18N[DEFAULTS.lang][key];
+    if (s === undefined) return key;
+    if (Array.isArray(s)) return s;
+    if (vars) {
+      s = String(s).replace(/\{(\w+)\}/g, (m, name) => (
+        vars[name] === undefined || vars[name] === null ? m : String(vars[name])
+      ));
+    }
+    return s;
+  }
+
+  /* 日期格式依語言：zh-Hant → 2026 年 9 月 28 日（週一）；en → September 28, 2026 (Mon) */
+  const localeTag = () => (lang === 'en' ? 'en-US' : 'zh-TW');
+
+  const fmtDateLabel = (d) => (lang === 'en'
+    ? `${MONTHS_EN[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} (${WEEK_EN[d.getDay()]})`
+    : `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日（週${WEEK_DOW[d.getDay()]}）`);
+
+  /* 月份標題：zh-Hant → 2026 年 9 月；en → September 2026 */
+  const fmtMonthTitle = (y, m) => (lang === 'en' ? `${MONTHS_EN[m]} ${y}` : `${y} 年 ${m + 1} 月`);
+
+  /* 星期表頭：zh-Hant 用中文單字，en 用單字母（維持表頭寬度） */
+  const weekdayLabel = (i) => (lang === 'en' ? WEEK_EN_MIN[i] : WEEK_DOW[i]);
+
+  /* CSV 的星期欄：zh-Hant「週一」；en「Monday」 */
+  const csvWeekday = (i) => (lang === 'en' ? WEEK_EN_FULL[i] : t('csvWeekPrefix') + WEEK_DOW[i]);
+
+  /* 假期名稱：HK_HOLIDAYS 存鍵，這裡依語言取名。
+     short=true 時英文改用短名（格子內小字版面用）。 */
+  function holidayName(k, short) {
+    const key = HK_HOLIDAYS[k];
+    if (!key) return null;
+    if (lang === 'en') {
+      if (short && HOLIDAY_SHORT_EN[key]) return HOLIDAY_SHORT_EN[key];
+      return HOLIDAY_NAMES.en[key] || key;
+    }
+    return HOLIDAY_NAMES.zh[key] || key;
+  }
+
   // 金額顯示：千分位 + 最多兩位小數（有需要才顯示小數）
   const fmtMoney = (n) => {
     const v = Math.round(n * 100) / 100;
     const hasFrac = Math.abs(v % 1) > 0.0001;
-    return v.toLocaleString('zh-TW', {
+    return v.toLocaleString(localeTag(), {
       minimumFractionDigits: hasFrac ? 2 : 0,
       maximumFractionDigits: 2,
     });
@@ -122,12 +727,8 @@
   // 工數僅提供 0.5 工（半日）與 1 工（全日）兩個選擇
   const WORK_CHOICES = [0.5, 1];
 
-  const WEEK_TC = ['日', '一', '二', '三', '四', '五', '六'];
-
-  function fmtDateLabel(d) {
-    const w = WEEK_TC[d.getDay()];
-    return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日（週${w}）`;
-  }
+  const WEEK_DOW = ['日', '一', '二', '三', '四', '五', '六'];
+  const WEEK_EN_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   /* ---------------- 儲存 ---------------- */
   function load() {
@@ -205,7 +806,7 @@
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, updatedAt: Date.now(), data: entries }));
     } catch (e) {
-      toast('儲存失敗，瀏覽器空間可能已滿');
+      toast(t('toastStorageFull'));
       console.error(e);
     }
     scheduleCfBackup();  // 已連接雲端時：20 秒 debounce 自動備份
@@ -239,6 +840,58 @@
     el.themeSeg.querySelectorAll('.seg-btn').forEach((btn) => {
       btn.classList.toggle('is-active', (btn.dataset.themeOpt || 'auto') === cur);
     });
+  }
+
+  /* ---------------- 語言切換 ----------------
+     靜態文案在 index.html 以 data-i18n / data-i18n-ph / data-i18n-aria 標記；
+     這裡一次套用。「語言」分段控制本身不翻譯（永遠顯示中文／English），
+     但 aria-label 與說明文字要跟著走。 */
+  function syncLangSeg() {
+    if (!el.langSeg) return;
+    el.langSeg.querySelectorAll('.seg-btn').forEach((btn) => {
+      btn.classList.toggle('is-active', (btn.dataset.langOpt || '') === lang);
+    });
+  }
+
+  function applyStaticText() {
+    document.querySelectorAll('[data-i18n]').forEach((node) => {
+      const v = t(node.dataset.i18n);
+      if (typeof v === 'string') node.innerHTML = v;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach((node) => {
+      node.setAttribute('placeholder', t(node.dataset.i18nPh));
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach((node) => {
+      node.setAttribute('aria-label', t(node.dataset.i18nAria));
+    });
+    document.querySelectorAll('[data-i18n-content]').forEach((node) => {
+      node.setAttribute('content', t(node.dataset.i18nContent));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach((node) => {
+      node.setAttribute('title', t(node.dataset.i18nTitle));
+    });
+  }
+
+  function applyLang() {
+    lang = normalizeLang(settings.lang);
+    document.documentElement.setAttribute('lang', lang === 'en' ? 'en' : 'zh-Hant');
+    // 瀏覽器／iOS 加入主畫面時會讀 title 與這些 meta
+    document.title = t('appName');
+    const setMeta = (sel, attr, value) => {
+      const m = document.head.querySelector(sel);
+      if (m) m.setAttribute(attr, value);
+    };
+    setMeta('meta[name="apple-mobile-web-app-title"]', 'content', t('appName'));
+
+    applyStaticText();
+    syncLangSeg();
+    syncThemeSeg();
+    syncLockUI();
+    syncCfUI();
+    renderVersionInfo();
+    updateHintText();
+    setupInstallHint();
+    render();
   }
 
   /* ---------------- 畫面元素 ---------------- */
@@ -300,6 +953,7 @@
     optShowHours: $('optShowHours'),
     optMondayFirst: $('optMondayFirst'),
     themeSeg: $('themeSeg'),
+    langSeg: $('langSeg'),
     exportCsv: $('exportCsv'),
     exportJson: $('exportJson'),
     importJson: $('importJson'),
@@ -520,12 +1174,12 @@
   async function cfPush() {
     const endpoint = cfNorm(settings.cfEndpoint);
     if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
-      throw new Error('Worker 網址必須是 https://');
+      throw new Error(t('msgCfBadEndpoint'));
     }
     const enc = await cfEncrypt(cfBackupPayload(), settings.cfCode, endpoint);
     const body = { app: CF_APP, v: 1, savedAt: new Date().toISOString(), enc };
     const r = await cfApi('PUT', body);
-    if (!r.ok) throw new Error(`備份失敗（${r.status}）`);
+    if (!r.ok) throw new Error(t('msgCfPushFail', { n: r.status }));
     settings.cfAt = new Date().toISOString();
     settings.cfHash = cfHashOfState();
     saveSettings();
@@ -548,8 +1202,8 @@
     if (on) {
       const t = settings.cfAt ? new Date(settings.cfAt) : null;
       el.cfStatus.textContent = t
-        ? `已連接・上次備份：${t.toLocaleString('zh-TW')}`
-        : '已連接・尚未備份過';
+        ? t('cfStatusAt', { t: t.toLocaleString(localeTag()) })
+        : t('cfStatusNever');
     }
   }
 
@@ -562,7 +1216,7 @@
   async function connectCf() {
     const endpoint = cfNorm(el.cfEndpoint.value) || cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
     if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
-      toast('Worker 網址必須是 https:// 開頭');
+      toast(t('toastCfScheme'));
       el.cfEndpoint.focus();
       return;
     }
@@ -571,7 +1225,7 @@
     const code = isNew ? genRecoveryCode() : typed;
 
     el.cfConnect.disabled = true;
-    el.cfConnect.textContent = '連接中…';
+    el.cfConnect.textContent = t('cfConnecting');
     const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
     try {
       settings.cfEndpoint = endpoint;
@@ -580,25 +1234,25 @@
       if (r.status === 200 && r.json && r.json.found) {
         if (Object.keys(entries).length) {
           const cloudAt = r.json.data && r.json.data.savedAt
-            ? new Date(r.json.data.savedAt).toLocaleString('zh-TW') : '時間不明';
-          const useCloud = confirm(`雲端已有這個碼的備份（${cloudAt}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝把本機推上雲端`);
+            ? new Date(r.json.data.savedAt).toLocaleString(localeTag()) : t('cfUnknownTime');
+          const useCloud = confirm(t('confirmCfConflict', { t: cloudAt }));
           if (useCloud) {
             await cfRestore(true);
-            toast('已從雲端找回資料');
+            toast(t('toastCfRestored'));
           } else {
             await cfPush();
-            toast('已把本機資料備份到雲端');
+            toast(t('toastCfPushed'));
           }
         } else {
           await cfRestore(true);   // 本機是空的：直接還原
-          toast('已從雲端找回資料');
+          toast(t('toastCfRestored'));
         }
       } else if (r.status === 404) {
-        if (!isNew) toast('這個碼在雲端沒有備份，將以本機資料開始');
+        if (!isNew) toast(t('toastCfNoBackup'));
         await cfPush();
-        toast('已建立雲端備份');
+        toast(t('toastCfCreated'));
       } else {
-        throw new Error(`Worker 回應異常（${r.status}）`);
+        throw new Error(t('msgCfBadResponse', { n: r.status }));
       }
       saveSettings();
       syncCfUI();
@@ -606,27 +1260,27 @@
       if (isNew) showCfCode(true);   // 新碼：立即大字展示引導截圖
     } catch (e) {
       console.error(e);
-      toast('連接失敗：' + String(e.message || e).slice(0, 80));
+      toast(t('toastCfFail') + String(e.message || e).slice(0, 80));
       settings.cfEndpoint = prev.ep;
       settings.cfCode = prev.code;
       saveSettings();
       syncCfUI();
     } finally {
       el.cfConnect.disabled = false;
-      el.cfConnect.textContent = '連接雲端備份';
+      el.cfConnect.textContent = t('cfConnect');
     }
   }
 
   async function cfRestore(silent) {
-    if (!settings.cfEndpoint || !settings.cfCode) { toast('尚未連接雲端'); return; }
-    if (!silent && !confirm('用雲端備份覆蓋本機資料？\n本機目前的記錄會被取代。')) return;
+    if (!settings.cfEndpoint || !settings.cfCode) { toast(t('toastCfNotConnected')); return; }
+    if (!silent && !confirm(t('confirmCfRestore'))) return;
     const r = await cfApi('GET');
     if (r.status !== 200 || !r.json || !r.json.found) {
-      throw new Error('雲端沒有這個碼的備份');
+      throw new Error(t('msgCfNoBackup'));
     }
     const endpoint = cfNorm(settings.cfEndpoint);
     const state = await cfDecrypt(r.json.data.enc, settings.cfCode, endpoint);
-    if (!state || !state.entries) throw new Error('備份格式不符');
+    if (!state || !state.entries) throw new Error(t('msgCfBadFormat'));
     entries = migrate(state.entries).data;   // migrate 回傳 { data, converted }
     if (state.settings) {
       // 連接資訊與 PIN 留本機現值，其餘設定以備份為準
@@ -644,22 +1298,22 @@
   }
 
   async function cfBackupNow() {
-    if (!settings.cfEndpoint || !settings.cfCode) { toast('尚未連接雲端'); return; }
+    if (!settings.cfEndpoint || !settings.cfCode) { toast(t('toastCfNotConnected')); return; }
     el.cfBackupNow.disabled = true;
     try {
       await cfPush();
       syncCfUI();
-      toast('已備份到雲端');
+      toast(t('toastCfBackedUp'));
     } catch (e) {
       console.error(e);
-      toast('備份失敗：' + String(e.message || e).slice(0, 80));
+      toast(t('toastCfBackupFail') + String(e.message || e).slice(0, 80));
     } finally {
       el.cfBackupNow.disabled = false;
     }
   }
 
   function disconnectCf() {
-    if (!confirm('斷開雲端備份？\n本機資料不受影響，之後不再自動備份。\n（恢復碼若要繼續使用，請保留截圖）')) return;
+    if (!confirm(t('confirmCfDisconnect'))) return;
     settings.cfEndpoint = '';
     settings.cfCode = '';
     settings.cfAt = '';
@@ -667,7 +1321,7 @@
     saveSettings();
     syncCfUI();
     syncCfBanner();
-    toast('已斷開雲端備份');
+    toast(t('toastCfDisconnected'));
   }
 
   /* ---------------- 一鍵開啟（主畫面橫幅） ---------------- */
@@ -691,7 +1345,7 @@
 
   async function oneTapConnect() {
     el.cfSheetOpen.disabled = true;
-    el.cfSheetOpen.textContent = '開啟中…';
+    el.cfSheetOpen.textContent = t('cfOpening');
     const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
     try {
       settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
@@ -717,10 +1371,10 @@
       settings.cfEndpoint = prev.ep;
       settings.cfCode = prev.code;
       saveSettings();
-      toast('開啟失敗：' + String(e.message || e).slice(0, 80));
+      toast(t('toastCfOpenFail') + String(e.message || e).slice(0, 80));
     } finally {
       el.cfSheetOpen.disabled = false;
-      el.cfSheetOpen.textContent = '一鍵開啟自動備份';
+      el.cfSheetOpen.textContent = t('cfOneTap');
     }
   }
 
@@ -729,12 +1383,12 @@
   async function restoreByCode() {
     const code = (el.cfSheetHaveInput.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (code.length !== 8) {
-      toast('請輸入 8 位恢復碼（格式 XXXX-XXXX）');
+      toast(t('toastCfCodeInvalid'));
       el.cfSheetHaveInput.focus();
       return;
     }
     el.cfSheetHaveGo.disabled = true;
-    el.cfSheetHaveGo.textContent = '找家中…';
+    el.cfSheetHaveGo.textContent = t('cfFinding');
     const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
     try {
       settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
@@ -744,23 +1398,23 @@
         if (Object.keys(entries).length) {
           // 本機已有資料：沿用 connectCf 的衝突選擇
           const cloudAt = r.json.data && r.json.data.savedAt
-            ? new Date(r.json.data.savedAt).toLocaleString('zh-TW') : '時間不明';
-          const useCloud = confirm(`雲端已有這個碼的備份（${cloudAt}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝保留本機，把本機推上雲端`);
+            ? new Date(r.json.data.savedAt).toLocaleString(localeTag()) : t('cfUnknownTime');
+          const useCloud = confirm(t('confirmCfConflictKeep', { t: cloudAt }));
           if (useCloud) {
             await cfRestore(true);
-            toast('已從雲端找回資料');
+            toast(t('toastCfRestored'));
           } else {
             await cfPush();
-            toast('已把本機資料備份到雲端');
+            toast(t('toastCfPushed'));
           }
         } else {
           await cfRestore(true);   // 本機是空的（剛重裝）：直接還原
-          toast('已從雲端找回資料');
+          toast(t('toastCfRestored'));
         }
       } else if (r.status === 404) {
-        throw new Error('雲端沒有這組恢復碼的備份，請確認有沒有打錯');
+        throw new Error(t('toastCfCodeMissing'));
       } else {
-        throw new Error(`Worker 回應異常（${r.status}）`);
+        throw new Error(t('msgCfBadResponse', { n: r.status }));
       }
       saveSettings();   // 沿用此碼：cfCode 已是舊碼，之後自動備份續用同一碼
       syncCfUI();
@@ -774,7 +1428,7 @@
       toast(String(e.message || e).slice(0, 100));
     } finally {
       el.cfSheetHaveGo.disabled = false;
-      el.cfSheetHaveGo.textContent = '用此碼找回並沿用';
+      el.cfSheetHaveGo.textContent = t('cfHaveGo');
     }
   }
 
@@ -854,10 +1508,10 @@
     el.lockScreen.classList.remove('unlocked', 'shake');
     if (Date.now() < lockCooldown) lockTickCooldown();
     else { el.lockPad.classList.remove('locked'); lockMsg(''); }
-    if (mode === 'unlock') { el.lockTitle.textContent = '輸入密碼'; lockMsg(''); }
-    else if (mode === 'set1') { el.lockTitle.textContent = '設定新密碼'; lockMsg('請輸入 4 位數字', true); }
-    else if (mode === 'set2') { el.lockTitle.textContent = '再輸入一次確認'; lockMsg(''); }
-    else if (mode === 'off') { el.lockTitle.textContent = '關閉鎖定'; lockMsg('輸入目前密碼以確認', true); }
+    if (mode === 'unlock') { el.lockTitle.textContent = t('lockTitleUnlock'); lockMsg(''); }
+    else if (mode === 'set1') { el.lockTitle.textContent = t('lockTitleSet'); lockMsg(t('lockPrompt4'), true); }
+    else if (mode === 'set2') { el.lockTitle.textContent = t('lockTitleConfirm'); lockMsg(''); }
+    else if (mode === 'off') { el.lockTitle.textContent = t('lockTitleOff'); lockMsg(t('lockPromptCurrent'), true); }
     lockRenderDots();
   }
   function closeLock() {
@@ -882,7 +1536,7 @@
     const left = Math.ceil((lockCooldown - Date.now()) / 1000);
     if (left > 0) {
       el.lockPad.classList.add('locked');
-      lockMsg(`嘗試次數過多，${left} 秒後可再試`);
+      lockMsg(t('lockCooldown', { n: left }));
       clearTimeout(lockTimer);
       lockTimer = setTimeout(lockTickCooldown, 500);
     } else {
@@ -897,21 +1551,21 @@
     lockBuf = ''; lockRenderDots();
     if (lockMode === 'unlock') {
       if (pin && await sha256Hex(pin) === settings.pinHash) { lockWrong = 0; closeLock(); }
-      else lockFail('密碼錯誤，請重試');
+      else lockFail(t('lockWrong'));
     } else if (lockMode === 'set1') {
       lockTemp = pin; openLock('set2');
     } else if (lockMode === 'set2') {
       if (pin === lockTemp) {
         settings.pinHash = await sha256Hex(pin);
         saveSettings(); syncLockUI();
-        closeLock(); toast('螢幕鎖定已啟用');
-      } else { haptic(HAPTIC_ERR); openLock('set1'); lockMsg('兩次輸入不一致，請重新設定'); }
+        closeLock(); toast(t('lockEnabled'));
+      } else { haptic(HAPTIC_ERR); openLock('set1'); lockMsg(t('lockMismatch')); }
     } else if (lockMode === 'off') {
       if (pin && await sha256Hex(pin) === settings.pinHash) {
         settings.pinHash = '';
         saveSettings(); syncLockUI();
-        closeLock(); toast('螢幕鎖定已關閉');
-      } else lockFail('密碼錯誤，請重試');
+        closeLock(); toast(t('lockDisabled'));
+      } else lockFail(t('lockWrong'));
     }
   }
   function lockKey(k) {
@@ -939,8 +1593,8 @@
 
   function syncLockUI() {
     const on = !!settings.pinHash;
-    el.lockState.textContent = on ? '已啟用' : '未啟用';
-    el.lockBtn.textContent = on ? '關閉鎖定' : '設定密碼';
+    el.lockState.textContent = on ? t('lockOn') : t('lockOff');
+    el.lockBtn.textContent = on ? t('lockDisable') : t('lockSet');
   }
 
   /* 收入金額的顯示狀態：session 內記憶、每次載入 App 都預設隱藏
@@ -963,7 +1617,7 @@
       : `<span class="income-mask sm" aria-hidden="true">•••</span>`;
     const parts = [];
     if (inc.dayPay > 0) {
-      parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} 工 × ${money(inc.dayPay)}</span>`);
+      parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} ${escapeHtml(t('unitWork'))} × ${money(inc.dayPay)}</span>`);
     }
     if (inc.hourlyPay > 0) {
       parts.push(`<span class="income-part part">${fmtH(inc.totalPart)} h × ${money(inc.hourlyPay)}</span>`);
@@ -980,16 +1634,16 @@
 
     el.incomeBar.innerHTML = `
       <div class="income-label">
-        <span>本月收入總計</span>
-        ${parts.length ? `<span class="income-formula">${parts.join('<i>＋</i>')}</span>` : ''}
+        <span>${escapeHtml(t('incomeLabel'))}</span>
+        ${parts.length ? `<span class="income-formula">${parts.join(`<i>${lang === 'en' ? ' + ' : '＋'}</i>`)}</span>` : ''}
       </div>
       <button type="button" class="income-total${shown ? '' : ' is-masked'}"
               id="incomeToggle"
               aria-expanded="${shown}"
-              aria-label="${shown ? '本月收入總計，點擊隱藏金額' : '本月收入總計已隱藏，點擊顯示金額'}"
-              title="${shown ? '點擊隱藏金額' : '點擊顯示金額'}">
+              aria-label="${escapeAttr(shown ? t('incomeShowAria') : t('incomeHideAria'))}"
+              title="${escapeAttr(shown ? t('incomeHideTip') : t('incomeShowTip'))}">
         ${amount}
-        <span class="income-eye" aria-hidden="true">${shown ? '隱藏' : '顯示'}</span>
+        <span class="income-eye" aria-hidden="true">${escapeHtml(shown ? t('incomeHideWord') : t('incomeShowWord'))}</span>
       </button>
     `;
     el.incomeBar.hidden = false;
@@ -1008,11 +1662,11 @@
 
     el.monthStats.innerHTML = `
       ${totalWork > 0 || (!totalPart && !totalOt && !totalNight)
-        ? `<span class="stat-pill"><span class="pill-label">工時 </span><b>${fmtUnits(totalWork)}</b> 工</span>` : ''}
-      ${totalPart > 0 ? `<span class="stat-pill part"><span class="pill-label">兼職 </span><b>${fmtH(totalPart)}</b> h</span>` : ''}
-      <span class="stat-pill ot"><span class="pill-label">加班 </span><b>${fmtH(totalOt)}</b> h</span>
-      ${totalNight > 0 ? `<span class="stat-pill night"><span class="pill-label">半夜 </span><b>${fmtH(totalNight)}</b> h</span>` : ''}
-      <span class="stat-pill"><span class="pill-label">記錄 </span><b>${days}</b> 天</span>
+        ? `<span class="stat-pill"><span class="pill-label">${escapeHtml(t('statWork'))}</span><b>${fmtUnits(totalWork)}</b> ${escapeHtml(t('unitWork'))}</span>` : ''}
+      ${totalPart > 0 ? `<span class="stat-pill part"><span class="pill-label">${escapeHtml(t('statPart'))}</span><b>${fmtH(totalPart)}</b> h</span>` : ''}
+      <span class="stat-pill ot"><span class="pill-label">${escapeHtml(t('statOt'))}</span><b>${fmtH(totalOt)}</b> h</span>
+      ${totalNight > 0 ? `<span class="stat-pill night"><span class="pill-label">${escapeHtml(t('statNight'))}</span><b>${fmtH(totalNight)}</b> h</span>` : ''}
+      <span class="stat-pill"><span class="pill-label">${escapeHtml(t('statDays'))}</span><b>${days}</b> ${escapeHtml(t('unitDays'))}</span>
     `;
     fitStatsRow();
   }
@@ -1063,14 +1717,14 @@
     el.weekdayRow.innerHTML = order
       .map((i) => {
         const cls = i === 6 ? 'wk-sat' : i === 0 ? 'wk-sun' : '';
-        return `<span class="${cls}">${WEEK_TC[i]}</span>`;
+        return `<span class="${cls}">${weekdayLabel(i)}</span>`;
       })
       .join('');
   }
 
   function renderCalendar() {
     const y = view.getFullYear(), m = view.getMonth();
-    el.monthTitle.textContent = `${y} 年 ${m + 1} 月`;
+    el.monthTitle.textContent = fmtMonthTitle(y, m);
     renderWeekdayRow();
 
     // 月曆第一個格子
@@ -1098,7 +1752,8 @@
         dow,
         isWeekend: dow === 0 || dow === 6,
         isToday: k === tKey,
-        holiday: settings.showHolidays ? (HK_HOLIDAYS[k] || null) : null,
+        holiday: settings.showHolidays ? holidayName(k, true) : null,
+        holidayFull: settings.showHolidays ? holidayName(k) : null,
         entry: e,
       });
     }
@@ -1149,13 +1804,13 @@
         rows.push(`<div class="day-desc">${escapeHtml(workDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">工</span></span></div>`);
+        rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">${escapeHtml(t('unitWork'))}</span></span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group work-group">${rows.join('')}</div>`);
     }
     if (hasPart) {
       if (showUnits) {
-        groups.push(`<div class="day-group part-group"><div class="day-units part-units"><span class="uv">${fmtH(ph)}<span class="u">h</span></span><span class="ut">兼職</span></div></div>`);
+        groups.push(`<div class="day-group part-group"><div class="day-units part-units"><span class="uv">${fmtH(ph)}<span class="u">h</span></span><span class="ut">${escapeHtml(t('cellPart'))}</span></div></div>`);
       }
     }
     if (hasOt) {
@@ -1164,7 +1819,7 @@
         rows.push(`<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units ot-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
+        rows.push(`<div class="day-units ot-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(oh)}<span class="u">h</span></span><span class="ut">${escapeHtml(t('cellOt'))}</span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group ot-group">${rows.join('')}</div>`);
     }
@@ -1174,7 +1829,7 @@
         rows.push(`<div class="day-desc night-text">${escapeHtml(nightDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units night-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(nh)}<span class="u">h</span></span><span class="ut">半夜</span></div>`);
+        rows.push(`<div class="day-units night-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(nh)}<span class="u">h</span></span><span class="ut">${escapeHtml(t('cellNight'))}</span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group night-group">${rows.join('')}</div>`);
     }
@@ -1189,24 +1844,24 @@
       : '';
 
     const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
-    if (c.holiday) labelParts.push(`公眾假期：${c.holiday}`);
+    if (c.holiday) labelParts.push(t('holPrefix') + (c.holidayFull || c.holiday));
     if (hasEntry) {
-      if (hasWork) labelParts.push(`工時 ${fmtUnits(wu)} 工`);
-      if (hasPart) labelParts.push(`兼職 ${fmtH(ph)} 小時`);
-      if (hasOt) labelParts.push(`加班 ${fmtH(oh)} 小時`);
-      if (hasNight) labelParts.push(`半夜加班 ${fmtH(nh)} 小時`);
+      if (hasWork) labelParts.push(`${t('cellWork')} ${fmtUnits(wu)}`);
+      if (hasPart) labelParts.push(`${t('cellPart')} ${fmtH(ph)} ${t('hourWord')}`);
+      if (hasOt) labelParts.push(`${t('cellOt')} ${fmtH(oh)} ${t('hourWord')}`);
+      if (hasNight) labelParts.push(`${t('cellNight')} ${fmtH(nh)} ${t('hourWord')}`);
     } else {
-      labelParts.push('尚無記錄');
+      labelParts.push(t('cellNoRecord'));
     }
     // 無障礙：只在金額可見時唸出每日收入（隱藏狀態不提示，維持格子靜默）
     if (dayInc != null && incomeShown) {
-      labelParts.push(`當日收入 ${fmtMoney(dayInc)} 元`);
+      labelParts.push(`${t('cellIncome')} ${fmtMoney(dayInc)}`);
     }
 
     // data-dow：讓 CSS 能分辨「六」與「日」。
     // 兩者都是週末（.is-weekend），但配色不同（星期六藍、星期日橘），
     // 與表頭的 六／日 一致；單靠 .is-weekend 無法區分。
-    return `<div class="${classes.join(' ')}" data-key="${c.key}" data-dow="${c.dow}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
+    return `<div class="${classes.join(' ')}" data-key="${c.key}" data-dow="${c.dow}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join(lang === 'en' ? ', ' : '，'))}">
       <div class="day-num">${c.day}</div>
       ${c.holiday ? `<div class="day-hol">${escapeHtml(c.holiday)}</div>` : ''}
       ${groupsHtml}
@@ -1237,10 +1892,10 @@
 
     el.sheetDate.textContent = fmtDateLabel(d);
     // 假期日：日期下方顯示紅日名稱（顯示選項關閉時連面板也不標示）
-    const hol = settings.showHolidays ? (HK_HOLIDAYS[key] || null) : null;
-    el.sheetHol.textContent = hol ? `香港公眾假期・${hol}` : '';
+    const hol = settings.showHolidays ? holidayName(key) : null;
+    el.sheetHol.textContent = hol ? t('hkHolidayPrefix') + hol : '';
     el.sheetHol.hidden = !hol;
-    el.sheetTitle.textContent = hasContent(e) ? '編輯記錄' : '新增記錄';
+    el.sheetTitle.textContent = hasContent(e) ? t('sheetEdit') : t('sheetNew');
     el.workDesc.value = e.workDesc || '';
     el.otDesc.value = e.otDesc || '';
     el.nightDesc.value = e.nightDesc || '';
@@ -1395,7 +2050,7 @@
     const input = $(wheel.dataset.input);
     if (input) input.value = fmtWheelNum(v);
     wheel.setAttribute('aria-valuenow', String(v));
-    wheel.setAttribute('aria-valuetext', `${fmtWheelNum(v)} 小時`);
+    wheel.setAttribute('aria-valuetext', `${fmtWheelNum(v)} ${t('hourWord')}`);
     items.forEach((it, i) => it.toggleAttribute('data-active', i === idx));
   }
 
@@ -1526,7 +2181,7 @@
     save();
     closeSheet();
     render();
-    toast(empty ? '已清空此日記錄' : '已儲存');
+    toast(empty ? t('toastCleared') : t('toastSaved'));
   }
 
   function deleteEntry() {
@@ -1535,7 +2190,7 @@
     save();
     closeSheet();
     render();
-    toast('已刪除記錄');
+    toast(t('toastDeleted'));
   }
 
   /* ---------------- 事件綁定 ---------------- */
@@ -1608,7 +2263,7 @@
       const t = new Date();
       view = new Date(t.getFullYear(), t.getMonth(), 1);
       render();
-      toast('已回到本月');
+      toast(t('toastBackToday'));
     });
 
     /* ---- 月曆左右滑動切換月份（觸控）----
@@ -1687,7 +2342,7 @@
     el.cancelBtn.addEventListener('click', closeSheet);
     el.sheetClose.addEventListener('click', closeSheet);
     el.deleteBtn.addEventListener('click', () => {
-      if (confirm('確定要刪除此日記錄嗎？')) deleteEntry();
+      if (confirm(t('confirmDeleteEntry'))) deleteEntry();
     });
     el.sheetBackdrop.addEventListener('click', closeSheet);
 
@@ -1738,6 +2393,7 @@
       el.optShowHours.checked = settings.showHours;
       el.optMondayFirst.checked = settings.mondayFirst;
       syncThemeSeg();
+      syncLangSeg();
       showOverlay(el.drawerBackdrop, el.drawer);
     });
     const closeDrawer = () => hideOverlay(el.drawerBackdrop, el.drawer);
@@ -1795,6 +2451,19 @@
         syncThemeSeg();
       });
     }
+    /* ---- 語言切換（中文／English）---- */
+    if (el.langSeg) {
+      el.langSeg.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.seg-btn');
+        if (!btn) return;
+        const next = normalizeLang(btn.dataset.langOpt);
+        if (next === lang) return;
+        settings.lang = next;
+        saveSettings();
+        applyLang();   // 內含 render()，整個介面立即切換
+      });
+    }
+
     if (themeMql) {
       const onSchemeChange = () => {
         if (settings.theme !== 'light' && settings.theme !== 'dark') applyTheme();
@@ -1865,7 +2534,7 @@
     el.cfRestore.addEventListener('click', () => {
       cfRestore(false).catch((e) => {
         console.error(e);
-        toast('還原失敗：' + String(e.message || e).slice(0, 80));
+        toast(t('toastCfRestoreFail') + String(e.message || e).slice(0, 80));
       });
     });
     // 切到背景前若有未推送的變更，立即補推（瀏覽器通常允許剛發起的請求完成）
@@ -1882,13 +2551,12 @@
     el.exportCsv.addEventListener('click', () => {
       const y = view.getFullYear(), m = view.getMonth();
       const prefix = `${y}-${pad(m + 1)}-`;
-      const rows = [['日期', '星期', '工數(工)', '工時描述', '兼職(小時)', '加班(小時)', '加班描述',
-        '半夜加班(小時)', '半夜加班描述', '標籤']];
+      const rows = [t('csvHeaders').slice()];
       Object.keys(entries).filter((k) => k.startsWith(prefix)).sort().forEach((k) => {
         const e = entries[k];
         const d = new Date(k + 'T00:00:00');
         rows.push([
-          k, `週${WEEK_TC[d.getDay()]}`,
+          k, csvWeekday(d.getDay()),
           num(e.workUnits), e.workDesc || '',
           num(e.partHours),
           num(e.otHours), e.otDesc || '',
@@ -1896,17 +2564,19 @@
           (e.tags || []).join(' / '),
         ]);
       });
-      if (rows.length === 1) { toast('本月尚無記錄可匯出'); return; }
+      if (rows.length === 1) { toast(t('toastNoExport')); return; }
       const csv = '\uFEFF' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n');
-      download(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `工時月曆_${y}-${pad(m + 1)}.csv`);
-      toast('已匯出 CSV');
+      download(new Blob([csv], { type: 'text/csv;charset=utf-8' }),
+        t('csvFilename', { ym: `${y}-${pad(m + 1)}` }));
+      toast(t('toastExportedCsv'));
     });
 
     /* ---- 匯出 JSON ---- */
     el.exportJson.addEventListener('click', () => {
       const payload = { app: 'worktime-calendar', v: 1, exportedAt: new Date().toISOString(), settings, data: entries };
-      download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `工時月曆_備份_${todayKey()}.json`);
-      toast('已匯出備份');
+      download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }),
+        t('jsonFilename', { date: todayKey() }));
+      toast(t('toastExportedJson'));
     });
 
     /* ---- 匯入 JSON ---- */
@@ -1919,16 +2589,16 @@
         const data = parsed.data || parsed;
         if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('格式錯誤');
         const incoming = Object.keys(data).length;
-        if (!confirm(`將匯入 ${incoming} 筆記錄，同名日期會被覆蓋。確定繼續？`)) return;
+        if (!confirm(t('confirmImport', { n: incoming }))) return;
         // 舊版小時制備份也會自動轉換為「工」
         entries = { ...entries, ...migrate(data).data };
         if (parsed.settings) settings = { ...settings, ...parsed.settings };
         save(); saveSettings();
         closeDrawer();
         render();
-        toast(`已匯入 ${incoming} 筆記錄`);
+        toast(t('toastImported', { n: incoming }));
       } catch (err) {
-        toast('匯入失敗：檔案格式不正確');
+        toast(t('toastImportFail'));
         console.error(err);
       } finally {
         el.importFile.value = '';
@@ -1937,12 +2607,12 @@
 
     /* ---- 清除全部 ---- */
     el.clearAll.addEventListener('click', () => {
-      if (!confirm('確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。')) return;
+      if (!confirm(t('confirmClearAll'))) return;
       entries = {};
       save();
       closeDrawer();
       render();
-      toast('已清除全部資料');
+      toast(t('toastClearedAll'));
     });
 
     /* ---- 全域快捷鍵 ---- */
@@ -1982,23 +2652,23 @@
   window.addEventListener('beforeinstallprompt', (ev) => {
     ev.preventDefault();
     deferredPrompt = ev;
-    el.installHint.textContent = '此應用可安裝到主畫面：點右上角選單 → 安裝應用程式。';
+    el.installHint.textContent = t('installBefore');
   });
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
-    el.installHint.textContent = '已安裝到裝置，可離線使用。';
+    el.installHint.textContent = t('installDone');
   });
 
   function setupInstallHint() {
     const isStandalone = matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isStandalone) {
-      el.installHint.textContent = '已以獨立應用模式執行，離線可用。';
+      el.installHint.textContent = t('installStandalone');
     } else if (isIOS) {
-      el.installHint.textContent = 'iOS：點「分享」→「加入主畫面」即可安裝。';
+      el.installHint.textContent = t('installIOS');
     } else if (!deferredPrompt) {
-      el.installHint.textContent = '可安裝為 App：瀏覽器選單 → 安裝／加到主畫面。';
+      el.installHint.textContent = t('installGeneric');
     }
   }
 
@@ -2034,7 +2704,7 @@
 
   function renderVersionInfo() {
     el.verCurrent.textContent = `v${APP_VERSION}`;
-    el.verBuild.textContent = APP_BUILD ? `建置於 ${formatBuild(APP_BUILD)}` : '';
+    el.verBuild.textContent = APP_BUILD ? t('verBuildAt', { t: formatBuild(APP_BUILD) }) : '';
   }
 
   /** 向伺服器查詢最新版本（繞過所有快取） */
@@ -2055,12 +2725,12 @@
   /** 檢查更新 → 'update' | 'latest' | 'error' */
   async function checkForUpdate({ silent = false } = {}) {
     if (version.updating) return 'error';
-    if (!silent) el.verStatus.textContent = '檢查中…';
+    if (!silent) el.verStatus.textContent = t('verChecking');
 
     // 1) 已有 waiting 的新版 SW → 這是新版鐵證，直接提示
     if (version.waiting) {
       showUpdateBar(null, true);
-      if (!silent) el.verStatus.textContent = '發現新版本，可立即更新';
+      if (!silent) el.verStatus.textContent = t('verFoundNow');
       return 'update';
     }
 
@@ -2069,8 +2739,8 @@
     if (!remote) {
       if (!silent) {
         el.verStatus.textContent = (location.protocol === 'file:')
-          ? '單檔版不支援線上檢查更新'
-          : '目前離線，無法檢查更新';
+          ? t('verFileMode')
+          : t('verOffline');
       }
       return 'error';
     }
@@ -2078,13 +2748,13 @@
 
     if (isNewer(remote.version, APP_VERSION)) {
       showUpdateBar(remote);
-      if (!silent) el.verStatus.textContent = `發現新版本 v${remote.version}`;
+      if (!silent) el.verStatus.textContent = t('verFound', { v: remote.version });
       return 'update';
     }
 
     if (!silent) {
-      el.verStatus.textContent = '已是最新版本';
-      toast('已是最新版本');
+      el.verStatus.textContent = t('verLatest');
+      toast(t('toastLatest'));
     }
     return 'latest';
   }
@@ -2113,8 +2783,8 @@
     }
 
     el.updateDesc.textContent = (ver && isNewer(ver, APP_VERSION))
-      ? (info.notes ? `v${ver}：${info.notes}` : `更新至 v${ver}`)
-      : '已下載新版本，點此套用';
+      ? (info.notes ? t('updateBarNotes', { v: ver, notes: info.notes }) : t('updateBarVersion', { v: ver }))
+      : t('updateBarDownloaded');
 
     el.updateBar.hidden = false;
     // 強制一次重排，確保 transition 由 transform 起始值開始
@@ -2136,7 +2806,7 @@
 
     const btn = el.updateNowBtn;
     const originalText = btn.textContent;
-    btn.textContent = '更新中…';
+    btn.textContent = t('verUpdating');
     btn.disabled = true;
 
     // 套用就緒的新 SW：postMessage(skipWaiting) → controllerchange → 重載
@@ -2171,9 +2841,9 @@
           }
           // 60 秒仍未就緒（網路慢）→ 不重載；全域偵測會在安裝完成時再提示套用
           version.updating = false;
-          btn.textContent = '下載較慢…';
+          btn.textContent = t('verSlow');
           btn.disabled = false;
-          toast('新版本下載中，完成後會自動提示');
+          toast(t('toastUpdateSlow'));
           return;
         }
       }
@@ -2189,7 +2859,7 @@
       version.updating = false;
       btn.textContent = originalText;
       btn.disabled = false;
-      toast('更新失敗，請稍後再試');
+      toast(t('toastUpdateFail'));
     }
   }
 
@@ -2283,13 +2953,13 @@
       const v = version.remote && version.remote.version;
       if (v) version.dismissed = v;
       hideUpdateBar();
-      el.verStatus.textContent = '已稍後提醒，可隨時在選單檢查更新';
+      el.verStatus.textContent = t('toastUpdateLater');
     });
 
     el.checkUpdateBtn.addEventListener('click', async () => {
       const r = await checkForUpdate();
-      if (r === 'latest') el.verStatus.textContent = '已是最新版本';
-      if (r === 'update') el.verStatus.textContent = '發現新版本，請點上方提示更新';
+      if (r === 'latest') el.verStatus.textContent = t('verLatest');
+      if (r === 'update') el.verStatus.textContent = t('toastUpdateFound');
     });
   }
 
@@ -2299,21 +2969,19 @@
     const el = document.getElementById('hintText');
     if (!el) return;
     el.textContent = matchMedia('(hover: none)').matches
-      ? '點一下日期可新增或編輯工時／兼職／加班／半夜記錄'
-      : '雙擊日期可新增或編輯工時／兼職／加班／半夜記錄';
+      ? t('hintTouch')
+      : t('hintMouse');
   }
 
   function init() {
     load();
+    lang = normalizeLang(settings.lang);   // 先定語言，後續所有字串才取得正確詞條
     applyTheme();   // 重設 meta theme-color 為目前主題（首幀由 inline script 設好）
     view = new Date();
     view.setDate(1);
     if (settings.pinHash) openLock('unlock');   // 先蓋鎖屏再渲染，內容不閃現
     bind();
-    render();
-    updateHintText();
-    setupInstallHint();
-    renderVersionInfo();
+    applyLang();    // 套用靜態文案＋渲染（含 updateHintText / setupInstallHint / renderVersionInfo）
     bindVersionUI();
 
     if (window.addEventListener) {

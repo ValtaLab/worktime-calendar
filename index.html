@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
 <meta name="theme-color" content="#2563eb">
-<meta name="description" content="工時月曆 — 快速記錄每日工時與加班，月曆一目了然">
+<meta name="description" content="工時月曆 — 快速記錄每日工時與加班，月曆一目了然" data-i18n-content="metaDesc">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="工時月曆">
@@ -21,6 +21,8 @@
     var t = s.theme === 'light' || s.theme === 'dark' ? s.theme
       : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', t);
+    /* 語言：在樣式套用前先掛上，避免切換語言後重載時字型／連字斷行先閃一幀中文。 */
+    document.documentElement.setAttribute('lang', s.lang === 'en' ? 'en' : 'zh-Hant');
   } catch (e) {}
 })();
 </script>
@@ -32,20 +34,20 @@
     <div class="topbar-inner">
       <div class="brand">
         <img class="brand-mark" src="./icons/icon-192.png" alt="" width="34" height="34" aria-hidden="true">
-        <h1>工時月曆</h1>
+        <h1 data-i18n="appName">工時月曆</h1>
       </div>
 
-      <nav class="month-nav" aria-label="月份切換">
-        <button id="prevMonth" class="nav-btn" type="button" aria-label="上一個月">
+      <nav class="month-nav" data-i18n-aria="monthNav" aria-label="月份切換">
+        <button id="prevMonth" class="nav-btn" type="button" data-i18n-aria="prevMonth" aria-label="上一個月">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <button id="todayBtn" class="today-btn" type="button">今天</button>
-        <button id="nextMonth" class="nav-btn" type="button" aria-label="下一個月">
+        <button id="todayBtn" class="today-btn" type="button" data-i18n="today">今天</button>
+        <button id="nextMonth" class="nav-btn" type="button" data-i18n-aria="nextMonth" aria-label="下一個月">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </nav>
 
-      <button id="menuBtn" class="icon-btn" type="button" aria-label="更多操作" aria-expanded="false">
+      <button id="menuBtn" class="icon-btn" type="button" data-i18n-aria="menu" aria-label="更多操作" aria-expanded="false">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
       </button>
     </div>
@@ -58,7 +60,7 @@
 
   <main class="calendar-wrap">
     <div class="weekday-row" id="weekdayRow"></div>
-    <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="月曆"></div>
+    <div id="calendarGrid" class="calendar-grid" role="grid" data-i18n-aria="calendar" aria-label="月曆"></div>
     <!-- 收入總計：需在選單設定日薪與加班時薪後才顯示 -->
     <div id="incomeBar" class="income-bar" hidden></div>
     <!-- 雲端備份橫幅：未開啟時顯示，點擊彈出一鍵開啟面板 -->
@@ -66,14 +68,14 @@
       <span class="cf-banner-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98 6 6 0 1 0-11.58 1.98A3.5 3.5 0 0 0 6.5 19z"/></svg>
       </span>
-      <span class="cf-banner-text"><b>雲端備份</b>　刪除 App 也不怕資料消失</span>
-      <span class="cf-banner-go">開啟／找回</span>
+      <span class="cf-banner-text" data-i18n="cfBannerText"><b>雲端備份</b>　刪除 App 也不怕資料消失</span>
+      <span class="cf-banner-go" data-i18n="cfBannerGo">開啟／找回</span>
     </button>
   </main>
 
   <footer class="hint-bar">
     <span class="hint-mark" aria-hidden="true"></span>
-    <span id="hintText">雙擊日期可新增或編輯工時／兼職／加班／半夜記錄</span>
+    <span id="hintText" data-i18n="hintMouse">雙擊日期可新增或編輯工時／兼職／加班／半夜記錄</span>
   </footer>
 </div>
 
@@ -86,9 +88,9 @@
     <div>
       <p id="sheetDate" class="sheet-date">—</p>
       <p id="sheetHol" class="sheet-hol" hidden></p>
-      <h3 id="sheetTitle" class="sheet-title">新增記錄</h3>
+      <h3 id="sheetTitle" class="sheet-title" data-i18n="sheetNew">新增記錄</h3>
     </div>
-    <button id="sheetClose" class="icon-btn" type="button" aria-label="關閉">
+    <button id="sheetClose" class="icon-btn" type="button" data-i18n-aria="close" aria-label="關閉">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </header>
@@ -96,28 +98,28 @@
   <div class="sheet-body">
     <!-- 工時區塊 -->
     <section class="field-group">
-      <h4 class="group-title"><span class="dot dot-work"></span>工時</h4>
+      <h4 class="group-title"><span class="dot dot-work"></span><span data-i18n="workSection">工時</span></h4>
 
       <div class="field">
-        <label class="field-label" for="workDesc">描述</label>
+        <label class="field-label" for="workDesc" data-i18n="desc">描述</label>
         <textarea id="workDesc" rows="1"></textarea>
         <div class="desc-suggest" id="suggestWork" hidden><!-- 最近描述建議由 JS 產生 --></div>
       </div>
 
       <div class="field">
-        <span class="field-label" id="workUnitsLabel">工數</span>
+        <span class="field-label" id="workUnitsLabel" data-i18n="workUnits">工數</span>
         <div class="unit-picker unit-picker-3" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
           <button type="button" class="unit-chip unit-chip-lg" data-value="0" role="radio" aria-checked="false">
-            <span class="chip-main">兼職時數</span>
-            <span class="chip-sub">不記工數</span>
+            <span class="chip-main" data-i18n="chipPart">兼職時數</span>
+            <span class="chip-sub" data-i18n="chipPartSub">不記工數</span>
           </button>
           <button type="button" class="unit-chip unit-chip-lg" data-value="0.5" role="radio" aria-checked="false">
-            <span class="chip-main">0.5 工</span>
-            <span class="chip-sub">半日</span>
+            <span class="chip-main" data-i18n="chipHalf">0.5 工</span>
+            <span class="chip-sub" data-i18n="chipHalfSub">半日</span>
           </button>
           <button type="button" class="unit-chip unit-chip-lg" data-value="1" role="radio" aria-checked="false">
-            <span class="chip-main">1 工</span>
-            <span class="chip-sub">全日</span>
+            <span class="chip-main" data-i18n="chipFull">1 工</span>
+            <span class="chip-sub" data-i18n="chipFullSub">全日</span>
           </button>
         </div>
       </div>
@@ -128,18 +130,18 @@
          編輯已有兼職記錄時由 openSheet 自動展開（openSheet 會覆寫 hidden）。
          橫向長條卡片：左側說明、右側時數滾輪（無描述欄）。 -->
     <section class="field-group fg-row" id="partGroup" hidden>
-      <h4 class="group-title"><span class="dot dot-part"></span>兼職小時</h4>
+      <h4 class="group-title"><span class="dot dot-part"></span><span data-i18n="partSection">兼職小時</span></h4>
       <div class="fg-cols">
         <div class="field fg-note">
           <!-- 與加班滾輪同一套：上下滑動、0–24、每次 0.5；隱藏 input 為資料來源 -->
-          <p class="field-help">上下滑動選擇・按時薪計</p>
+          <p class="field-help" data-i18n="scrollHelp">上下滑動選擇・按時薪計</p>
         </div>
         <div class="field field-hours">
-          <span class="field-label" id="partHoursLabel">兼職時數</span>
+          <span class="field-label" id="partHoursLabel" data-i18n="partHours">兼職時數</span>
           <div class="wheel-picker wheel-part" id="partHoursWheel" data-input="partHours" role="spinbutton"
-               tabindex="0" aria-label="兼職時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+               tabindex="0" data-i18n-aria="partHours" aria-label="兼職時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
             <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit" data-i18n="hourWord">小時</span></div>
           </div>
           <input id="partHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
         </div>
@@ -148,21 +150,21 @@
 
     <!-- 加班區塊（橫向長條卡片：描述在左、時數滾輪在右） -->
     <section class="field-group fg-row">
-      <h4 class="group-title"><span class="dot dot-ot"></span>加班</h4>
+      <h4 class="group-title"><span class="dot dot-ot"></span><span data-i18n="otSection">加班</span></h4>
       <div class="fg-cols">
         <div class="field">
-          <label class="field-label" for="otDesc">描述</label>
+          <label class="field-label" for="otDesc" data-i18n="desc">描述</label>
           <textarea id="otDesc" rows="1"></textarea>
           <div class="desc-suggest" id="suggestOt" hidden><!-- 最近描述建議由 JS 產生 --></div>
         </div>
         <div class="field field-hours">
-          <span class="field-label" id="otUnitsLabel">加班時數</span>
+          <span class="field-label" id="otUnitsLabel" data-i18n="otHours">加班時數</span>
           <!-- iOS 風格滾輪：上下滑動、吸附置中即為選中值。
                隱藏的 number input 仍是資料來源（開面板寫值、儲存讀值）。 -->
           <div class="wheel-picker wheel-ot" id="otHoursWheel" data-input="otHours" role="spinbutton"
-               tabindex="0" aria-label="加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+               tabindex="0" data-i18n-aria="otHours" aria-label="加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
             <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit" data-i18n="hourWord">小時</span></div>
           </div>
           <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
         </div>
@@ -171,19 +173,19 @@
 
     <!-- 半夜加班區塊（橫向長條卡片：描述在左、時數滾輪在右） -->
     <section class="field-group fg-row">
-      <h4 class="group-title"><span class="dot dot-night"></span>半夜加班</h4>
+      <h4 class="group-title"><span class="dot dot-night"></span><span data-i18n="nightSection">半夜加班</span></h4>
       <div class="fg-cols">
         <div class="field">
-          <label class="field-label" for="nightDesc">描述</label>
+          <label class="field-label" for="nightDesc" data-i18n="desc">描述</label>
           <textarea id="nightDesc" rows="1"></textarea>
           <div class="desc-suggest" id="suggestNight" hidden><!-- 最近描述建議由 JS 產生 --></div>
         </div>
         <div class="field field-hours">
-          <span class="field-label" id="nightUnitsLabel">半夜加班時數</span>
+          <span class="field-label" id="nightUnitsLabel" data-i18n="nightHours">半夜加班時數</span>
           <div class="wheel-picker wheel-night" id="nightHoursWheel" data-input="nightHours" role="spinbutton"
-               tabindex="0" aria-label="半夜加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+               tabindex="0" data-i18n-aria="nightHours" aria-label="半夜加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
             <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit" data-i18n="hourWord">小時</span></div>
           </div>
           <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
         </div>
@@ -191,42 +193,51 @@
     </section>
 
     <div class="field">
-      <label class="field-label" for="tagsInput">標籤（選填）</label>
-      <input id="tagsInput" type="text" placeholder="以逗號分隔，例：出差, 遠端">
+      <label class="field-label" for="tagsInput" data-i18n="tagsLabel">標籤（選填）</label>
+      <input id="tagsInput" type="text" data-i18n-ph="tagsPlaceholder" placeholder="以逗號分隔，例：出差, 遠端">
     </div>
   </div>
 
   <footer class="sheet-foot">
-    <button id="deleteBtn" class="btn btn-danger" type="button" hidden>刪除</button>
-    <button id="cancelBtn" class="btn btn-ghost" type="button">取消</button>
-    <button id="saveBtn" class="btn btn-primary" type="button">儲存</button>
+    <button id="deleteBtn" class="btn btn-danger" type="button" data-i18n="delete" hidden>刪除</button>
+    <button id="cancelBtn" class="btn btn-ghost" type="button" data-i18n="cancel">取消</button>
+    <button id="saveBtn" class="btn btn-primary" type="button" data-i18n="save">儲存</button>
   </footer>
 </section>
 
 <!-- ============ 側邊選單 ============ -->
 <div id="drawerBackdrop" class="sheet-backdrop" hidden></div>
-<aside id="drawer" class="drawer" hidden aria-label="選單">
+<aside id="drawer" class="drawer" hidden data-i18n-aria="drawerMenu" aria-label="選單">
   <header class="drawer-head">
-    <h3>工時月曆</h3>
-    <button id="drawerClose" class="icon-btn" type="button" aria-label="關閉">
+    <h3 data-i18n="appName">工時月曆</h3>
+    <button id="drawerClose" class="icon-btn" type="button" data-i18n-aria="close" aria-label="關閉">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </header>
 
   <div class="drawer-section">
-    <p class="drawer-label">外觀</p>
-    <div id="themeSeg" class="seg-row" role="radiogroup" aria-label="主題模式">
-      <button class="seg-btn" data-theme-opt="auto" type="button" role="radio">跟隨系統</button>
-      <button class="seg-btn" data-theme-opt="light" type="button" role="radio">淺色</button>
-      <button class="seg-btn" data-theme-opt="dark" type="button" role="radio">深色</button>
+    <p class="drawer-label" data-i18n="secAppearance">外觀</p>
+    <div id="themeSeg" class="seg-row" role="radiogroup" data-i18n-aria="themeGroup" aria-label="主題模式">
+      <button class="seg-btn" data-theme-opt="auto" type="button" role="radio" data-i18n="themeAuto">跟隨系統</button>
+      <button class="seg-btn" data-theme-opt="light" type="button" role="radio" data-i18n="themeLight">淺色</button>
+      <button class="seg-btn" data-theme-opt="dark" type="button" role="radio" data-i18n="themeDark">深色</button>
     </div>
-    <p class="drawer-help">「跟隨系統」會自動配合手機的光暗模式設定；選淺色或深色則固定不變。</p>
+    <p class="drawer-help" data-i18n="themeHelp">「跟隨系統」會自動配合手機的光暗模式設定；選淺色或深色則固定不變。</p>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">薪資設定</p>
+    <p class="drawer-label" data-i18n="secLanguage">語言</p>
+    <div id="langSeg" class="seg-row" role="radiogroup" data-i18n-aria="secLanguage" aria-label="語言">
+      <button class="seg-btn" data-lang-opt="zh-Hant" type="button" role="radio" lang="zh-Hant">中文</button>
+      <button class="seg-btn" data-lang-opt="en" type="button" role="radio" lang="en">English</button>
+    </div>
+    <p class="drawer-help" data-i18n="langHelp">介面語言會立即切換，設定會記在此裝置。</p>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label" data-i18n="secPay">薪資設定</p>
     <div class="pay-field">
-      <label class="pay-label" for="dayPay">日薪（1 工）</label>
+      <label class="pay-label" for="dayPay" data-i18n="payDay">日薪（1 工）</label>
       <div class="pay-input-wrap">
         <span class="pay-prefix">$</span>
         <input id="dayPay" class="pay-input" type="number" inputmode="decimal"
@@ -234,7 +245,7 @@
       </div>
     </div>
     <div class="pay-field">
-      <label class="pay-label" for="hourlyPay">時薪（兼職）</label>
+      <label class="pay-label" for="hourlyPay" data-i18n="payHourly">時薪（兼職）</label>
       <div class="pay-input-wrap">
         <span class="pay-prefix">$</span>
         <input id="hourlyPay" class="pay-input" type="number" inputmode="decimal"
@@ -242,7 +253,7 @@
       </div>
     </div>
     <div class="pay-field">
-      <label class="pay-label" for="otPay">加班時薪</label>
+      <label class="pay-label" for="otPay" data-i18n="payOt">加班時薪</label>
       <div class="pay-input-wrap">
         <span class="pay-prefix">$</span>
         <input id="otPay" class="pay-input" type="number" inputmode="decimal"
@@ -250,101 +261,101 @@
       </div>
     </div>
     <div class="pay-field">
-      <label class="pay-label" for="nightPay">半夜加班時薪</label>
+      <label class="pay-label" for="nightPay" data-i18n="payNight">半夜加班時薪</label>
       <div class="pay-input-wrap">
         <span class="pay-prefix">$</span>
         <input id="nightPay" class="pay-input" type="number" inputmode="decimal"
                step="10" min="0" placeholder="0" value="">
       </div>
     </div>
-    <p class="drawer-help">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。</p>
+    <p class="drawer-help" data-i18n="payHelp">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。</p>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">顯示選項</p>
+    <p class="drawer-label" data-i18n="secDisplay">顯示選項</p>
     <label class="switch-row">
-      <span>顯示香港公眾假期</span>
+      <span data-i18n="optHoliday">顯示香港公眾假期</span>
       <input id="optHoliday" type="checkbox" checked>
     </label>
     <label class="switch-row">
-      <span>顯示週末</span>
+      <span data-i18n="optWeekend">顯示週末</span>
       <input id="optWeekend" type="checkbox" checked>
     </label>
     <label class="switch-row">
-      <span>月曆上顯示工數</span>
+      <span data-i18n="optHours">月曆上顯示工數</span>
       <input id="optShowHours" type="checkbox" checked>
     </label>
     <label class="switch-row">
-      <span>週一為每週第一天</span>
+      <span data-i18n="optMonday">週一為每週第一天</span>
       <input id="optMondayFirst" type="checkbox" checked>
     </label>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">螢幕鎖定</p>
+    <p class="drawer-label" data-i18n="secLock">螢幕鎖定</p>
     <div class="lock-row">
-      <span id="lockState" class="lock-state">未啟用</span>
-      <button id="lockBtn" class="drawer-btn" type="button">設定密碼</button>
+      <span id="lockState" class="lock-state" data-i18n="lockOff">未啟用</span>
+      <button id="lockBtn" class="drawer-btn" type="button" data-i18n="lockSet">設定密碼</button>
     </div>
-    <p class="drawer-help">啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。</p>
+    <p class="drawer-help" data-i18n="lockHelp">啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。</p>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">資料</p>
-    <button id="exportCsv" class="drawer-btn" type="button">匯出 CSV（本月）</button>
-    <button id="exportJson" class="drawer-btn" type="button">匯出備份 JSON</button>
-    <button id="importJson" class="drawer-btn" type="button">匯入備份 JSON</button>
+    <p class="drawer-label" data-i18n="secData">資料</p>
+    <button id="exportCsv" class="drawer-btn" type="button" data-i18n="exportCsv">匯出 CSV（本月）</button>
+    <button id="exportJson" class="drawer-btn" type="button" data-i18n="exportJson">匯出備份 JSON</button>
+    <button id="importJson" class="drawer-btn" type="button" data-i18n="importJson">匯入備份 JSON</button>
     <input id="importFile" type="file" accept="application/json,.json" hidden>
-    <button id="clearAll" class="drawer-btn drawer-btn-danger" type="button">清除全部資料</button>
+    <button id="clearAll" class="drawer-btn drawer-btn-danger" type="button" data-i18n="clearAll">清除全部資料</button>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">雲端備份（Cloudflare）</p>
+    <p class="drawer-label" data-i18n="secCloud">雲端備份（Cloudflare）</p>
     <div id="cfSetup">
       <div class="pay-field">
-        <span class="pay-label">Worker 網址（可留空）</span>
+        <span class="pay-label" data-i18n="cfEndpointLabel">Worker 網址（可留空）</span>
         <div class="pay-input-wrap">
-          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" placeholder="留空＝使用預設雲端">
+          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" data-i18n-ph="cfEndpointPh" placeholder="留空＝使用預設雲端">
         </div>
       </div>
       <div class="pay-field">
-        <span class="pay-label">恢復碼（重裝找回資料用；留空＝自動生成）</span>
+        <span class="pay-label" data-i18n="cfCodeLabel">恢復碼（重裝找回資料用；留空＝自動生成）</span>
         <div class="pay-input-wrap">
-          <input id="cfCodeInput" class="pay-input" type="text" autocomplete="off" spellcheck="false" placeholder="留空自動生成">
+          <input id="cfCodeInput" class="pay-input" type="text" autocomplete="off" spellcheck="false" data-i18n-ph="cfCodePh" placeholder="留空自動生成">
         </div>
       </div>
-      <button id="cfConnect" class="drawer-btn" type="button">連接雲端備份</button>
+      <button id="cfConnect" class="drawer-btn" type="button" data-i18n="cfConnect">連接雲端備份</button>
     </div>
     <div id="cfConnected" hidden>
       <p class="cf-status" id="cfStatus"></p>
       <div class="lock-row">
-        <button id="cfRestore" class="drawer-btn" type="button">從雲端還原</button>
-        <button id="cfBackupNow" class="drawer-btn" type="button">立即備份</button>
+        <button id="cfRestore" class="drawer-btn" type="button" data-i18n="cfRestore">從雲端還原</button>
+        <button id="cfBackupNow" class="drawer-btn" type="button" data-i18n="cfBackupNow">立即備份</button>
       </div>
-      <button id="cfShowCode" class="drawer-btn" type="button">查看恢復碼</button>
-      <button id="cfDisconnect" class="drawer-btn drawer-btn-danger" type="button">斷開</button>
+      <button id="cfShowCode" class="drawer-btn" type="button" data-i18n="cfShowCode">查看恢復碼</button>
+      <button id="cfDisconnect" class="drawer-btn drawer-btn-danger" type="button" data-i18n="cfDisconnect">斷開</button>
     </div>
     <div id="cfCodeShow" hidden>
-      <p class="cf-code-hint">這組恢復碼是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
+      <p class="cf-code-hint" data-i18n="cfCodeHint">這組恢復碼是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
       <p class="cf-code" id="cfCodeText"></p>
-      <button id="cfCodeOk" class="drawer-btn" type="button">已保存好</button>
+      <button id="cfCodeOk" class="drawer-btn" type="button" data-i18n="cfSaved">已保存好</button>
     </div>
-    <p class="drawer-help">連接後，每次修改會自動加密備份（伺服器只有密文）。<b>刪除 App 重裝後</b>：填回同一個 Worker 網址＋恢復碼即可自動找回資料。恢復碼務必截圖保管。</p>
+    <p class="drawer-help" data-i18n="cfHelp">連接後，每次修改會自動加密備份（伺服器只有密文）。<b>刪除 App 重裝後</b>：填回同一個 Worker 網址＋恢復碼即可自動找回資料。恢復碼務必截圖保管。</p>
   </div>
 
   <div class="drawer-section drawer-about">
     <p id="installHint" class="drawer-help"></p>
-    <p class="drawer-help">資料儲存在此裝置的瀏覽器中，離線可用。</p>
+    <p class="drawer-help" data-i18n="dataLocalHelp">資料儲存在此裝置的瀏覽器中，離線可用。</p>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">版本</p>
+    <p class="drawer-label" data-i18n="secVersion">版本</p>
     <div class="version-row">
       <div>
         <p class="version-num" id="verCurrent">—</p>
         <p class="drawer-help" id="verBuild"></p>
       </div>
-      <button id="checkUpdateBtn" class="drawer-btn version-check" type="button">檢查更新</button>
+      <button id="checkUpdateBtn" class="drawer-btn version-check" type="button" data-i18n="checkUpdate">檢查更新</button>
     </div>
     <p class="drawer-help" id="verStatus"></p>
   </div>
@@ -360,11 +371,11 @@
       </svg>
     </span>
     <div class="update-text">
-      <p class="update-title">有新版本可用</p>
-      <p class="update-desc" id="updateDesc">更新後即可使用最新功能</p>
+      <p class="update-title" data-i18n="updateTitle">有新版本可用</p>
+      <p class="update-desc" id="updateDesc" data-i18n="updateDesc">更新後即可使用最新功能</p>
     </div>
-    <button id="updateNowBtn" class="update-btn" type="button">立即更新</button>
-    <button id="updateLaterBtn" class="update-close" type="button" aria-label="稍後再說">
+    <button id="updateNowBtn" class="update-btn" type="button" data-i18n="updateNow">立即更新</button>
+    <button id="updateLaterBtn" class="update-close" type="button" data-i18n-aria="updateLater" aria-label="稍後再說">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </div>
@@ -379,43 +390,43 @@
   <div class="sheet-handle" aria-hidden="true"></div>
   <header class="sheet-head">
     <div>
-      <p class="sheet-date">自動備份</p>
-      <h3 id="cfSheetTitle" class="sheet-title">雲端備份</h3>
+      <p class="sheet-date" data-i18n="cfAutoBackup">自動備份</p>
+      <h3 id="cfSheetTitle" class="sheet-title" data-i18n="cfSheetTitle">雲端備份</h3>
     </div>
-    <button id="cfSheetClose" class="icon-btn" type="button" aria-label="關閉">
+    <button id="cfSheetClose" class="icon-btn" type="button" data-i18n-aria="close" aria-label="關閉">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </header>
   <div class="sheet-body">
     <div id="cfSheetIntro">
-      <p class="cf-sheet-line">開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。</p>
-      <p class="cf-sheet-line">第一次使用 → 點<b>一鍵開啟</b>，會生成一組<b>恢復碼</b>，請截圖保存。</p>
-      <p class="cf-sheet-line">曾經開啟過（例如<b>刪除 App 後重裝</b>）→ 點<b>輸入恢復碼找回</b>，資料會自動回來，並<b>沿用原本的碼</b>，不需要新碼。</p>
+      <p class="cf-sheet-line" data-i18n="cfIntro1">開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。</p>
+      <p class="cf-sheet-line" data-i18n="cfIntro2">第一次使用 → 點<b>一鍵開啟</b>，會生成一組<b>恢復碼</b>，請截圖保存。</p>
+      <p class="cf-sheet-line" data-i18n="cfIntro3">曾經開啟過（例如<b>刪除 App 後重裝</b>）→ 點<b>輸入恢復碼找回</b>，資料會自動回來，並<b>沿用原本的碼</b>，不需要新碼。</p>
     </div>
-    <button id="cfSheetOpen" class="btn btn-primary" type="button">一鍵開啟自動備份</button>
-    <button id="cfSheetHaveToggle" class="btn btn-ghost" type="button">我已有恢復碼，輸入找回</button>
+    <button id="cfSheetOpen" class="btn btn-primary" type="button" data-i18n="cfOneTap">一鍵開啟自動備份</button>
+    <button id="cfSheetHaveToggle" class="btn btn-ghost" type="button" data-i18n="cfHaveToggle">我已有恢復碼，輸入找回</button>
     <div id="cfSheetHave" hidden>
       <input id="cfSheetHaveInput" class="cf-have-input" type="text" inputmode="text"
              autocapitalize="characters" autocomplete="off" spellcheck="false"
-             placeholder="XXXX-XXXX" maxlength="9" aria-label="恢復碼">
-      <button id="cfSheetHaveGo" class="btn btn-primary" type="button">用此碼找回並沿用</button>
+             placeholder="XXXX-XXXX" maxlength="9" data-i18n-aria="cfHaveAria" aria-label="恢復碼">
+      <button id="cfSheetHaveGo" class="btn btn-primary" type="button" data-i18n="cfHaveGo">用此碼找回並沿用</button>
     </div>
     <div id="cfSheetCode" hidden>
-      <p class="cf-code-hint">這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
+      <p class="cf-code-hint" data-i18n="cfCodeHintSheet">這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
       <p class="cf-code" id="cfSheetCodeText"></p>
-      <button id="cfSheetDone" class="btn btn-primary" type="button">已截圖保存，完成</button>
+      <button id="cfSheetDone" class="btn btn-primary" type="button" data-i18n="cfDone">已截圖保存，完成</button>
     </div>
   </div>
 </section>
 
-<div id="lockScreen" class="lock-screen" hidden role="dialog" aria-modal="true" aria-label="螢幕鎖定">
+<div id="lockScreen" class="lock-screen" hidden role="dialog" aria-modal="true" data-i18n-aria="lockAria" aria-label="螢幕鎖定">
   <div class="lock-card">
     <svg class="lock-icon" viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5"/>
       <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
       <circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/>
     </svg>
-    <h2 id="lockTitle">輸入密碼</h2>
+    <h2 id="lockTitle" data-i18n="lockTitleUnlock">輸入密碼</h2>
     <div class="lock-dots" id="lockDots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <p id="lockMsg" class="lock-msg" role="alert"></p>
     <div class="lock-pad" id="lockPad">
@@ -428,9 +439,9 @@
       <button class="lock-key" type="button" data-k="7">7</button>
       <button class="lock-key" type="button" data-k="8">8</button>
       <button class="lock-key" type="button" data-k="9">9</button>
-      <button class="lock-key lock-key-fn" type="button" data-k="clear">清除</button>
+      <button class="lock-key lock-key-fn" type="button" data-k="clear" data-i18n="lockClear">清除</button>
       <button class="lock-key" type="button" data-k="0">0</button>
-      <button class="lock-key lock-key-fn" type="button" data-k="back" aria-label="刪除最後一位">
+      <button class="lock-key lock-key-fn" type="button" data-k="back" data-i18n-aria="lockBackspace" aria-label="刪除最後一位">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7z"/><path d="M12 9.5l5 5M17 9.5l-5 5"/></svg>
       </button>
     </div>

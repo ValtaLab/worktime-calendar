@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
 <meta name="theme-color" content="#2563eb">
-<meta name="description" content="工時月曆 — 快速記錄每日工時與加班，月曆一目了然">
+<meta name="description" content="工時月曆 — 快速記錄每日工時與加班，月曆一目了然" data-i18n-content="metaDesc">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="工時月曆">
@@ -20,6 +20,8 @@
     var t = s.theme === 'light' || s.theme === 'dark' ? s.theme
       : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     document.documentElement.setAttribute('data-theme', t);
+    /* 語言：在樣式套用前先掛上，避免切換語言後重載時字型／連字斷行先閃一幀中文。 */
+    document.documentElement.setAttribute('lang', s.lang === 'en' ? 'en' : 'zh-Hant');
   } catch (e) {}
 })();
 </script>
@@ -213,6 +215,17 @@ input, textarea { font-family: inherit; }
   margin: 0;
   letter-spacing: -.2px;
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 英文標題（Worktime Calendar）比中文「工時月曆」寬得多，窄機上會把
+   月份切換擠出畫面。拉丁字母縮一級並允許收窄，中文維持原本字級。
+   真的塞不下時（≤480px）只留 App icon——月份切換與「Today」比品牌名重要，
+   截成「Worktime C…」既不美觀也沒有資訊量。 */
+html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
+@media (max-width: 480px) {
+  html[lang="en"] .brand h1 { display: none; }
 }
 
 .month-nav { display: flex; align-items: center; gap: 4px; }
@@ -1306,9 +1319,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 }
 .cf-banner[hidden] { display: none; }   /* display:flex 會覆蓋 hidden，必須顯式聲明 */
 .cf-banner-icon { display: inline-flex; color: var(--work); flex: none; }
-.cf-banner-text { flex: 1; min-width: 0; color: var(--text-2); }
+.cf-banner-text { flex: 1; min-width: 0; color: var(--text-2); overflow-wrap: anywhere; }
 .cf-banner-text b { color: var(--text); }
-.cf-banner-go { color: var(--work); font-weight: 600; white-space: nowrap; }
+.cf-banner-go { color: var(--work); font-weight: 600; white-space: nowrap; flex: none; }
 .cf-sheet-line { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
 .cf-sheet-line b { color: var(--text); }
 /* 雲端備份面板：覆蓋 sheet-body 預設兩欄 → 單欄直排
@@ -1669,6 +1682,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   /* 紅日：手機格窄，假期名一行截斷（完整名稱點開面板可見） */
   .day.is-holiday .day-num { color: var(--holiday); }
   .day-hol { font-size: 8.5px; line-height: 1.2; -webkit-line-clamp: 1; }
+  /* 英文假期名為拉丁字母，同樣寬度塞得下的字數遠少於中文（約 11 字元），
+     放寬為兩行；用字級與行高較小的 7.5px 讓 "Chung Yeung +1" 這類仍可讀完。 */
+  html[lang="en"] .day-hol { font-size: 7.5px; line-height: 1.15; -webkit-line-clamp: 2; }
 
   /* 日期數字：縮小並靠左上，把中段空間留給描述 */
   .day-num { font-size: 13px; line-height: 1; gap: 2px; }
@@ -2156,20 +2172,20 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     <div class="topbar-inner">
       <div class="brand">
         <img class="brand-mark" src="data:image/png;base64,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" alt="" width="34" height="34" aria-hidden="true">
-        <h1>工時月曆</h1>
+        <h1 data-i18n="appName">工時月曆</h1>
       </div>
 
-      <nav class="month-nav" aria-label="月份切換">
-        <button id="prevMonth" class="nav-btn" type="button" aria-label="上一個月">
+      <nav class="month-nav" data-i18n-aria="monthNav" aria-label="月份切換">
+        <button id="prevMonth" class="nav-btn" type="button" data-i18n-aria="prevMonth" aria-label="上一個月">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
         </button>
-        <button id="todayBtn" class="today-btn" type="button">今天</button>
-        <button id="nextMonth" class="nav-btn" type="button" aria-label="下一個月">
+        <button id="todayBtn" class="today-btn" type="button" data-i18n="today">今天</button>
+        <button id="nextMonth" class="nav-btn" type="button" data-i18n-aria="nextMonth" aria-label="下一個月">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </button>
       </nav>
 
-      <button id="menuBtn" class="icon-btn" type="button" aria-label="更多操作" aria-expanded="false">
+      <button id="menuBtn" class="icon-btn" type="button" data-i18n-aria="menu" aria-label="更多操作" aria-expanded="false">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
       </button>
     </div>
@@ -2182,7 +2198,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   <main class="calendar-wrap">
     <div class="weekday-row" id="weekdayRow"></div>
-    <div id="calendarGrid" class="calendar-grid" role="grid" aria-label="月曆"></div>
+    <div id="calendarGrid" class="calendar-grid" role="grid" data-i18n-aria="calendar" aria-label="月曆"></div>
     <!-- 收入總計：需在選單設定日薪與加班時薪後才顯示 -->
     <div id="incomeBar" class="income-bar" hidden></div>
     <!-- 雲端備份橫幅：未開啟時顯示，點擊彈出一鍵開啟面板 -->
@@ -2190,14 +2206,14 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       <span class="cf-banner-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-.42-8.98 6 6 0 1 0-11.58 1.98A3.5 3.5 0 0 0 6.5 19z"/></svg>
       </span>
-      <span class="cf-banner-text"><b>雲端備份</b>　刪除 App 也不怕資料消失</span>
-      <span class="cf-banner-go">開啟／找回</span>
+      <span class="cf-banner-text" data-i18n="cfBannerText"><b>雲端備份</b>　刪除 App 也不怕資料消失</span>
+      <span class="cf-banner-go" data-i18n="cfBannerGo">開啟／找回</span>
     </button>
   </main>
 
   <footer class="hint-bar">
     <span class="hint-mark" aria-hidden="true"></span>
-    <span id="hintText">雙擊日期可新增或編輯工時／兼職／加班／半夜記錄</span>
+    <span id="hintText" data-i18n="hintMouse">雙擊日期可新增或編輯工時／兼職／加班／半夜記錄</span>
   </footer>
 </div>
 
@@ -2210,9 +2226,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     <div>
       <p id="sheetDate" class="sheet-date">—</p>
       <p id="sheetHol" class="sheet-hol" hidden></p>
-      <h3 id="sheetTitle" class="sheet-title">新增記錄</h3>
+      <h3 id="sheetTitle" class="sheet-title" data-i18n="sheetNew">新增記錄</h3>
     </div>
-    <button id="sheetClose" class="icon-btn" type="button" aria-label="關閉">
+    <button id="sheetClose" class="icon-btn" type="button" data-i18n-aria="close" aria-label="關閉">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </header>
@@ -2220,28 +2236,28 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   <div class="sheet-body">
     <!-- 工時區塊 -->
     <section class="field-group">
-      <h4 class="group-title"><span class="dot dot-work"></span>工時</h4>
+      <h4 class="group-title"><span class="dot dot-work"></span><span data-i18n="workSection">工時</span></h4>
 
       <div class="field">
-        <label class="field-label" for="workDesc">描述</label>
+        <label class="field-label" for="workDesc" data-i18n="desc">描述</label>
         <textarea id="workDesc" rows="1"></textarea>
         <div class="desc-suggest" id="suggestWork" hidden><!-- 最近描述建議由 JS 產生 --></div>
       </div>
 
       <div class="field">
-        <span class="field-label" id="workUnitsLabel">工數</span>
+        <span class="field-label" id="workUnitsLabel" data-i18n="workUnits">工數</span>
         <div class="unit-picker unit-picker-3" id="workUnitPicker" role="radiogroup" aria-labelledby="workUnitsLabel">
           <button type="button" class="unit-chip unit-chip-lg" data-value="0" role="radio" aria-checked="false">
-            <span class="chip-main">兼職時數</span>
-            <span class="chip-sub">不記工數</span>
+            <span class="chip-main" data-i18n="chipPart">兼職時數</span>
+            <span class="chip-sub" data-i18n="chipPartSub">不記工數</span>
           </button>
           <button type="button" class="unit-chip unit-chip-lg" data-value="0.5" role="radio" aria-checked="false">
-            <span class="chip-main">0.5 工</span>
-            <span class="chip-sub">半日</span>
+            <span class="chip-main" data-i18n="chipHalf">0.5 工</span>
+            <span class="chip-sub" data-i18n="chipHalfSub">半日</span>
           </button>
           <button type="button" class="unit-chip unit-chip-lg" data-value="1" role="radio" aria-checked="false">
-            <span class="chip-main">1 工</span>
-            <span class="chip-sub">全日</span>
+            <span class="chip-main" data-i18n="chipFull">1 工</span>
+            <span class="chip-sub" data-i18n="chipFullSub">全日</span>
           </button>
         </div>
       </div>
@@ -2252,18 +2268,18 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
          編輯已有兼職記錄時由 openSheet 自動展開（openSheet 會覆寫 hidden）。
          橫向長條卡片：左側說明、右側時數滾輪（無描述欄）。 -->
     <section class="field-group fg-row" id="partGroup" hidden>
-      <h4 class="group-title"><span class="dot dot-part"></span>兼職小時</h4>
+      <h4 class="group-title"><span class="dot dot-part"></span><span data-i18n="partSection">兼職小時</span></h4>
       <div class="fg-cols">
         <div class="field fg-note">
           <!-- 與加班滾輪同一套：上下滑動、0–24、每次 0.5；隱藏 input 為資料來源 -->
-          <p class="field-help">上下滑動選擇・按時薪計</p>
+          <p class="field-help" data-i18n="scrollHelp">上下滑動選擇・按時薪計</p>
         </div>
         <div class="field field-hours">
-          <span class="field-label" id="partHoursLabel">兼職時數</span>
+          <span class="field-label" id="partHoursLabel" data-i18n="partHours">兼職時數</span>
           <div class="wheel-picker wheel-part" id="partHoursWheel" data-input="partHours" role="spinbutton"
-               tabindex="0" aria-label="兼職時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+               tabindex="0" data-i18n-aria="partHours" aria-label="兼職時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
             <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit" data-i18n="hourWord">小時</span></div>
           </div>
           <input id="partHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
         </div>
@@ -2272,21 +2288,21 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     <!-- 加班區塊（橫向長條卡片：描述在左、時數滾輪在右） -->
     <section class="field-group fg-row">
-      <h4 class="group-title"><span class="dot dot-ot"></span>加班</h4>
+      <h4 class="group-title"><span class="dot dot-ot"></span><span data-i18n="otSection">加班</span></h4>
       <div class="fg-cols">
         <div class="field">
-          <label class="field-label" for="otDesc">描述</label>
+          <label class="field-label" for="otDesc" data-i18n="desc">描述</label>
           <textarea id="otDesc" rows="1"></textarea>
           <div class="desc-suggest" id="suggestOt" hidden><!-- 最近描述建議由 JS 產生 --></div>
         </div>
         <div class="field field-hours">
-          <span class="field-label" id="otUnitsLabel">加班時數</span>
+          <span class="field-label" id="otUnitsLabel" data-i18n="otHours">加班時數</span>
           <!-- iOS 風格滾輪：上下滑動、吸附置中即為選中值。
                隱藏的 number input 仍是資料來源（開面板寫值、儲存讀值）。 -->
           <div class="wheel-picker wheel-ot" id="otHoursWheel" data-input="otHours" role="spinbutton"
-               tabindex="0" aria-label="加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+               tabindex="0" data-i18n-aria="otHours" aria-label="加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
             <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit" data-i18n="hourWord">小時</span></div>
           </div>
           <input id="otHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
         </div>
@@ -2295,19 +2311,19 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     <!-- 半夜加班區塊（橫向長條卡片：描述在左、時數滾輪在右） -->
     <section class="field-group fg-row">
-      <h4 class="group-title"><span class="dot dot-night"></span>半夜加班</h4>
+      <h4 class="group-title"><span class="dot dot-night"></span><span data-i18n="nightSection">半夜加班</span></h4>
       <div class="fg-cols">
         <div class="field">
-          <label class="field-label" for="nightDesc">描述</label>
+          <label class="field-label" for="nightDesc" data-i18n="desc">描述</label>
           <textarea id="nightDesc" rows="1"></textarea>
           <div class="desc-suggest" id="suggestNight" hidden><!-- 最近描述建議由 JS 產生 --></div>
         </div>
         <div class="field field-hours">
-          <span class="field-label" id="nightUnitsLabel">半夜加班時數</span>
+          <span class="field-label" id="nightUnitsLabel" data-i18n="nightHours">半夜加班時數</span>
           <div class="wheel-picker wheel-night" id="nightHoursWheel" data-input="nightHours" role="spinbutton"
-               tabindex="0" aria-label="半夜加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
+               tabindex="0" data-i18n-aria="nightHours" aria-label="半夜加班時數" aria-valuemin="0" aria-valuemax="24" aria-valuenow="0">
             <div class="wheel-scroll"><!-- 選項由 JS 產生（0–24，每次 0.5）--></div>
-            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit">小時</span></div>
+            <div class="wheel-band" aria-hidden="true"><span class="wheel-unit" data-i18n="hourWord">小時</span></div>
           </div>
           <input id="nightHours" type="number" inputmode="decimal" step="0.5" min="0" max="24" value="0" hidden>
         </div>
@@ -2315,42 +2331,51 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     </section>
 
     <div class="field">
-      <label class="field-label" for="tagsInput">標籤（選填）</label>
-      <input id="tagsInput" type="text" placeholder="以逗號分隔，例：出差, 遠端">
+      <label class="field-label" for="tagsInput" data-i18n="tagsLabel">標籤（選填）</label>
+      <input id="tagsInput" type="text" data-i18n-ph="tagsPlaceholder" placeholder="以逗號分隔，例：出差, 遠端">
     </div>
   </div>
 
   <footer class="sheet-foot">
-    <button id="deleteBtn" class="btn btn-danger" type="button" hidden>刪除</button>
-    <button id="cancelBtn" class="btn btn-ghost" type="button">取消</button>
-    <button id="saveBtn" class="btn btn-primary" type="button">儲存</button>
+    <button id="deleteBtn" class="btn btn-danger" type="button" data-i18n="delete" hidden>刪除</button>
+    <button id="cancelBtn" class="btn btn-ghost" type="button" data-i18n="cancel">取消</button>
+    <button id="saveBtn" class="btn btn-primary" type="button" data-i18n="save">儲存</button>
   </footer>
 </section>
 
 <!-- ============ 側邊選單 ============ -->
 <div id="drawerBackdrop" class="sheet-backdrop" hidden></div>
-<aside id="drawer" class="drawer" hidden aria-label="選單">
+<aside id="drawer" class="drawer" hidden data-i18n-aria="drawerMenu" aria-label="選單">
   <header class="drawer-head">
-    <h3>工時月曆</h3>
-    <button id="drawerClose" class="icon-btn" type="button" aria-label="關閉">
+    <h3 data-i18n="appName">工時月曆</h3>
+    <button id="drawerClose" class="icon-btn" type="button" data-i18n-aria="close" aria-label="關閉">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </header>
 
   <div class="drawer-section">
-    <p class="drawer-label">外觀</p>
-    <div id="themeSeg" class="seg-row" role="radiogroup" aria-label="主題模式">
-      <button class="seg-btn" data-theme-opt="auto" type="button" role="radio">跟隨系統</button>
-      <button class="seg-btn" data-theme-opt="light" type="button" role="radio">淺色</button>
-      <button class="seg-btn" data-theme-opt="dark" type="button" role="radio">深色</button>
+    <p class="drawer-label" data-i18n="secAppearance">外觀</p>
+    <div id="themeSeg" class="seg-row" role="radiogroup" data-i18n-aria="themeGroup" aria-label="主題模式">
+      <button class="seg-btn" data-theme-opt="auto" type="button" role="radio" data-i18n="themeAuto">跟隨系統</button>
+      <button class="seg-btn" data-theme-opt="light" type="button" role="radio" data-i18n="themeLight">淺色</button>
+      <button class="seg-btn" data-theme-opt="dark" type="button" role="radio" data-i18n="themeDark">深色</button>
     </div>
-    <p class="drawer-help">「跟隨系統」會自動配合手機的光暗模式設定；選淺色或深色則固定不變。</p>
+    <p class="drawer-help" data-i18n="themeHelp">「跟隨系統」會自動配合手機的光暗模式設定；選淺色或深色則固定不變。</p>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">薪資設定</p>
+    <p class="drawer-label" data-i18n="secLanguage">語言</p>
+    <div id="langSeg" class="seg-row" role="radiogroup" data-i18n-aria="secLanguage" aria-label="語言">
+      <button class="seg-btn" data-lang-opt="zh-Hant" type="button" role="radio" lang="zh-Hant">中文</button>
+      <button class="seg-btn" data-lang-opt="en" type="button" role="radio" lang="en">English</button>
+    </div>
+    <p class="drawer-help" data-i18n="langHelp">介面語言會立即切換，設定會記在此裝置。</p>
+  </div>
+
+  <div class="drawer-section">
+    <p class="drawer-label" data-i18n="secPay">薪資設定</p>
     <div class="pay-field">
-      <label class="pay-label" for="dayPay">日薪（1 工）</label>
+      <label class="pay-label" for="dayPay" data-i18n="payDay">日薪（1 工）</label>
       <div class="pay-input-wrap">
         <span class="pay-prefix">$</span>
         <input id="dayPay" class="pay-input" type="number" inputmode="decimal"
@@ -2358,7 +2383,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       </div>
     </div>
     <div class="pay-field">
-      <label class="pay-label" for="hourlyPay">時薪（兼職）</label>
+      <label class="pay-label" for="hourlyPay" data-i18n="payHourly">時薪（兼職）</label>
       <div class="pay-input-wrap">
         <span class="pay-prefix">$</span>
         <input id="hourlyPay" class="pay-input" type="number" inputmode="decimal"
@@ -2366,7 +2391,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       </div>
     </div>
     <div class="pay-field">
-      <label class="pay-label" for="otPay">加班時薪</label>
+      <label class="pay-label" for="otPay" data-i18n="payOt">加班時薪</label>
       <div class="pay-input-wrap">
         <span class="pay-prefix">$</span>
         <input id="otPay" class="pay-input" type="number" inputmode="decimal"
@@ -2374,101 +2399,101 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       </div>
     </div>
     <div class="pay-field">
-      <label class="pay-label" for="nightPay">半夜加班時薪</label>
+      <label class="pay-label" for="nightPay" data-i18n="payNight">半夜加班時薪</label>
       <div class="pay-input-wrap">
         <span class="pay-prefix">$</span>
         <input id="nightPay" class="pay-input" type="number" inputmode="decimal"
                step="10" min="0" placeholder="0" value="">
       </div>
     </div>
-    <p class="drawer-help">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。</p>
+    <p class="drawer-help" data-i18n="payHelp">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。</p>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">顯示選項</p>
+    <p class="drawer-label" data-i18n="secDisplay">顯示選項</p>
     <label class="switch-row">
-      <span>顯示香港公眾假期</span>
+      <span data-i18n="optHoliday">顯示香港公眾假期</span>
       <input id="optHoliday" type="checkbox" checked>
     </label>
     <label class="switch-row">
-      <span>顯示週末</span>
+      <span data-i18n="optWeekend">顯示週末</span>
       <input id="optWeekend" type="checkbox" checked>
     </label>
     <label class="switch-row">
-      <span>月曆上顯示工數</span>
+      <span data-i18n="optHours">月曆上顯示工數</span>
       <input id="optShowHours" type="checkbox" checked>
     </label>
     <label class="switch-row">
-      <span>週一為每週第一天</span>
+      <span data-i18n="optMonday">週一為每週第一天</span>
       <input id="optMondayFirst" type="checkbox" checked>
     </label>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">螢幕鎖定</p>
+    <p class="drawer-label" data-i18n="secLock">螢幕鎖定</p>
     <div class="lock-row">
-      <span id="lockState" class="lock-state">未啟用</span>
-      <button id="lockBtn" class="drawer-btn" type="button">設定密碼</button>
+      <span id="lockState" class="lock-state" data-i18n="lockOff">未啟用</span>
+      <button id="lockBtn" class="drawer-btn" type="button" data-i18n="lockSet">設定密碼</button>
     </div>
-    <p class="drawer-help">啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。</p>
+    <p class="drawer-help" data-i18n="lockHelp">啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。</p>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">資料</p>
-    <button id="exportCsv" class="drawer-btn" type="button">匯出 CSV（本月）</button>
-    <button id="exportJson" class="drawer-btn" type="button">匯出備份 JSON</button>
-    <button id="importJson" class="drawer-btn" type="button">匯入備份 JSON</button>
+    <p class="drawer-label" data-i18n="secData">資料</p>
+    <button id="exportCsv" class="drawer-btn" type="button" data-i18n="exportCsv">匯出 CSV（本月）</button>
+    <button id="exportJson" class="drawer-btn" type="button" data-i18n="exportJson">匯出備份 JSON</button>
+    <button id="importJson" class="drawer-btn" type="button" data-i18n="importJson">匯入備份 JSON</button>
     <input id="importFile" type="file" accept="application/json,.json" hidden>
-    <button id="clearAll" class="drawer-btn drawer-btn-danger" type="button">清除全部資料</button>
+    <button id="clearAll" class="drawer-btn drawer-btn-danger" type="button" data-i18n="clearAll">清除全部資料</button>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">雲端備份（Cloudflare）</p>
+    <p class="drawer-label" data-i18n="secCloud">雲端備份（Cloudflare）</p>
     <div id="cfSetup">
       <div class="pay-field">
-        <span class="pay-label">Worker 網址（可留空）</span>
+        <span class="pay-label" data-i18n="cfEndpointLabel">Worker 網址（可留空）</span>
         <div class="pay-input-wrap">
-          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" placeholder="留空＝使用預設雲端">
+          <input id="cfEndpoint" class="pay-input" type="url" autocomplete="off" spellcheck="false" data-i18n-ph="cfEndpointPh" placeholder="留空＝使用預設雲端">
         </div>
       </div>
       <div class="pay-field">
-        <span class="pay-label">恢復碼（重裝找回資料用；留空＝自動生成）</span>
+        <span class="pay-label" data-i18n="cfCodeLabel">恢復碼（重裝找回資料用；留空＝自動生成）</span>
         <div class="pay-input-wrap">
-          <input id="cfCodeInput" class="pay-input" type="text" autocomplete="off" spellcheck="false" placeholder="留空自動生成">
+          <input id="cfCodeInput" class="pay-input" type="text" autocomplete="off" spellcheck="false" data-i18n-ph="cfCodePh" placeholder="留空自動生成">
         </div>
       </div>
-      <button id="cfConnect" class="drawer-btn" type="button">連接雲端備份</button>
+      <button id="cfConnect" class="drawer-btn" type="button" data-i18n="cfConnect">連接雲端備份</button>
     </div>
     <div id="cfConnected" hidden>
       <p class="cf-status" id="cfStatus"></p>
       <div class="lock-row">
-        <button id="cfRestore" class="drawer-btn" type="button">從雲端還原</button>
-        <button id="cfBackupNow" class="drawer-btn" type="button">立即備份</button>
+        <button id="cfRestore" class="drawer-btn" type="button" data-i18n="cfRestore">從雲端還原</button>
+        <button id="cfBackupNow" class="drawer-btn" type="button" data-i18n="cfBackupNow">立即備份</button>
       </div>
-      <button id="cfShowCode" class="drawer-btn" type="button">查看恢復碼</button>
-      <button id="cfDisconnect" class="drawer-btn drawer-btn-danger" type="button">斷開</button>
+      <button id="cfShowCode" class="drawer-btn" type="button" data-i18n="cfShowCode">查看恢復碼</button>
+      <button id="cfDisconnect" class="drawer-btn drawer-btn-danger" type="button" data-i18n="cfDisconnect">斷開</button>
     </div>
     <div id="cfCodeShow" hidden>
-      <p class="cf-code-hint">這組恢復碼是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
+      <p class="cf-code-hint" data-i18n="cfCodeHint">這組恢復碼是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
       <p class="cf-code" id="cfCodeText"></p>
-      <button id="cfCodeOk" class="drawer-btn" type="button">已保存好</button>
+      <button id="cfCodeOk" class="drawer-btn" type="button" data-i18n="cfSaved">已保存好</button>
     </div>
-    <p class="drawer-help">連接後，每次修改會自動加密備份（伺服器只有密文）。<b>刪除 App 重裝後</b>：填回同一個 Worker 網址＋恢復碼即可自動找回資料。恢復碼務必截圖保管。</p>
+    <p class="drawer-help" data-i18n="cfHelp">連接後，每次修改會自動加密備份（伺服器只有密文）。<b>刪除 App 重裝後</b>：填回同一個 Worker 網址＋恢復碼即可自動找回資料。恢復碼務必截圖保管。</p>
   </div>
 
   <div class="drawer-section drawer-about">
     <p id="installHint" class="drawer-help"></p>
-    <p class="drawer-help">資料儲存在此裝置的瀏覽器中，離線可用。</p>
+    <p class="drawer-help" data-i18n="dataLocalHelp">資料儲存在此裝置的瀏覽器中，離線可用。</p>
   </div>
 
   <div class="drawer-section">
-    <p class="drawer-label">版本</p>
+    <p class="drawer-label" data-i18n="secVersion">版本</p>
     <div class="version-row">
       <div>
         <p class="version-num" id="verCurrent">—</p>
         <p class="drawer-help" id="verBuild"></p>
       </div>
-      <button id="checkUpdateBtn" class="drawer-btn version-check" type="button">檢查更新</button>
+      <button id="checkUpdateBtn" class="drawer-btn version-check" type="button" data-i18n="checkUpdate">檢查更新</button>
     </div>
     <p class="drawer-help" id="verStatus"></p>
   </div>
@@ -2484,11 +2509,11 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       </svg>
     </span>
     <div class="update-text">
-      <p class="update-title">有新版本可用</p>
-      <p class="update-desc" id="updateDesc">更新後即可使用最新功能</p>
+      <p class="update-title" data-i18n="updateTitle">有新版本可用</p>
+      <p class="update-desc" id="updateDesc" data-i18n="updateDesc">更新後即可使用最新功能</p>
     </div>
-    <button id="updateNowBtn" class="update-btn" type="button">立即更新</button>
-    <button id="updateLaterBtn" class="update-close" type="button" aria-label="稍後再說">
+    <button id="updateNowBtn" class="update-btn" type="button" data-i18n="updateNow">立即更新</button>
+    <button id="updateLaterBtn" class="update-close" type="button" data-i18n-aria="updateLater" aria-label="稍後再說">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </div>
@@ -2503,43 +2528,43 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   <div class="sheet-handle" aria-hidden="true"></div>
   <header class="sheet-head">
     <div>
-      <p class="sheet-date">自動備份</p>
-      <h3 id="cfSheetTitle" class="sheet-title">雲端備份</h3>
+      <p class="sheet-date" data-i18n="cfAutoBackup">自動備份</p>
+      <h3 id="cfSheetTitle" class="sheet-title" data-i18n="cfSheetTitle">雲端備份</h3>
     </div>
-    <button id="cfSheetClose" class="icon-btn" type="button" aria-label="關閉">
+    <button id="cfSheetClose" class="icon-btn" type="button" data-i18n-aria="close" aria-label="關閉">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </button>
   </header>
   <div class="sheet-body">
     <div id="cfSheetIntro">
-      <p class="cf-sheet-line">開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。</p>
-      <p class="cf-sheet-line">第一次使用 → 點<b>一鍵開啟</b>，會生成一組<b>恢復碼</b>，請截圖保存。</p>
-      <p class="cf-sheet-line">曾經開啟過（例如<b>刪除 App 後重裝</b>）→ 點<b>輸入恢復碼找回</b>，資料會自動回來，並<b>沿用原本的碼</b>，不需要新碼。</p>
+      <p class="cf-sheet-line" data-i18n="cfIntro1">開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。</p>
+      <p class="cf-sheet-line" data-i18n="cfIntro2">第一次使用 → 點<b>一鍵開啟</b>，會生成一組<b>恢復碼</b>，請截圖保存。</p>
+      <p class="cf-sheet-line" data-i18n="cfIntro3">曾經開啟過（例如<b>刪除 App 後重裝</b>）→ 點<b>輸入恢復碼找回</b>，資料會自動回來，並<b>沿用原本的碼</b>，不需要新碼。</p>
     </div>
-    <button id="cfSheetOpen" class="btn btn-primary" type="button">一鍵開啟自動備份</button>
-    <button id="cfSheetHaveToggle" class="btn btn-ghost" type="button">我已有恢復碼，輸入找回</button>
+    <button id="cfSheetOpen" class="btn btn-primary" type="button" data-i18n="cfOneTap">一鍵開啟自動備份</button>
+    <button id="cfSheetHaveToggle" class="btn btn-ghost" type="button" data-i18n="cfHaveToggle">我已有恢復碼，輸入找回</button>
     <div id="cfSheetHave" hidden>
       <input id="cfSheetHaveInput" class="cf-have-input" type="text" inputmode="text"
              autocapitalize="characters" autocomplete="off" spellcheck="false"
-             placeholder="XXXX-XXXX" maxlength="9" aria-label="恢復碼">
-      <button id="cfSheetHaveGo" class="btn btn-primary" type="button">用此碼找回並沿用</button>
+             placeholder="XXXX-XXXX" maxlength="9" data-i18n-aria="cfHaveAria" aria-label="恢復碼">
+      <button id="cfSheetHaveGo" class="btn btn-primary" type="button" data-i18n="cfHaveGo">用此碼找回並沿用</button>
     </div>
     <div id="cfSheetCode" hidden>
-      <p class="cf-code-hint">這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
+      <p class="cf-code-hint" data-i18n="cfCodeHintSheet">這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：</p>
       <p class="cf-code" id="cfSheetCodeText"></p>
-      <button id="cfSheetDone" class="btn btn-primary" type="button">已截圖保存，完成</button>
+      <button id="cfSheetDone" class="btn btn-primary" type="button" data-i18n="cfDone">已截圖保存，完成</button>
     </div>
   </div>
 </section>
 
-<div id="lockScreen" class="lock-screen" hidden role="dialog" aria-modal="true" aria-label="螢幕鎖定">
+<div id="lockScreen" class="lock-screen" hidden role="dialog" aria-modal="true" data-i18n-aria="lockAria" aria-label="螢幕鎖定">
   <div class="lock-card">
     <svg class="lock-icon" viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <rect x="4.5" y="10.5" width="15" height="9.5" rx="2.5"/>
       <path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/>
       <circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/>
     </svg>
-    <h2 id="lockTitle">輸入密碼</h2>
+    <h2 id="lockTitle" data-i18n="lockTitleUnlock">輸入密碼</h2>
     <div class="lock-dots" id="lockDots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <p id="lockMsg" class="lock-msg" role="alert"></p>
     <div class="lock-pad" id="lockPad">
@@ -2552,9 +2577,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       <button class="lock-key" type="button" data-k="7">7</button>
       <button class="lock-key" type="button" data-k="8">8</button>
       <button class="lock-key" type="button" data-k="9">9</button>
-      <button class="lock-key lock-key-fn" type="button" data-k="clear">清除</button>
+      <button class="lock-key lock-key-fn" type="button" data-k="clear" data-i18n="lockClear">清除</button>
       <button class="lock-key" type="button" data-k="0">0</button>
-      <button class="lock-key lock-key-fn" type="button" data-k="back" aria-label="刪除最後一位">
+      <button class="lock-key lock-key-fn" type="button" data-k="back" data-i18n-aria="lockBackspace" aria-label="刪除最後一位">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5h11a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H9l-6-7 6-7z"/><path d="M12 9.5l5 5M17 9.5l-5 5"/></svg>
       </button>
     </div>
@@ -2571,8 +2596,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.31.1';
-  const APP_BUILD = '20260928-1815';
+  const APP_VERSION = '1.32.0';
+  const APP_BUILD = '20261001-2303';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2580,66 +2605,68 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   // 香港公眾假期（紅日）——資料來源：1823 官方 iCal（www.1823.gov.hk）
   // 2025–2027 已由政府憲報公布；新一年公布後於年末更新此表。
   // 無資料的年份照常運作（只是不顯示假期標示）。
+  // 值為 HOLIDAY_NAMES 的鍵（顯示時才依語言取名），見 i18n 區塊。
   const HK_HOLIDAYS = {
     // 2025
-    '2025-01-01': '一月一日',
-    '2025-01-29': '農曆年初一',
-    '2025-01-30': '農曆年初二',
-    '2025-01-31': '農曆年初三',
-    '2025-04-04': '清明節',
-    '2025-04-18': '耶穌受難節',
-    '2025-04-19': '耶穌受難節翌日',
-    '2025-04-21': '復活節星期一',
-    '2025-05-01': '勞動節',
-    '2025-05-05': '佛誕',
-    '2025-05-31': '端午節',
-    '2025-07-01': '香港特別行政區成立紀念日',
-    '2025-10-01': '國慶日',
-    '2025-10-07': '中秋節翌日',
-    '2025-10-29': '重陽節',
-    '2025-12-25': '聖誕節',
-    '2025-12-26': '聖誕節後第一個周日',
+    '2025-01-01': 'newYear',
+    '2025-01-29': 'lunarNewYear1',
+    '2025-01-30': 'lunarNewYear2',
+    '2025-01-31': 'lunarNewYear3',
+    '2025-04-04': 'chingMing',
+    '2025-04-18': 'goodFriday',
+    '2025-04-19': 'goodFridayNext',
+    '2025-04-21': 'easterMonday',
+    '2025-05-01': 'labourDay',
+    '2025-05-05': 'buddha',
+    '2025-05-31': 'tsuenWan',
+    '2025-07-01': 'hksar',
+    '2025-10-01': 'nationalDay',
+    '2025-10-07': 'midAutumnNext',
+    '2025-10-29': 'chungYeung',
+    '2025-12-25': 'christmas',
+    '2025-12-26': 'boxingDay',
     // 2026
-    '2026-01-01': '一月一日',
-    '2026-02-17': '農曆年初一',
-    '2026-02-18': '農曆年初二',
-    '2026-02-19': '農曆年初三',
-    '2026-04-03': '耶穌受難節',
-    '2026-04-04': '耶穌受難節翌日',
-    '2026-04-06': '清明節翌日',
-    '2026-04-07': '復活節星期一翌日',
-    '2026-05-01': '勞動節',
-    '2026-05-25': '佛誕翌日',
-    '2026-06-19': '端午節',
-    '2026-07-01': '香港特別行政區成立紀念日',
-    '2026-09-26': '中秋節翌日',
-    '2026-10-01': '國慶日',
-    '2026-10-19': '重陽節翌日',
-    '2026-12-25': '聖誕節',
-    '2026-12-26': '聖誕節後第一個周日',
+    '2026-01-01': 'newYear',
+    '2026-02-17': 'lunarNewYear1',
+    '2026-02-18': 'lunarNewYear2',
+    '2026-02-19': 'lunarNewYear3',
+    '2026-04-03': 'goodFriday',
+    '2026-04-04': 'goodFridayNext',
+    '2026-04-06': 'chingMingNext',
+    '2026-04-07': 'easterMondayNext',
+    '2026-05-01': 'labourDay',
+    '2026-05-25': 'buddhaNext',
+    '2026-06-19': 'tsuenWan',
+    '2026-07-01': 'hksar',
+    '2026-09-26': 'midAutumnNext',
+    '2026-10-01': 'nationalDay',
+    '2026-10-19': 'chungYeungNext',
+    '2026-12-25': 'christmas',
+    '2026-12-26': 'boxingDay',
     // 2027
-    '2027-01-01': '一月一日',
-    '2027-02-06': '農曆年初一',
-    '2027-02-08': '農曆年初三',
-    '2027-02-09': '農曆年初四',
-    '2027-03-26': '耶穌受難節',
-    '2027-03-27': '耶穌受難節翌日',
-    '2027-03-29': '復活節星期一',
-    '2027-04-05': '清明節',
-    '2027-05-01': '勞動節',
-    '2027-05-13': '佛誕',
-    '2027-06-09': '端午節',
-    '2027-07-01': '香港特別行政區成立紀念日',
-    '2027-09-16': '中秋節翌日',
-    '2027-10-01': '國慶日',
-    '2027-10-08': '重陽節',
-    '2027-12-25': '聖誕節',
-    '2027-12-27': '聖誕節後第一個周日',
+    '2027-01-01': 'newYear',
+    '2027-02-06': 'lunarNewYear1',
+    '2027-02-08': 'lunarNewYear3',
+    '2027-02-09': 'lunarNewYear4',
+    '2027-03-26': 'goodFriday',
+    '2027-03-27': 'goodFridayNext',
+    '2027-03-29': 'easterMonday',
+    '2027-04-05': 'chingMing',
+    '2027-05-01': 'labourDay',
+    '2027-05-13': 'buddha',
+    '2027-06-09': 'tsuenWan',
+    '2027-07-01': 'hksar',
+    '2027-09-16': 'midAutumnNext',
+    '2027-10-01': 'nationalDay',
+    '2027-10-08': 'chungYeung',
+    '2027-12-25': 'christmas',
+    '2027-12-27': 'boxingDay',
   };
 
   const DEFAULTS = {
     stdHours: 8,    // 僅供舊資料遷移換算（1 工 = N 小時）；UI 已移除此設定
     theme: 'auto',  // 主題：auto＝跟隨系統光暗模式；light／dark＝固定
+    lang: 'zh-Hant', // 介面語言：'zh-Hant'（繁中）| 'en'（English）
     showWeekend: true,
     showHolidays: true,  // 顯示香港公眾假期（紅日：日期轉紅＋假期名）
     showHours: true,
@@ -2655,6 +2682,559 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     cfAt: '',       // 上次成功備份時間（ISO）
     cfHash: '',     // 上次成功備份的內容指紋（沒變不重推）
   };
+
+  /* ===================== i18n（繁體中文 / English） =====================
+     語言設定存於 settings.lang（'zh-Hant' | 'en'），在側邊選單「語言」切換。
+     靜態文案在 index.html 以 data-i18n / data-i18n-ph / data-i18n-aria 標記，
+     由 applyLang() 一次套用；動態文案一律走 t(key, vars)。
+     假期名稱 HK_HOLIDAYS 只存鍵（HOLIDAY_NAMES 的 key），顯示時才依語言取名。 */
+  const LANGS = ['zh-Hant', 'en'];
+
+  const I18N = {
+    'zh-Hant': {
+      appName: '工時月曆',
+      metaDesc: '工時月曆 — 快速記錄每日工時與加班，月曆一目了然',
+      today: '今天',
+      monthNav: '月份切換',
+      prevMonth: '上一個月',
+      nextMonth: '下一個月',
+      menu: '更多操作',
+      calendar: '月曆',
+      close: '關閉',
+      drawerMenu: '選單',
+
+      // 底部提示
+      hintTouch: '點一下日期可新增或編輯工時／兼職／加班／半夜記錄',
+      hintMouse: '雙擊日期可新增或編輯工時／兼職／加班／半夜記錄',
+
+      // 面板
+      sheetNew: '新增記錄',
+      sheetEdit: '編輯記錄',
+      workSection: '工時',
+      partSection: '兼職小時',
+      otSection: '加班',
+      nightSection: '半夜加班',
+      desc: '描述',
+      workUnits: '工數',
+      partHours: '兼職時數',
+      otHours: '加班時數',
+      nightHours: '半夜加班時數',
+      chipPart: '兼職時數',
+      chipPartSub: '不記工數',
+      chipHalf: '0.5 工',
+      chipHalfSub: '半日',
+      chipFull: '1 工',
+      chipFullSub: '全日',
+      hourWord: '小時',
+      scrollHelp: '上下滑動選擇・按時薪計',
+      tagsLabel: '標籤（選填）',
+      tagsPlaceholder: '以逗號分隔，例：出差, 遠端',
+      delete: '刪除',
+      cancel: '取消',
+      save: '儲存',
+      hkHolidayPrefix: '香港公眾假期・',
+
+      // 收入
+      incomeLabel: '本月收入總計',
+      incomeShowAria: '本月收入總計，點擊隱藏金額',
+      incomeHideAria: '本月收入總計已隱藏，點擊顯示金額',
+      incomeHideTip: '點擊隱藏金額',
+      incomeShowTip: '點擊顯示金額',
+      incomeHideWord: '隱藏',
+      incomeShowWord: '顯示',
+
+      // 統計膠囊
+      statWork: '工時 ',
+      statPart: '兼職 ',
+      statOt: '加班 ',
+      statNight: '半夜 ',
+      statDays: '記錄 ',
+      unitWork: '工',
+      unitDays: '天',
+
+      // 格子
+      holPrefix: '公眾假期：',
+      cellWork: '工時',
+      cellPart: '兼職',
+      cellOt: '加班',
+      cellNight: '半夜加班',
+      cellNoRecord: '尚無記錄',
+      cellIncome: '當日收入',
+
+      // 側邊選單
+      secAppearance: '外觀',
+      themeGroup: '主題模式',
+      themeAuto: '跟隨系統',
+      themeLight: '淺色',
+      themeDark: '深色',
+      themeHelp: '「跟隨系統」會自動配合手機的光暗模式設定；選淺色或深色則固定不變。',
+      secLanguage: '語言',
+      langHelp: '介面語言會立即切換，設定會記在此裝置。',
+      secPay: '薪資設定',
+      payDay: '日薪（1 工）',
+      payHourly: '時薪（兼職）',
+      payOt: '加班時薪',
+      payNight: '半夜加班時薪',
+      payHelp: '設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。',
+      secDisplay: '顯示選項',
+      optHoliday: '顯示香港公眾假期',
+      optWeekend: '顯示週末',
+      optHours: '月曆上顯示工數',
+      optMonday: '週一為每週第一天',
+      secLock: '螢幕鎖定',
+      lockOn: '已啟用',
+      lockOff: '未啟用',
+      lockSet: '設定密碼',
+      lockDisable: '關閉鎖定',
+      lockHelp: '啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。',
+      secData: '資料',
+      exportCsv: '匯出 CSV（本月）',
+      exportJson: '匯出備份 JSON',
+      importJson: '匯入備份 JSON',
+      clearAll: '清除全部資料',
+      secCloud: '雲端備份（Cloudflare）',
+      cfEndpointLabel: 'Worker 網址（可留空）',
+      cfEndpointPh: '留空＝使用預設雲端',
+      cfCodeLabel: '恢復碼（重裝找回資料用；留空＝自動生成）',
+      cfCodePh: '留空自動生成',
+      cfConnect: '連接雲端備份',
+      cfConnecting: '連接中…',
+      cfRestore: '從雲端還原',
+      cfBackupNow: '立即備份',
+      cfShowCode: '查看恢復碼',
+      cfDisconnect: '斷開',
+      cfCodeHint: '這組恢復碼是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：',
+      cfCodeHintSheet: '這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：',
+      cfSaved: '已保存好',
+      cfHelp: '連接後，每次修改會自動加密備份（伺服器只有密文）。<b>刪除 App 重裝後</b>：填回同一個 Worker 網址＋恢復碼即可自動找回資料。恢復碼務必截圖保管。',
+      dataLocalHelp: '資料儲存在此裝置的瀏覽器中，離線可用。',
+      secVersion: '版本',
+      checkUpdate: '檢查更新',
+
+      // 雲端備份橫幅／面板
+      cfBannerText: '<b>雲端備份</b>　刪除 App 也不怕資料消失',
+      cfBannerGo: '開啟／找回',
+      cfAutoBackup: '自動備份',
+      cfSheetTitle: '雲端備份',
+      cfIntro1: '開啟後，每次修改都會<b>自動加密備份</b>到雲端（AES-GCM 端到端加密，伺服器只有密文，連站長也看不到內容）。',
+      cfIntro2: '第一次使用 → 點<b>一鍵開啟</b>，會生成一組<b>恢復碼</b>，請截圖保存。',
+      cfIntro3: '曾經開啟過（例如<b>刪除 App 後重裝</b>）→ 點<b>輸入恢復碼找回</b>，資料會自動回來，並<b>沿用原本的碼</b>，不需要新碼。',
+      cfOneTap: '一鍵開啟自動備份',
+      cfOpening: '開啟中…',
+      cfHaveToggle: '我已有恢復碼，輸入找回',
+      cfHaveGo: '用此碼找回並沿用',
+      cfFinding: '找家中…',
+      cfHaveAria: '恢復碼',
+      cfDone: '已截圖保存，完成',
+
+      // 更新橫幅
+      updateTitle: '有新版本可用',
+      updateDesc: '更新後即可使用最新功能',
+      updateNow: '立即更新',
+      updateLater: '稍後再說',
+
+      // 鎖屏
+      lockTitleUnlock: '輸入密碼',
+      lockTitleSet: '設定新密碼',
+      lockTitleConfirm: '再輸入一次確認',
+      lockTitleOff: '關閉鎖定',
+      lockPrompt4: '請輸入 4 位數字',
+      lockPromptCurrent: '輸入目前密碼以確認',
+      lockClear: '清除',
+      lockBackspace: '刪除最後一位',
+      lockWrong: '密碼錯誤，請重試',
+      lockEnabled: '螢幕鎖定已啟用',
+      lockDisabled: '螢幕鎖定已關閉',
+      lockMismatch: '兩次輸入不一致，請重新設定',
+      lockCooldown: '嘗試次數過多，{n} 秒後可再試',
+      lockAria: '螢幕鎖定',
+
+      // Toast
+      toastSaved: '已儲存',
+      toastCleared: '已清空此日記錄',
+      toastDeleted: '已刪除記錄',
+      toastBackToday: '已回到本月',
+      toastStorageFull: '儲存失敗，瀏覽器空間可能已滿',
+      toastExportedCsv: '已匯出 CSV',
+      toastNoExport: '本月尚無記錄可匯出',
+      toastExportedJson: '已匯出備份',
+      toastImported: '已匯入 {n} 筆記錄',
+      toastImportFail: '匯入失敗：檔案格式不正確',
+      toastClearedAll: '已清除全部資料',
+      toastLatest: '已是最新版本',
+      toastUpdateLater: '已稍後提醒，可隨時在選單檢查更新',
+      toastUpdateFound: '發現新版本，請點上方提示更新',
+      toastUpdateSlow: '新版本下載中，完成後會自動提示',
+      toastUpdateFail: '更新失敗，請稍後再試',
+      toastCfScheme: 'Worker 網址必須是 https:// 開頭',
+      toastCfRestored: '已從雲端找回資料',
+      toastCfPushed: '已把本機資料備份到雲端',
+      toastCfNoBackup: '這個碼在雲端沒有備份，將以本機資料開始',
+      toastCfCreated: '已建立雲端備份',
+      toastCfFail: '連接失敗：',
+      toastCfNotConnected: '尚未連接雲端',
+      toastCfBackedUp: '已備份到雲端',
+      toastCfBackupFail: '備份失敗：',
+      toastCfDisconnected: '已斷開雲端備份',
+      toastCfOpenFail: '開啟失敗：',
+      toastCfCodeInvalid: '請輸入 8 位恢復碼（格式 XXXX-XXXX）',
+      toastCfCodeMissing: '雲端沒有這組恢復碼的備份，請確認有沒有打錯',
+      toastCfRestoreFail: '還原失敗：',
+      msgCfBadEndpoint: 'Worker 網址必須是 https://',
+      msgCfPushFail: '備份失敗（{n}）',
+      msgCfBadResponse: 'Worker 回應異常（{n}）',
+      msgCfNoBackup: '雲端沒有這個碼的備份',
+      msgCfBadFormat: '備份格式不符',
+      cfUnknownTime: '時間不明',
+      cfStatusAt: '已連接・上次備份：{t}',
+      cfStatusNever: '已連接・尚未備份過',
+
+      // Confirm
+      confirmDeleteEntry: '確定要刪除此日記錄嗎？',
+      confirmCfConflict: '雲端已有這個碼的備份（{t}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝把本機推上雲端',
+      confirmCfConflictKeep: '雲端已有這個碼的備份（{t}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝保留本機，把本機推上雲端',
+      confirmCfRestore: '用雲端備份覆蓋本機資料？\n本機目前的記錄會被取代。',
+      confirmCfDisconnect: '斷開雲端備份？\n本機資料不受影響，之後不再自動備份。\n（恢復碼若要繼續使用，請保留截圖）',
+      confirmImport: '將匯入 {n} 筆記錄，同名日期會被覆蓋。確定繼續？',
+      confirmClearAll: '確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。',
+
+      // 版本
+      verBuildAt: '建置於 {t}',
+      verChecking: '檢查中…',
+      verFoundNow: '發現新版本，可立即更新',
+      verFileMode: '單檔版不支援線上檢查更新',
+      verOffline: '目前離線，無法檢查更新',
+      verFound: '發現新版本 v{v}',
+      verLatest: '已是最新版本',
+      verUpdating: '更新中…',
+      verSlow: '下載較慢…',
+      updateBarNotes: 'v{v}：{notes}',
+      updateBarVersion: '更新至 v{v}',
+      updateBarDownloaded: '已下載新版本，點此套用',
+
+      // 安裝提示
+      installBefore: '此應用可安裝到主畫面：點右上角選單 → 安裝應用程式。',
+      installDone: '已安裝到裝置，可離線使用。',
+      installStandalone: '已以獨立應用模式執行，離線可用。',
+      installIOS: 'iOS：點「分享」→「加入主畫面」即可安裝。',
+      installGeneric: '可安裝為 App：瀏覽器選單 → 安裝／加到主畫面。',
+
+      // CSV / 檔案
+      csvWeekPrefix: '週',
+      csvHeaders: ['日期', '星期', '工數(工)', '工時描述', '兼職(小時)', '加班(小時)', '加班描述',
+        '半夜加班(小時)', '半夜加班描述', '標籤'],
+      csvFilename: '工時月曆_{ym}.csv',
+      jsonFilename: '工時月曆_備份_{date}.json',
+    },
+
+    en: {
+      appName: 'Worktime Calendar',
+      metaDesc: 'Worktime Calendar — log daily work hours and overtime at a glance',
+      today: 'Today',
+      monthNav: 'Month navigation',
+      prevMonth: 'Previous month',
+      nextMonth: 'Next month',
+      menu: 'More actions',
+      calendar: 'Calendar',
+      close: 'Close',
+      drawerMenu: 'Menu',
+
+      hintTouch: 'Tap a date to add or edit work, part-time, overtime or night records',
+      hintMouse: 'Double-click a date to add or edit work, part-time, overtime or night records',
+
+      sheetNew: 'New Record',
+      sheetEdit: 'Edit Record',
+      workSection: 'Work',
+      partSection: 'Part-time Hours',
+      otSection: 'Overtime',
+      nightSection: 'Night Overtime',
+      desc: 'Description',
+      workUnits: 'Day Units',
+      partHours: 'Part-time Hours',
+      otHours: 'Overtime Hours',
+      nightHours: 'Night Overtime Hours',
+      chipPart: 'Part-time',
+      chipPartSub: 'No day units',
+      chipHalf: '0.5 unit',
+      chipHalfSub: 'Half day',
+      chipFull: '1 unit',
+      chipFullSub: 'Full day',
+      hourWord: 'hr',
+      scrollHelp: 'Scroll to choose · paid at hourly rate',
+      tagsLabel: 'Tags (optional)',
+      tagsPlaceholder: 'Comma separated, e.g. trip, remote',
+      delete: 'Delete',
+      cancel: 'Cancel',
+      save: 'Save',
+      hkHolidayPrefix: 'HK public holiday · ',
+
+      incomeLabel: 'Monthly Income',
+      incomeShowAria: 'Monthly income total, tap to hide amounts',
+      incomeHideAria: 'Monthly income total hidden, tap to show amounts',
+      incomeHideTip: 'Tap to hide amounts',
+      incomeShowTip: 'Tap to show amounts',
+      incomeHideWord: 'Hide',
+      incomeShowWord: 'Show',
+
+      statWork: 'Days ',
+      statPart: 'Part-time ',
+      statOt: 'OT ',
+      statNight: 'Night ',
+      statDays: 'Records ',
+      unitWork: 'd',
+      unitDays: 'd',
+
+      holPrefix: 'Public holiday: ',
+      cellWork: 'Work',
+      cellPart: 'Part-time',
+      cellOt: 'Overtime',
+      cellNight: 'Night overtime',
+      cellNoRecord: 'No record',
+      cellIncome: 'Daily income',
+
+      secAppearance: 'Appearance',
+      themeGroup: 'Theme',
+      themeAuto: 'System',
+      themeLight: 'Light',
+      themeDark: 'Dark',
+      themeHelp: '“System” follows your phone’s light/dark setting; Light or Dark stays fixed.',
+      secLanguage: 'Language',
+      langHelp: 'The interface switches instantly. The choice is saved on this device.',
+      secPay: 'Pay Settings',
+      payDay: 'Daily rate (1 unit)',
+      payHourly: 'Hourly rate (part-time)',
+      payOt: 'Overtime hourly rate',
+      payNight: 'Night overtime hourly rate',
+      payHelp: 'Once set, the monthly income total appears below the calendar (day units × daily rate + part-time hours × hourly rate + overtime hours × overtime rate + night hours × night rate). Leave blank or 0 to hide.',
+      secDisplay: 'Display Options',
+      optHoliday: 'Show Hong Kong public holidays',
+      optWeekend: 'Show weekends',
+      optHours: 'Show day units on calendar',
+      optMonday: 'Start week on Monday',
+      secLock: 'Screen Lock',
+      lockOn: 'Enabled',
+      lockOff: 'Not enabled',
+      lockSet: 'Set Passcode',
+      lockDisable: 'Turn Off Lock',
+      lockHelp: 'Once enabled, you must enter a 4-digit passcode each time you open the app or return to it. The passcode is stored only as a hash and never leaves this device.',
+      secData: 'Data',
+      exportCsv: 'Export CSV (this month)',
+      exportJson: 'Export Backup JSON',
+      importJson: 'Import Backup JSON',
+      clearAll: 'Clear All Data',
+      secCloud: 'Cloud Backup (Cloudflare)',
+      cfEndpointLabel: 'Worker URL (optional)',
+      cfEndpointPh: 'Blank = use default cloud',
+      cfCodeLabel: 'Recovery code (for restoring after reinstall; blank = auto-generate)',
+      cfCodePh: 'Blank = auto-generate',
+      cfConnect: 'Connect Cloud Backup',
+      cfConnecting: 'Connecting…',
+      cfRestore: 'Restore from Cloud',
+      cfBackupNow: 'Back Up Now',
+      cfShowCode: 'View Recovery Code',
+      cfDisconnect: 'Disconnect',
+      cfCodeHint: 'This recovery code is the only proof of ownership, <b>screenshot it now</b> (send it to yourself / keep it in Photos):',
+      cfCodeHintSheet: 'This <b>recovery code</b> is the only proof of ownership, <b>screenshot it now</b> (send it to yourself / keep it in Photos):',
+      cfSaved: 'Saved',
+      cfHelp: 'Once connected, every change is encrypted and backed up automatically (the server only holds ciphertext). <b>After reinstalling the app</b>, enter the same Worker URL and recovery code to restore everything. Always keep a screenshot of the code.',
+      dataLocalHelp: 'Data is stored in this device’s browser and works offline.',
+      secVersion: 'Version',
+      checkUpdate: 'Check for Updates',
+
+      cfBannerText: '<b>Cloud backup</b>　Keep your data safe',
+      cfBannerGo: 'Set up',
+      cfAutoBackup: 'Auto backup',
+      cfSheetTitle: 'Cloud Backup',
+      cfIntro1: 'Once enabled, every change is <b>encrypted and backed up</b> automatically (AES-GCM end-to-end encryption — the server only holds ciphertext and even the developer cannot read it).',
+      cfIntro2: 'First time → tap <b>Enable</b>. A <b>recovery code</b> is generated — screenshot it.',
+      cfIntro3: 'Used before (e.g. <b>after reinstalling the app</b>) → tap <b>Enter recovery code</b>. Your data comes back and <b>keeps the same code</b> — no new code needed.',
+      cfOneTap: 'Enable Auto Backup',
+      cfOpening: 'Enabling…',
+      cfHaveToggle: 'I already have a recovery code',
+      cfHaveGo: 'Restore with this code',
+      cfFinding: 'Searching…',
+      cfHaveAria: 'Recovery code',
+      cfDone: 'Saved, done',
+
+      updateTitle: 'New version available',
+      updateDesc: 'Update to get the latest features',
+      updateNow: 'Update Now',
+      updateLater: 'Later',
+
+      lockTitleUnlock: 'Enter Passcode',
+      lockTitleSet: 'Set New Passcode',
+      lockTitleConfirm: 'Enter Again to Confirm',
+      lockTitleOff: 'Turn Off Lock',
+      lockPrompt4: 'Enter 4 digits',
+      lockPromptCurrent: 'Enter current passcode to confirm',
+      lockClear: 'Clear',
+      lockBackspace: 'Delete last digit',
+      lockWrong: 'Wrong passcode, try again',
+      lockEnabled: 'Screen lock enabled',
+      lockDisabled: 'Screen lock turned off',
+      lockMismatch: 'The two entries differ, please set again',
+      lockCooldown: 'Too many attempts, try again in {n}s',
+      lockAria: 'Screen lock',
+
+      toastSaved: 'Saved',
+      toastCleared: 'Record cleared for this day',
+      toastDeleted: 'Record deleted',
+      toastBackToday: 'Back to this month',
+      toastStorageFull: 'Save failed — browser storage may be full',
+      toastExportedCsv: 'CSV exported',
+      toastNoExport: 'No records this month to export',
+      toastExportedJson: 'Backup exported',
+      toastImported: 'Imported {n} records',
+      toastImportFail: 'Import failed: invalid file format',
+      toastClearedAll: 'All data cleared',
+      toastLatest: 'You are on the latest version',
+      toastUpdateLater: 'Reminder dismissed — check for updates anytime in the menu',
+      toastUpdateFound: 'New version found, tap the banner above to update',
+      toastUpdateSlow: 'Downloading the new version — you will be notified when it is ready',
+      toastUpdateFail: 'Update failed, please try again later',
+      toastCfScheme: 'Worker URL must start with https://',
+      toastCfRestored: 'Data restored from the cloud',
+      toastCfPushed: 'Local data backed up to the cloud',
+      toastCfNoBackup: 'No cloud backup for this code — starting with your local data',
+      toastCfCreated: 'Cloud backup created',
+      toastCfFail: 'Connection failed: ',
+      toastCfNotConnected: 'Not connected to the cloud',
+      toastCfBackedUp: 'Backed up to the cloud',
+      toastCfBackupFail: 'Backup failed: ',
+      toastCfDisconnected: 'Cloud backup disconnected',
+      toastCfOpenFail: 'Could not enable: ',
+      toastCfCodeInvalid: 'Enter an 8-character recovery code (XXXX-XXXX)',
+      toastCfCodeMissing: 'No cloud backup for this code — please check for typos',
+      toastCfRestoreFail: 'Restore failed: ',
+      msgCfBadEndpoint: 'Worker URL must start with https://',
+      msgCfPushFail: 'Backup failed ({n})',
+      msgCfBadResponse: 'Unexpected worker response ({n})',
+      msgCfNoBackup: 'No cloud backup for this code',
+      msgCfBadFormat: 'Backup format is invalid',
+      cfUnknownTime: 'unknown time',
+      cfStatusAt: 'Connected · last backup: {t}',
+      cfStatusNever: 'Connected · no backup yet',
+
+      confirmDeleteEntry: 'Delete this day’s record?',
+      confirmCfConflict: 'A cloud backup for this code already exists ({t}).\n\nOK = overwrite this device with the cloud copy\nCancel = push this device to the cloud',
+      confirmCfConflictKeep: 'A cloud backup for this code already exists ({t}).\n\nOK = overwrite this device with the cloud copy\nCancel = keep this device and push it to the cloud',
+      confirmCfRestore: 'Overwrite this device with the cloud backup?\nYour current records will be replaced.',
+      confirmCfDisconnect: 'Disconnect cloud backup?\nYour local data is unaffected; auto backup will stop.\n(Keep a screenshot of the recovery code if you still need it)',
+      confirmImport: 'Import {n} records? Existing dates with the same name will be overwritten.',
+      confirmClearAll: 'Clear all work records? This cannot be undone. Export a backup first.',
+
+      verBuildAt: 'Built {t}',
+      verChecking: 'Checking…',
+      verFoundNow: 'New version found — update now',
+      verFileMode: 'Update check is unavailable in single-file mode',
+      verOffline: 'Offline — cannot check for updates',
+      verFound: 'New version v{v} found',
+      verLatest: 'You are on the latest version',
+      verUpdating: 'Updating…',
+      verSlow: 'Still downloading…',
+      updateBarNotes: 'v{v}: {notes}',
+      updateBarVersion: 'Update to v{v}',
+      updateBarDownloaded: 'New version downloaded, tap to apply',
+
+      installBefore: 'This app can be installed: open the browser menu → Install app.',
+      installDone: 'Installed on this device and available offline.',
+      installStandalone: 'Running as a standalone app — available offline.',
+      installIOS: 'iOS: tap Share → Add to Home Screen to install.',
+      installGeneric: 'Install as an app: browser menu → Install / Add to Home Screen.',
+
+      csvWeekPrefix: '',
+      csvHeaders: ['Date', 'Day', 'Day Units', 'Work Description', 'Part-time (h)', 'Overtime (h)', 'Overtime Description',
+        'Night OT (h)', 'Night OT Description', 'Tags'],
+      csvFilename: 'worktime-calendar_{ym}.csv',
+      jsonFilename: 'worktime-calendar_backup_{date}.json',
+    },
+  };
+
+  /* 香港公眾假期名稱（中英對照）。HK_HOLIDAYS 只存鍵，顯示時才取名。 */
+  const HOLIDAY_NAMES = {
+    zh: {
+      newYear: '一月一日',
+      lunarNewYear1: '農曆年初一',
+      lunarNewYear2: '農曆年初二',
+      lunarNewYear3: '農曆年初三',
+      lunarNewYear4: '農曆年初四',
+      chingMing: '清明節',
+      chingMingNext: '清明節翌日',
+      goodFriday: '耶穌受難節',
+      goodFridayNext: '耶穌受難節翌日',
+      easterMonday: '復活節星期一',
+      easterMondayNext: '復活節星期一翌日',
+      labourDay: '勞動節',
+      buddha: '佛誕',
+      buddhaNext: '佛誕翌日',
+      tsuenWan: '端午節',
+      hksar: '香港特別行政區成立紀念日',
+      nationalDay: '國慶日',
+      midAutumnNext: '中秋節翌日',
+      chungYeung: '重陽節',
+      chungYeungNext: '重陽節翌日',
+      christmas: '聖誕節',
+      boxingDay: '聖誕節後第一個周日',
+    },
+    en: {
+      newYear: 'New Year’s Day',
+      lunarNewYear1: 'Lunar New Year’s Day',
+      lunarNewYear2: 'The second day of Lunar New Year',
+      lunarNewYear3: 'The third day of Lunar New Year',
+      lunarNewYear4: 'The fourth day of Lunar New Year',
+      chingMing: 'Ching Ming Festival',
+      chingMingNext: 'The day following Ching Ming Festival',
+      goodFriday: 'Good Friday',
+      goodFridayNext: 'The day following Good Friday',
+      easterMonday: 'Easter Monday',
+      easterMondayNext: 'The day following Easter Monday',
+      labourDay: 'Labour Day',
+      buddha: 'The Birthday of the Buddha',
+      buddhaNext: 'The day following the Birthday of the Buddha',
+      tsuenWan: 'Tuen Ng Festival',
+      hksar: 'Hong Kong Special Administrative Region Establishment Day',
+      nationalDay: 'National Day',
+      midAutumnNext: 'The day following the Chinese Mid-Autumn Festival',
+      chungYeung: 'Chung Yeung Festival',
+      chungYeungNext: 'The day following Chung Yeung Festival',
+      christmas: 'Christmas Day',
+      boxingDay: 'The first weekday after Christmas Day',
+    },
+  };
+
+  /* 英文假期名有兩套：
+     - HOLIDAY_NAMES.en  → 完整官方名稱，用於面板與 aria-label（唸出來要正確）
+     - HOLIDAY_SHORT_EN  → 格子內短名，10px 小字塞不進 30 幾個字母
+       兩者沒有短版的（例如 National Day）就沿用長名。 */
+  const HOLIDAY_SHORT_EN = {
+    nationalDay: 'National Day',
+    christmas: 'Christmas',
+    boxingDay: 'Boxing Day',
+    hksar: 'HKSAR Day',
+    newYear: 'New Year',
+    lunarNewYear1: 'LNY Day 1',
+    lunarNewYear2: 'LNY Day 2',
+    lunarNewYear3: 'LNY Day 3',
+    lunarNewYear4: 'LNY Day 4',
+    chingMing: 'Ching Ming',
+    chingMingNext: 'Ching Ming +1',
+    goodFriday: 'Good Friday',
+    goodFridayNext: 'Good Friday +1',
+    easterMonday: 'Easter Mon',
+    easterMondayNext: 'Easter Mon +1',
+    labourDay: 'Labour Day',
+    buddha: 'Buddha’s Birthday',
+    buddhaNext: 'Buddha’s Birthday +1',
+    tsuenWan: 'Tuen Ng',
+    midAutumnNext: 'Mid-Autumn +1',
+    chungYeung: 'Chung Yeung',
+    chungYeungNext: 'Chung Yeung +1',
+  };
+
+  const MONTHS_EN = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  const WEEK_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const WEEK_EN_MIN = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
   /* ---------------- 狀態 ---------------- */
   let entries = {};              // { 'YYYY-MM-DD': {workDesc, workUnits, partHours, otDesc, otHours, nightDesc, nightHours, tags, updatedAt} }
@@ -2673,11 +3253,61 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   // 工數顯示：整數不帶小數，半工保留 .5
   const fmtUnits = (u) => round1(u).toString().replace(/\.0$/, '');
 
+  /* ---------------- 語言（i18n）執行環境 ----------------
+     lang 為目前語言；t(key, vars) 取詞並代換 {name} 變數（{n}／{t}／{v}／{notes}）。
+     缺鍵一律回退繁中、再回退鍵名本身，避免任何一處漏翻就整句空白。 */
+  let lang = DEFAULTS.lang;
+
+  function normalizeLang(v) {
+    return LANGS.includes(v) ? v : DEFAULTS.lang;
+  }
+
+  function t(key, vars) {
+    let s = I18N[lang] && I18N[lang][key];
+    if (s === undefined) s = I18N[DEFAULTS.lang][key];
+    if (s === undefined) return key;
+    if (Array.isArray(s)) return s;
+    if (vars) {
+      s = String(s).replace(/\{(\w+)\}/g, (m, name) => (
+        vars[name] === undefined || vars[name] === null ? m : String(vars[name])
+      ));
+    }
+    return s;
+  }
+
+  /* 日期格式依語言：zh-Hant → 2026 年 9 月 28 日（週一）；en → September 28, 2026 (Mon) */
+  const localeTag = () => (lang === 'en' ? 'en-US' : 'zh-TW');
+
+  const fmtDateLabel = (d) => (lang === 'en'
+    ? `${MONTHS_EN[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} (${WEEK_EN[d.getDay()]})`
+    : `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日（週${WEEK_DOW[d.getDay()]}）`);
+
+  /* 月份標題：zh-Hant → 2026 年 9 月；en → September 2026 */
+  const fmtMonthTitle = (y, m) => (lang === 'en' ? `${MONTHS_EN[m]} ${y}` : `${y} 年 ${m + 1} 月`);
+
+  /* 星期表頭：zh-Hant 用中文單字，en 用單字母（維持表頭寬度） */
+  const weekdayLabel = (i) => (lang === 'en' ? WEEK_EN_MIN[i] : WEEK_DOW[i]);
+
+  /* CSV 的星期欄：zh-Hant「週一」；en「Monday」 */
+  const csvWeekday = (i) => (lang === 'en' ? WEEK_EN_FULL[i] : t('csvWeekPrefix') + WEEK_DOW[i]);
+
+  /* 假期名稱：HK_HOLIDAYS 存鍵，這裡依語言取名。
+     short=true 時英文改用短名（格子內小字版面用）。 */
+  function holidayName(k, short) {
+    const key = HK_HOLIDAYS[k];
+    if (!key) return null;
+    if (lang === 'en') {
+      if (short && HOLIDAY_SHORT_EN[key]) return HOLIDAY_SHORT_EN[key];
+      return HOLIDAY_NAMES.en[key] || key;
+    }
+    return HOLIDAY_NAMES.zh[key] || key;
+  }
+
   // 金額顯示：千分位 + 最多兩位小數（有需要才顯示小數）
   const fmtMoney = (n) => {
     const v = Math.round(n * 100) / 100;
     const hasFrac = Math.abs(v % 1) > 0.0001;
-    return v.toLocaleString('zh-TW', {
+    return v.toLocaleString(localeTag(), {
       minimumFractionDigits: hasFrac ? 2 : 0,
       maximumFractionDigits: 2,
     });
@@ -2686,12 +3316,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   // 工數僅提供 0.5 工（半日）與 1 工（全日）兩個選擇
   const WORK_CHOICES = [0.5, 1];
 
-  const WEEK_TC = ['日', '一', '二', '三', '四', '五', '六'];
-
-  function fmtDateLabel(d) {
-    const w = WEEK_TC[d.getDay()];
-    return `${d.getFullYear()} 年 ${d.getMonth() + 1} 月 ${d.getDate()} 日（週${w}）`;
-  }
+  const WEEK_DOW = ['日', '一', '二', '三', '四', '五', '六'];
+  const WEEK_EN_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
   /* ---------------- 儲存 ---------------- */
   function load() {
@@ -2769,7 +3395,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, updatedAt: Date.now(), data: entries }));
     } catch (e) {
-      toast('儲存失敗，瀏覽器空間可能已滿');
+      toast(t('toastStorageFull'));
       console.error(e);
     }
     scheduleCfBackup();  // 已連接雲端時：20 秒 debounce 自動備份
@@ -2803,6 +3429,58 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.themeSeg.querySelectorAll('.seg-btn').forEach((btn) => {
       btn.classList.toggle('is-active', (btn.dataset.themeOpt || 'auto') === cur);
     });
+  }
+
+  /* ---------------- 語言切換 ----------------
+     靜態文案在 index.html 以 data-i18n / data-i18n-ph / data-i18n-aria 標記；
+     這裡一次套用。「語言」分段控制本身不翻譯（永遠顯示中文／English），
+     但 aria-label 與說明文字要跟著走。 */
+  function syncLangSeg() {
+    if (!el.langSeg) return;
+    el.langSeg.querySelectorAll('.seg-btn').forEach((btn) => {
+      btn.classList.toggle('is-active', (btn.dataset.langOpt || '') === lang);
+    });
+  }
+
+  function applyStaticText() {
+    document.querySelectorAll('[data-i18n]').forEach((node) => {
+      const v = t(node.dataset.i18n);
+      if (typeof v === 'string') node.innerHTML = v;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach((node) => {
+      node.setAttribute('placeholder', t(node.dataset.i18nPh));
+    });
+    document.querySelectorAll('[data-i18n-aria]').forEach((node) => {
+      node.setAttribute('aria-label', t(node.dataset.i18nAria));
+    });
+    document.querySelectorAll('[data-i18n-content]').forEach((node) => {
+      node.setAttribute('content', t(node.dataset.i18nContent));
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach((node) => {
+      node.setAttribute('title', t(node.dataset.i18nTitle));
+    });
+  }
+
+  function applyLang() {
+    lang = normalizeLang(settings.lang);
+    document.documentElement.setAttribute('lang', lang === 'en' ? 'en' : 'zh-Hant');
+    // 瀏覽器／iOS 加入主畫面時會讀 title 與這些 meta
+    document.title = t('appName');
+    const setMeta = (sel, attr, value) => {
+      const m = document.head.querySelector(sel);
+      if (m) m.setAttribute(attr, value);
+    };
+    setMeta('meta[name="apple-mobile-web-app-title"]', 'content', t('appName'));
+
+    applyStaticText();
+    syncLangSeg();
+    syncThemeSeg();
+    syncLockUI();
+    syncCfUI();
+    renderVersionInfo();
+    updateHintText();
+    setupInstallHint();
+    render();
   }
 
   /* ---------------- 畫面元素 ---------------- */
@@ -2864,6 +3542,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     optShowHours: $('optShowHours'),
     optMondayFirst: $('optMondayFirst'),
     themeSeg: $('themeSeg'),
+    langSeg: $('langSeg'),
     exportCsv: $('exportCsv'),
     exportJson: $('exportJson'),
     importJson: $('importJson'),
@@ -3084,12 +3763,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   async function cfPush() {
     const endpoint = cfNorm(settings.cfEndpoint);
     if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
-      throw new Error('Worker 網址必須是 https://');
+      throw new Error(t('msgCfBadEndpoint'));
     }
     const enc = await cfEncrypt(cfBackupPayload(), settings.cfCode, endpoint);
     const body = { app: CF_APP, v: 1, savedAt: new Date().toISOString(), enc };
     const r = await cfApi('PUT', body);
-    if (!r.ok) throw new Error(`備份失敗（${r.status}）`);
+    if (!r.ok) throw new Error(t('msgCfPushFail', { n: r.status }));
     settings.cfAt = new Date().toISOString();
     settings.cfHash = cfHashOfState();
     saveSettings();
@@ -3112,8 +3791,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     if (on) {
       const t = settings.cfAt ? new Date(settings.cfAt) : null;
       el.cfStatus.textContent = t
-        ? `已連接・上次備份：${t.toLocaleString('zh-TW')}`
-        : '已連接・尚未備份過';
+        ? t('cfStatusAt', { t: t.toLocaleString(localeTag()) })
+        : t('cfStatusNever');
     }
   }
 
@@ -3126,7 +3805,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   async function connectCf() {
     const endpoint = cfNorm(el.cfEndpoint.value) || cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
     if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
-      toast('Worker 網址必須是 https:// 開頭');
+      toast(t('toastCfScheme'));
       el.cfEndpoint.focus();
       return;
     }
@@ -3135,7 +3814,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     const code = isNew ? genRecoveryCode() : typed;
 
     el.cfConnect.disabled = true;
-    el.cfConnect.textContent = '連接中…';
+    el.cfConnect.textContent = t('cfConnecting');
     const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
     try {
       settings.cfEndpoint = endpoint;
@@ -3144,25 +3823,25 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       if (r.status === 200 && r.json && r.json.found) {
         if (Object.keys(entries).length) {
           const cloudAt = r.json.data && r.json.data.savedAt
-            ? new Date(r.json.data.savedAt).toLocaleString('zh-TW') : '時間不明';
-          const useCloud = confirm(`雲端已有這個碼的備份（${cloudAt}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝把本機推上雲端`);
+            ? new Date(r.json.data.savedAt).toLocaleString(localeTag()) : t('cfUnknownTime');
+          const useCloud = confirm(t('confirmCfConflict', { t: cloudAt }));
           if (useCloud) {
             await cfRestore(true);
-            toast('已從雲端找回資料');
+            toast(t('toastCfRestored'));
           } else {
             await cfPush();
-            toast('已把本機資料備份到雲端');
+            toast(t('toastCfPushed'));
           }
         } else {
           await cfRestore(true);   // 本機是空的：直接還原
-          toast('已從雲端找回資料');
+          toast(t('toastCfRestored'));
         }
       } else if (r.status === 404) {
-        if (!isNew) toast('這個碼在雲端沒有備份，將以本機資料開始');
+        if (!isNew) toast(t('toastCfNoBackup'));
         await cfPush();
-        toast('已建立雲端備份');
+        toast(t('toastCfCreated'));
       } else {
-        throw new Error(`Worker 回應異常（${r.status}）`);
+        throw new Error(t('msgCfBadResponse', { n: r.status }));
       }
       saveSettings();
       syncCfUI();
@@ -3170,27 +3849,27 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       if (isNew) showCfCode(true);   // 新碼：立即大字展示引導截圖
     } catch (e) {
       console.error(e);
-      toast('連接失敗：' + String(e.message || e).slice(0, 80));
+      toast(t('toastCfFail') + String(e.message || e).slice(0, 80));
       settings.cfEndpoint = prev.ep;
       settings.cfCode = prev.code;
       saveSettings();
       syncCfUI();
     } finally {
       el.cfConnect.disabled = false;
-      el.cfConnect.textContent = '連接雲端備份';
+      el.cfConnect.textContent = t('cfConnect');
     }
   }
 
   async function cfRestore(silent) {
-    if (!settings.cfEndpoint || !settings.cfCode) { toast('尚未連接雲端'); return; }
-    if (!silent && !confirm('用雲端備份覆蓋本機資料？\n本機目前的記錄會被取代。')) return;
+    if (!settings.cfEndpoint || !settings.cfCode) { toast(t('toastCfNotConnected')); return; }
+    if (!silent && !confirm(t('confirmCfRestore'))) return;
     const r = await cfApi('GET');
     if (r.status !== 200 || !r.json || !r.json.found) {
-      throw new Error('雲端沒有這個碼的備份');
+      throw new Error(t('msgCfNoBackup'));
     }
     const endpoint = cfNorm(settings.cfEndpoint);
     const state = await cfDecrypt(r.json.data.enc, settings.cfCode, endpoint);
-    if (!state || !state.entries) throw new Error('備份格式不符');
+    if (!state || !state.entries) throw new Error(t('msgCfBadFormat'));
     entries = migrate(state.entries).data;   // migrate 回傳 { data, converted }
     if (state.settings) {
       // 連接資訊與 PIN 留本機現值，其餘設定以備份為準
@@ -3208,22 +3887,22 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   }
 
   async function cfBackupNow() {
-    if (!settings.cfEndpoint || !settings.cfCode) { toast('尚未連接雲端'); return; }
+    if (!settings.cfEndpoint || !settings.cfCode) { toast(t('toastCfNotConnected')); return; }
     el.cfBackupNow.disabled = true;
     try {
       await cfPush();
       syncCfUI();
-      toast('已備份到雲端');
+      toast(t('toastCfBackedUp'));
     } catch (e) {
       console.error(e);
-      toast('備份失敗：' + String(e.message || e).slice(0, 80));
+      toast(t('toastCfBackupFail') + String(e.message || e).slice(0, 80));
     } finally {
       el.cfBackupNow.disabled = false;
     }
   }
 
   function disconnectCf() {
-    if (!confirm('斷開雲端備份？\n本機資料不受影響，之後不再自動備份。\n（恢復碼若要繼續使用，請保留截圖）')) return;
+    if (!confirm(t('confirmCfDisconnect'))) return;
     settings.cfEndpoint = '';
     settings.cfCode = '';
     settings.cfAt = '';
@@ -3231,7 +3910,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     saveSettings();
     syncCfUI();
     syncCfBanner();
-    toast('已斷開雲端備份');
+    toast(t('toastCfDisconnected'));
   }
 
   /* ---------------- 一鍵開啟（主畫面橫幅） ---------------- */
@@ -3255,7 +3934,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   async function oneTapConnect() {
     el.cfSheetOpen.disabled = true;
-    el.cfSheetOpen.textContent = '開啟中…';
+    el.cfSheetOpen.textContent = t('cfOpening');
     const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
     try {
       settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
@@ -3281,10 +3960,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       settings.cfEndpoint = prev.ep;
       settings.cfCode = prev.code;
       saveSettings();
-      toast('開啟失敗：' + String(e.message || e).slice(0, 80));
+      toast(t('toastCfOpenFail') + String(e.message || e).slice(0, 80));
     } finally {
       el.cfSheetOpen.disabled = false;
-      el.cfSheetOpen.textContent = '一鍵開啟自動備份';
+      el.cfSheetOpen.textContent = t('cfOneTap');
     }
   }
 
@@ -3293,12 +3972,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   async function restoreByCode() {
     const code = (el.cfSheetHaveInput.value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
     if (code.length !== 8) {
-      toast('請輸入 8 位恢復碼（格式 XXXX-XXXX）');
+      toast(t('toastCfCodeInvalid'));
       el.cfSheetHaveInput.focus();
       return;
     }
     el.cfSheetHaveGo.disabled = true;
-    el.cfSheetHaveGo.textContent = '找家中…';
+    el.cfSheetHaveGo.textContent = t('cfFinding');
     const prev = { ep: settings.cfEndpoint, code: settings.cfCode };
     try {
       settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
@@ -3308,23 +3987,23 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         if (Object.keys(entries).length) {
           // 本機已有資料：沿用 connectCf 的衝突選擇
           const cloudAt = r.json.data && r.json.data.savedAt
-            ? new Date(r.json.data.savedAt).toLocaleString('zh-TW') : '時間不明';
-          const useCloud = confirm(`雲端已有這個碼的備份（${cloudAt}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝保留本機，把本機推上雲端`);
+            ? new Date(r.json.data.savedAt).toLocaleString(localeTag()) : t('cfUnknownTime');
+          const useCloud = confirm(t('confirmCfConflictKeep', { t: cloudAt }));
           if (useCloud) {
             await cfRestore(true);
-            toast('已從雲端找回資料');
+            toast(t('toastCfRestored'));
           } else {
             await cfPush();
-            toast('已把本機資料備份到雲端');
+            toast(t('toastCfPushed'));
           }
         } else {
           await cfRestore(true);   // 本機是空的（剛重裝）：直接還原
-          toast('已從雲端找回資料');
+          toast(t('toastCfRestored'));
         }
       } else if (r.status === 404) {
-        throw new Error('雲端沒有這組恢復碼的備份，請確認有沒有打錯');
+        throw new Error(t('toastCfCodeMissing'));
       } else {
-        throw new Error(`Worker 回應異常（${r.status}）`);
+        throw new Error(t('msgCfBadResponse', { n: r.status }));
       }
       saveSettings();   // 沿用此碼：cfCode 已是舊碼，之後自動備份續用同一碼
       syncCfUI();
@@ -3338,7 +4017,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       toast(String(e.message || e).slice(0, 100));
     } finally {
       el.cfSheetHaveGo.disabled = false;
-      el.cfSheetHaveGo.textContent = '用此碼找回並沿用';
+      el.cfSheetHaveGo.textContent = t('cfHaveGo');
     }
   }
 
@@ -3418,10 +4097,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.lockScreen.classList.remove('unlocked', 'shake');
     if (Date.now() < lockCooldown) lockTickCooldown();
     else { el.lockPad.classList.remove('locked'); lockMsg(''); }
-    if (mode === 'unlock') { el.lockTitle.textContent = '輸入密碼'; lockMsg(''); }
-    else if (mode === 'set1') { el.lockTitle.textContent = '設定新密碼'; lockMsg('請輸入 4 位數字', true); }
-    else if (mode === 'set2') { el.lockTitle.textContent = '再輸入一次確認'; lockMsg(''); }
-    else if (mode === 'off') { el.lockTitle.textContent = '關閉鎖定'; lockMsg('輸入目前密碼以確認', true); }
+    if (mode === 'unlock') { el.lockTitle.textContent = t('lockTitleUnlock'); lockMsg(''); }
+    else if (mode === 'set1') { el.lockTitle.textContent = t('lockTitleSet'); lockMsg(t('lockPrompt4'), true); }
+    else if (mode === 'set2') { el.lockTitle.textContent = t('lockTitleConfirm'); lockMsg(''); }
+    else if (mode === 'off') { el.lockTitle.textContent = t('lockTitleOff'); lockMsg(t('lockPromptCurrent'), true); }
     lockRenderDots();
   }
   function closeLock() {
@@ -3446,7 +4125,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     const left = Math.ceil((lockCooldown - Date.now()) / 1000);
     if (left > 0) {
       el.lockPad.classList.add('locked');
-      lockMsg(`嘗試次數過多，${left} 秒後可再試`);
+      lockMsg(t('lockCooldown', { n: left }));
       clearTimeout(lockTimer);
       lockTimer = setTimeout(lockTickCooldown, 500);
     } else {
@@ -3461,21 +4140,21 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     lockBuf = ''; lockRenderDots();
     if (lockMode === 'unlock') {
       if (pin && await sha256Hex(pin) === settings.pinHash) { lockWrong = 0; closeLock(); }
-      else lockFail('密碼錯誤，請重試');
+      else lockFail(t('lockWrong'));
     } else if (lockMode === 'set1') {
       lockTemp = pin; openLock('set2');
     } else if (lockMode === 'set2') {
       if (pin === lockTemp) {
         settings.pinHash = await sha256Hex(pin);
         saveSettings(); syncLockUI();
-        closeLock(); toast('螢幕鎖定已啟用');
-      } else { haptic(HAPTIC_ERR); openLock('set1'); lockMsg('兩次輸入不一致，請重新設定'); }
+        closeLock(); toast(t('lockEnabled'));
+      } else { haptic(HAPTIC_ERR); openLock('set1'); lockMsg(t('lockMismatch')); }
     } else if (lockMode === 'off') {
       if (pin && await sha256Hex(pin) === settings.pinHash) {
         settings.pinHash = '';
         saveSettings(); syncLockUI();
-        closeLock(); toast('螢幕鎖定已關閉');
-      } else lockFail('密碼錯誤，請重試');
+        closeLock(); toast(t('lockDisabled'));
+      } else lockFail(t('lockWrong'));
     }
   }
   function lockKey(k) {
@@ -3503,8 +4182,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   function syncLockUI() {
     const on = !!settings.pinHash;
-    el.lockState.textContent = on ? '已啟用' : '未啟用';
-    el.lockBtn.textContent = on ? '關閉鎖定' : '設定密碼';
+    el.lockState.textContent = on ? t('lockOn') : t('lockOff');
+    el.lockBtn.textContent = on ? t('lockDisable') : t('lockSet');
   }
 
   /* 收入金額的顯示狀態：session 內記憶、每次載入 App 都預設隱藏
@@ -3527,7 +4206,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       : `<span class="income-mask sm" aria-hidden="true">•••</span>`;
     const parts = [];
     if (inc.dayPay > 0) {
-      parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} 工 × ${money(inc.dayPay)}</span>`);
+      parts.push(`<span class="income-part">${fmtUnits(inc.totalWork)} ${escapeHtml(t('unitWork'))} × ${money(inc.dayPay)}</span>`);
     }
     if (inc.hourlyPay > 0) {
       parts.push(`<span class="income-part part">${fmtH(inc.totalPart)} h × ${money(inc.hourlyPay)}</span>`);
@@ -3544,16 +4223,16 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     el.incomeBar.innerHTML = `
       <div class="income-label">
-        <span>本月收入總計</span>
-        ${parts.length ? `<span class="income-formula">${parts.join('<i>＋</i>')}</span>` : ''}
+        <span>${escapeHtml(t('incomeLabel'))}</span>
+        ${parts.length ? `<span class="income-formula">${parts.join(`<i>${lang === 'en' ? ' + ' : '＋'}</i>`)}</span>` : ''}
       </div>
       <button type="button" class="income-total${shown ? '' : ' is-masked'}"
               id="incomeToggle"
               aria-expanded="${shown}"
-              aria-label="${shown ? '本月收入總計，點擊隱藏金額' : '本月收入總計已隱藏，點擊顯示金額'}"
-              title="${shown ? '點擊隱藏金額' : '點擊顯示金額'}">
+              aria-label="${escapeAttr(shown ? t('incomeShowAria') : t('incomeHideAria'))}"
+              title="${escapeAttr(shown ? t('incomeHideTip') : t('incomeShowTip'))}">
         ${amount}
-        <span class="income-eye" aria-hidden="true">${shown ? '隱藏' : '顯示'}</span>
+        <span class="income-eye" aria-hidden="true">${escapeHtml(shown ? t('incomeHideWord') : t('incomeShowWord'))}</span>
       </button>
     `;
     el.incomeBar.hidden = false;
@@ -3572,11 +4251,11 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     el.monthStats.innerHTML = `
       ${totalWork > 0 || (!totalPart && !totalOt && !totalNight)
-        ? `<span class="stat-pill"><span class="pill-label">工時 </span><b>${fmtUnits(totalWork)}</b> 工</span>` : ''}
-      ${totalPart > 0 ? `<span class="stat-pill part"><span class="pill-label">兼職 </span><b>${fmtH(totalPart)}</b> h</span>` : ''}
-      <span class="stat-pill ot"><span class="pill-label">加班 </span><b>${fmtH(totalOt)}</b> h</span>
-      ${totalNight > 0 ? `<span class="stat-pill night"><span class="pill-label">半夜 </span><b>${fmtH(totalNight)}</b> h</span>` : ''}
-      <span class="stat-pill"><span class="pill-label">記錄 </span><b>${days}</b> 天</span>
+        ? `<span class="stat-pill"><span class="pill-label">${escapeHtml(t('statWork'))}</span><b>${fmtUnits(totalWork)}</b> ${escapeHtml(t('unitWork'))}</span>` : ''}
+      ${totalPart > 0 ? `<span class="stat-pill part"><span class="pill-label">${escapeHtml(t('statPart'))}</span><b>${fmtH(totalPart)}</b> h</span>` : ''}
+      <span class="stat-pill ot"><span class="pill-label">${escapeHtml(t('statOt'))}</span><b>${fmtH(totalOt)}</b> h</span>
+      ${totalNight > 0 ? `<span class="stat-pill night"><span class="pill-label">${escapeHtml(t('statNight'))}</span><b>${fmtH(totalNight)}</b> h</span>` : ''}
+      <span class="stat-pill"><span class="pill-label">${escapeHtml(t('statDays'))}</span><b>${days}</b> ${escapeHtml(t('unitDays'))}</span>
     `;
     fitStatsRow();
   }
@@ -3627,14 +4306,14 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.weekdayRow.innerHTML = order
       .map((i) => {
         const cls = i === 6 ? 'wk-sat' : i === 0 ? 'wk-sun' : '';
-        return `<span class="${cls}">${WEEK_TC[i]}</span>`;
+        return `<span class="${cls}">${weekdayLabel(i)}</span>`;
       })
       .join('');
   }
 
   function renderCalendar() {
     const y = view.getFullYear(), m = view.getMonth();
-    el.monthTitle.textContent = `${y} 年 ${m + 1} 月`;
+    el.monthTitle.textContent = fmtMonthTitle(y, m);
     renderWeekdayRow();
 
     // 月曆第一個格子
@@ -3662,7 +4341,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         dow,
         isWeekend: dow === 0 || dow === 6,
         isToday: k === tKey,
-        holiday: settings.showHolidays ? (HK_HOLIDAYS[k] || null) : null,
+        holiday: settings.showHolidays ? holidayName(k, true) : null,
+        holidayFull: settings.showHolidays ? holidayName(k) : null,
         entry: e,
       });
     }
@@ -3713,13 +4393,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         rows.push(`<div class="day-desc">${escapeHtml(workDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">工</span></span></div>`);
+        rows.push(`<div class="day-units"><span class="uv">${fmtUnits(wu)}<span class="u">${escapeHtml(t('unitWork'))}</span></span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group work-group">${rows.join('')}</div>`);
     }
     if (hasPart) {
       if (showUnits) {
-        groups.push(`<div class="day-group part-group"><div class="day-units part-units"><span class="uv">${fmtH(ph)}<span class="u">h</span></span><span class="ut">兼職</span></div></div>`);
+        groups.push(`<div class="day-group part-group"><div class="day-units part-units"><span class="uv">${fmtH(ph)}<span class="u">h</span></span><span class="ut">${escapeHtml(t('cellPart'))}</span></div></div>`);
       }
     }
     if (hasOt) {
@@ -3728,7 +4408,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         rows.push(`<div class="day-desc ot-text">${escapeHtml(otDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units ot-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(oh)}<span class="u">h</span></span><span class="ut">加班</span></div>`);
+        rows.push(`<div class="day-units ot-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(oh)}<span class="u">h</span></span><span class="ut">${escapeHtml(t('cellOt'))}</span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group ot-group">${rows.join('')}</div>`);
     }
@@ -3738,7 +4418,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         rows.push(`<div class="day-desc night-text">${escapeHtml(nightDesc)}</div>`);
       }
       if (showUnits) {
-        rows.push(`<div class="day-units night-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(nh)}<span class="u">h</span></span><span class="ut">半夜</span></div>`);
+        rows.push(`<div class="day-units night-units"><span class="uv"><span class="ot-pre">OT</span> ${fmtH(nh)}<span class="u">h</span></span><span class="ut">${escapeHtml(t('cellNight'))}</span></div>`);
       }
       if (rows.length) groups.push(`<div class="day-group night-group">${rows.join('')}</div>`);
     }
@@ -3753,24 +4433,24 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       : '';
 
     const labelParts = [fmtDateLabel(new Date(c.key + 'T00:00:00'))];
-    if (c.holiday) labelParts.push(`公眾假期：${c.holiday}`);
+    if (c.holiday) labelParts.push(t('holPrefix') + (c.holidayFull || c.holiday));
     if (hasEntry) {
-      if (hasWork) labelParts.push(`工時 ${fmtUnits(wu)} 工`);
-      if (hasPart) labelParts.push(`兼職 ${fmtH(ph)} 小時`);
-      if (hasOt) labelParts.push(`加班 ${fmtH(oh)} 小時`);
-      if (hasNight) labelParts.push(`半夜加班 ${fmtH(nh)} 小時`);
+      if (hasWork) labelParts.push(`${t('cellWork')} ${fmtUnits(wu)}`);
+      if (hasPart) labelParts.push(`${t('cellPart')} ${fmtH(ph)} ${t('hourWord')}`);
+      if (hasOt) labelParts.push(`${t('cellOt')} ${fmtH(oh)} ${t('hourWord')}`);
+      if (hasNight) labelParts.push(`${t('cellNight')} ${fmtH(nh)} ${t('hourWord')}`);
     } else {
-      labelParts.push('尚無記錄');
+      labelParts.push(t('cellNoRecord'));
     }
     // 無障礙：只在金額可見時唸出每日收入（隱藏狀態不提示，維持格子靜默）
     if (dayInc != null && incomeShown) {
-      labelParts.push(`當日收入 ${fmtMoney(dayInc)} 元`);
+      labelParts.push(`${t('cellIncome')} ${fmtMoney(dayInc)}`);
     }
 
     // data-dow：讓 CSS 能分辨「六」與「日」。
     // 兩者都是週末（.is-weekend），但配色不同（星期六藍、星期日橘），
     // 與表頭的 六／日 一致；單靠 .is-weekend 無法區分。
-    return `<div class="${classes.join(' ')}" data-key="${c.key}" data-dow="${c.dow}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join('，'))}">
+    return `<div class="${classes.join(' ')}" data-key="${c.key}" data-dow="${c.dow}" role="gridcell" tabindex="0" aria-label="${escapeAttr(labelParts.join(lang === 'en' ? ', ' : '，'))}">
       <div class="day-num">${c.day}</div>
       ${c.holiday ? `<div class="day-hol">${escapeHtml(c.holiday)}</div>` : ''}
       ${groupsHtml}
@@ -3801,10 +4481,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     el.sheetDate.textContent = fmtDateLabel(d);
     // 假期日：日期下方顯示紅日名稱（顯示選項關閉時連面板也不標示）
-    const hol = settings.showHolidays ? (HK_HOLIDAYS[key] || null) : null;
-    el.sheetHol.textContent = hol ? `香港公眾假期・${hol}` : '';
+    const hol = settings.showHolidays ? holidayName(key) : null;
+    el.sheetHol.textContent = hol ? t('hkHolidayPrefix') + hol : '';
     el.sheetHol.hidden = !hol;
-    el.sheetTitle.textContent = hasContent(e) ? '編輯記錄' : '新增記錄';
+    el.sheetTitle.textContent = hasContent(e) ? t('sheetEdit') : t('sheetNew');
     el.workDesc.value = e.workDesc || '';
     el.otDesc.value = e.otDesc || '';
     el.nightDesc.value = e.nightDesc || '';
@@ -3959,7 +4639,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     const input = $(wheel.dataset.input);
     if (input) input.value = fmtWheelNum(v);
     wheel.setAttribute('aria-valuenow', String(v));
-    wheel.setAttribute('aria-valuetext', `${fmtWheelNum(v)} 小時`);
+    wheel.setAttribute('aria-valuetext', `${fmtWheelNum(v)} ${t('hourWord')}`);
     items.forEach((it, i) => it.toggleAttribute('data-active', i === idx));
   }
 
@@ -4090,7 +4770,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     save();
     closeSheet();
     render();
-    toast(empty ? '已清空此日記錄' : '已儲存');
+    toast(empty ? t('toastCleared') : t('toastSaved'));
   }
 
   function deleteEntry() {
@@ -4099,7 +4779,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     save();
     closeSheet();
     render();
-    toast('已刪除記錄');
+    toast(t('toastDeleted'));
   }
 
   /* ---------------- 事件綁定 ---------------- */
@@ -4172,7 +4852,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       const t = new Date();
       view = new Date(t.getFullYear(), t.getMonth(), 1);
       render();
-      toast('已回到本月');
+      toast(t('toastBackToday'));
     });
 
     /* ---- 月曆左右滑動切換月份（觸控）----
@@ -4251,7 +4931,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.cancelBtn.addEventListener('click', closeSheet);
     el.sheetClose.addEventListener('click', closeSheet);
     el.deleteBtn.addEventListener('click', () => {
-      if (confirm('確定要刪除此日記錄嗎？')) deleteEntry();
+      if (confirm(t('confirmDeleteEntry'))) deleteEntry();
     });
     el.sheetBackdrop.addEventListener('click', closeSheet);
 
@@ -4302,6 +4982,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       el.optShowHours.checked = settings.showHours;
       el.optMondayFirst.checked = settings.mondayFirst;
       syncThemeSeg();
+      syncLangSeg();
       showOverlay(el.drawerBackdrop, el.drawer);
     });
     const closeDrawer = () => hideOverlay(el.drawerBackdrop, el.drawer);
@@ -4359,6 +5040,19 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         syncThemeSeg();
       });
     }
+    /* ---- 語言切換（中文／English）---- */
+    if (el.langSeg) {
+      el.langSeg.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.seg-btn');
+        if (!btn) return;
+        const next = normalizeLang(btn.dataset.langOpt);
+        if (next === lang) return;
+        settings.lang = next;
+        saveSettings();
+        applyLang();   // 內含 render()，整個介面立即切換
+      });
+    }
+
     if (themeMql) {
       const onSchemeChange = () => {
         if (settings.theme !== 'light' && settings.theme !== 'dark') applyTheme();
@@ -4429,7 +5123,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.cfRestore.addEventListener('click', () => {
       cfRestore(false).catch((e) => {
         console.error(e);
-        toast('還原失敗：' + String(e.message || e).slice(0, 80));
+        toast(t('toastCfRestoreFail') + String(e.message || e).slice(0, 80));
       });
     });
     // 切到背景前若有未推送的變更，立即補推（瀏覽器通常允許剛發起的請求完成）
@@ -4446,13 +5140,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.exportCsv.addEventListener('click', () => {
       const y = view.getFullYear(), m = view.getMonth();
       const prefix = `${y}-${pad(m + 1)}-`;
-      const rows = [['日期', '星期', '工數(工)', '工時描述', '兼職(小時)', '加班(小時)', '加班描述',
-        '半夜加班(小時)', '半夜加班描述', '標籤']];
+      const rows = [t('csvHeaders').slice()];
       Object.keys(entries).filter((k) => k.startsWith(prefix)).sort().forEach((k) => {
         const e = entries[k];
         const d = new Date(k + 'T00:00:00');
         rows.push([
-          k, `週${WEEK_TC[d.getDay()]}`,
+          k, csvWeekday(d.getDay()),
           num(e.workUnits), e.workDesc || '',
           num(e.partHours),
           num(e.otHours), e.otDesc || '',
@@ -4460,17 +5153,19 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
           (e.tags || []).join(' / '),
         ]);
       });
-      if (rows.length === 1) { toast('本月尚無記錄可匯出'); return; }
+      if (rows.length === 1) { toast(t('toastNoExport')); return; }
       const csv = '\uFEFF' + rows.map((r) => r.map(csvCell).join(',')).join('\r\n');
-      download(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `工時月曆_${y}-${pad(m + 1)}.csv`);
-      toast('已匯出 CSV');
+      download(new Blob([csv], { type: 'text/csv;charset=utf-8' }),
+        t('csvFilename', { ym: `${y}-${pad(m + 1)}` }));
+      toast(t('toastExportedCsv'));
     });
 
     /* ---- 匯出 JSON ---- */
     el.exportJson.addEventListener('click', () => {
       const payload = { app: 'worktime-calendar', v: 1, exportedAt: new Date().toISOString(), settings, data: entries };
-      download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), `工時月曆_備份_${todayKey()}.json`);
-      toast('已匯出備份');
+      download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }),
+        t('jsonFilename', { date: todayKey() }));
+      toast(t('toastExportedJson'));
     });
 
     /* ---- 匯入 JSON ---- */
@@ -4483,16 +5178,16 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         const data = parsed.data || parsed;
         if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('格式錯誤');
         const incoming = Object.keys(data).length;
-        if (!confirm(`將匯入 ${incoming} 筆記錄，同名日期會被覆蓋。確定繼續？`)) return;
+        if (!confirm(t('confirmImport', { n: incoming }))) return;
         // 舊版小時制備份也會自動轉換為「工」
         entries = { ...entries, ...migrate(data).data };
         if (parsed.settings) settings = { ...settings, ...parsed.settings };
         save(); saveSettings();
         closeDrawer();
         render();
-        toast(`已匯入 ${incoming} 筆記錄`);
+        toast(t('toastImported', { n: incoming }));
       } catch (err) {
-        toast('匯入失敗：檔案格式不正確');
+        toast(t('toastImportFail'));
         console.error(err);
       } finally {
         el.importFile.value = '';
@@ -4501,12 +5196,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     /* ---- 清除全部 ---- */
     el.clearAll.addEventListener('click', () => {
-      if (!confirm('確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。')) return;
+      if (!confirm(t('confirmClearAll'))) return;
       entries = {};
       save();
       closeDrawer();
       render();
-      toast('已清除全部資料');
+      toast(t('toastClearedAll'));
     });
 
     /* ---- 全域快捷鍵 ---- */
@@ -4546,23 +5241,23 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   window.addEventListener('beforeinstallprompt', (ev) => {
     ev.preventDefault();
     deferredPrompt = ev;
-    el.installHint.textContent = '此應用可安裝到主畫面：點右上角選單 → 安裝應用程式。';
+    el.installHint.textContent = t('installBefore');
   });
 
   window.addEventListener('appinstalled', () => {
     deferredPrompt = null;
-    el.installHint.textContent = '已安裝到裝置，可離線使用。';
+    el.installHint.textContent = t('installDone');
   });
 
   function setupInstallHint() {
     const isStandalone = matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     if (isStandalone) {
-      el.installHint.textContent = '已以獨立應用模式執行，離線可用。';
+      el.installHint.textContent = t('installStandalone');
     } else if (isIOS) {
-      el.installHint.textContent = 'iOS：點「分享」→「加入主畫面」即可安裝。';
+      el.installHint.textContent = t('installIOS');
     } else if (!deferredPrompt) {
-      el.installHint.textContent = '可安裝為 App：瀏覽器選單 → 安裝／加到主畫面。';
+      el.installHint.textContent = t('installGeneric');
     }
   }
 
@@ -4598,7 +5293,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   function renderVersionInfo() {
     el.verCurrent.textContent = `v${APP_VERSION}`;
-    el.verBuild.textContent = APP_BUILD ? `建置於 ${formatBuild(APP_BUILD)}` : '';
+    el.verBuild.textContent = APP_BUILD ? t('verBuildAt', { t: formatBuild(APP_BUILD) }) : '';
   }
 
   /** 向伺服器查詢最新版本（繞過所有快取） */
@@ -4619,12 +5314,12 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   /** 檢查更新 → 'update' | 'latest' | 'error' */
   async function checkForUpdate({ silent = false } = {}) {
     if (version.updating) return 'error';
-    if (!silent) el.verStatus.textContent = '檢查中…';
+    if (!silent) el.verStatus.textContent = t('verChecking');
 
     // 1) 已有 waiting 的新版 SW → 這是新版鐵證，直接提示
     if (version.waiting) {
       showUpdateBar(null, true);
-      if (!silent) el.verStatus.textContent = '發現新版本，可立即更新';
+      if (!silent) el.verStatus.textContent = t('verFoundNow');
       return 'update';
     }
 
@@ -4633,8 +5328,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     if (!remote) {
       if (!silent) {
         el.verStatus.textContent = (location.protocol === 'file:')
-          ? '單檔版不支援線上檢查更新'
-          : '目前離線，無法檢查更新';
+          ? t('verFileMode')
+          : t('verOffline');
       }
       return 'error';
     }
@@ -4642,13 +5337,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     if (isNewer(remote.version, APP_VERSION)) {
       showUpdateBar(remote);
-      if (!silent) el.verStatus.textContent = `發現新版本 v${remote.version}`;
+      if (!silent) el.verStatus.textContent = t('verFound', { v: remote.version });
       return 'update';
     }
 
     if (!silent) {
-      el.verStatus.textContent = '已是最新版本';
-      toast('已是最新版本');
+      el.verStatus.textContent = t('verLatest');
+      toast(t('toastLatest'));
     }
     return 'latest';
   }
@@ -4677,8 +5372,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     }
 
     el.updateDesc.textContent = (ver && isNewer(ver, APP_VERSION))
-      ? (info.notes ? `v${ver}：${info.notes}` : `更新至 v${ver}`)
-      : '已下載新版本，點此套用';
+      ? (info.notes ? t('updateBarNotes', { v: ver, notes: info.notes }) : t('updateBarVersion', { v: ver }))
+      : t('updateBarDownloaded');
 
     el.updateBar.hidden = false;
     // 強制一次重排，確保 transition 由 transform 起始值開始
@@ -4700,7 +5395,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     const btn = el.updateNowBtn;
     const originalText = btn.textContent;
-    btn.textContent = '更新中…';
+    btn.textContent = t('verUpdating');
     btn.disabled = true;
 
     // 套用就緒的新 SW：postMessage(skipWaiting) → controllerchange → 重載
@@ -4735,9 +5430,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
           }
           // 60 秒仍未就緒（網路慢）→ 不重載；全域偵測會在安裝完成時再提示套用
           version.updating = false;
-          btn.textContent = '下載較慢…';
+          btn.textContent = t('verSlow');
           btn.disabled = false;
-          toast('新版本下載中，完成後會自動提示');
+          toast(t('toastUpdateSlow'));
           return;
         }
       }
@@ -4753,7 +5448,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       version.updating = false;
       btn.textContent = originalText;
       btn.disabled = false;
-      toast('更新失敗，請稍後再試');
+      toast(t('toastUpdateFail'));
     }
   }
 
@@ -4847,13 +5542,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       const v = version.remote && version.remote.version;
       if (v) version.dismissed = v;
       hideUpdateBar();
-      el.verStatus.textContent = '已稍後提醒，可隨時在選單檢查更新';
+      el.verStatus.textContent = t('toastUpdateLater');
     });
 
     el.checkUpdateBtn.addEventListener('click', async () => {
       const r = await checkForUpdate();
-      if (r === 'latest') el.verStatus.textContent = '已是最新版本';
-      if (r === 'update') el.verStatus.textContent = '發現新版本，請點上方提示更新';
+      if (r === 'latest') el.verStatus.textContent = t('verLatest');
+      if (r === 'update') el.verStatus.textContent = t('toastUpdateFound');
     });
   }
 
@@ -4863,21 +5558,19 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     const el = document.getElementById('hintText');
     if (!el) return;
     el.textContent = matchMedia('(hover: none)').matches
-      ? '點一下日期可新增或編輯工時／兼職／加班／半夜記錄'
-      : '雙擊日期可新增或編輯工時／兼職／加班／半夜記錄';
+      ? t('hintTouch')
+      : t('hintMouse');
   }
 
   function init() {
     load();
+    lang = normalizeLang(settings.lang);   // 先定語言，後續所有字串才取得正確詞條
     applyTheme();   // 重設 meta theme-color 為目前主題（首幀由 inline script 設好）
     view = new Date();
     view.setDate(1);
     if (settings.pinHash) openLock('unlock');   // 先蓋鎖屏再渲染，內容不閃現
     bind();
-    render();
-    updateHintText();
-    setupInstallHint();
-    renderVersionInfo();
+    applyLang();    // 套用靜態文案＋渲染（含 updateHintText / setupInstallHint / renderVersionInfo）
     bindVersionUI();
 
     if (window.addEventListener) {

@@ -187,6 +187,17 @@ input, textarea { font-family: inherit; }
   margin: 0;
   letter-spacing: -.2px;
   white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* 英文標題（Worktime Calendar）比中文「工時月曆」寬得多，窄機上會把
+   月份切換擠出畫面。拉丁字母縮一級並允許收窄，中文維持原本字級。
+   真的塞不下時（≤480px）只留 App icon——月份切換與「Today」比品牌名重要，
+   截成「Worktime C…」既不美觀也沒有資訊量。 */
+html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
+@media (max-width: 480px) {
+  html[lang="en"] .brand h1 { display: none; }
 }
 
 .month-nav { display: flex; align-items: center; gap: 4px; }
@@ -1280,9 +1291,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 }
 .cf-banner[hidden] { display: none; }   /* display:flex 會覆蓋 hidden，必須顯式聲明 */
 .cf-banner-icon { display: inline-flex; color: var(--work); flex: none; }
-.cf-banner-text { flex: 1; min-width: 0; color: var(--text-2); }
+.cf-banner-text { flex: 1; min-width: 0; color: var(--text-2); overflow-wrap: anywhere; }
 .cf-banner-text b { color: var(--text); }
-.cf-banner-go { color: var(--work); font-weight: 600; white-space: nowrap; }
+.cf-banner-go { color: var(--work); font-weight: 600; white-space: nowrap; flex: none; }
 .cf-sheet-line { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: var(--text-2); }
 .cf-sheet-line b { color: var(--text); }
 /* 雲端備份面板：覆蓋 sheet-body 預設兩欄 → 單欄直排
@@ -1643,6 +1654,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   /* 紅日：手機格窄，假期名一行截斷（完整名稱點開面板可見） */
   .day.is-holiday .day-num { color: var(--holiday); }
   .day-hol { font-size: 8.5px; line-height: 1.2; -webkit-line-clamp: 1; }
+  /* 英文假期名為拉丁字母，同樣寬度塞得下的字數遠少於中文（約 11 字元），
+     放寬為兩行；用字級與行高較小的 7.5px 讓 "Chung Yeung +1" 這類仍可讀完。 */
+  html[lang="en"] .day-hol { font-size: 7.5px; line-height: 1.15; -webkit-line-clamp: 2; }
 
   /* 日期數字：縮小並靠左上，把中段空間留給描述 */
   .day-num { font-size: 13px; line-height: 1; gap: 2px; }
