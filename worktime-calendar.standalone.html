@@ -2596,8 +2596,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.32.0';
-  const APP_BUILD = '20261001-2303';
+  const APP_VERSION = '1.32.1';
+  const APP_BUILD = '20261002-1658';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2886,7 +2886,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       msgCfNoBackup: '雲端沒有這個碼的備份',
       msgCfBadFormat: '備份格式不符',
       cfUnknownTime: '時間不明',
-      cfStatusAt: '已連接・上次備份：{t}',
+      cfStatusAt: '已連接・上次備份：{time}',
       cfStatusNever: '已連接・尚未備份過',
 
       // Confirm
@@ -2899,7 +2899,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       confirmClearAll: '確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。',
 
       // 版本
-      verBuildAt: '建置於 {t}',
+      verBuildAt: '建置於 {time}',
       verChecking: '檢查中…',
       verFoundNow: '發現新版本，可立即更新',
       verFileMode: '單檔版不支援線上檢查更新',
@@ -3112,7 +3112,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       msgCfNoBackup: 'No cloud backup for this code',
       msgCfBadFormat: 'Backup format is invalid',
       cfUnknownTime: 'unknown time',
-      cfStatusAt: 'Connected · last backup: {t}',
+      cfStatusAt: 'Connected · last backup: {time}',
       cfStatusNever: 'Connected · no backup yet',
 
       confirmDeleteEntry: 'Delete this day’s record?',
@@ -3123,7 +3123,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       confirmImport: 'Import {n} records? Existing dates with the same name will be overwritten.',
       confirmClearAll: 'Clear all work records? This cannot be undone. Export a backup first.',
 
-      verBuildAt: 'Built {t}',
+      verBuildAt: 'Built {time}',
       verChecking: 'Checking…',
       verFoundNow: 'New version found — update now',
       verFileMode: 'Update check is unavailable in single-file mode',
@@ -3414,13 +3414,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   const THEME_META = { light: '#f4f6fb', dark: '#0d1117' };   // 瀏覽器 UI（地址欄）跟著主題走
 
   function applyTheme() {
-    const t = settings.theme === 'light' || settings.theme === 'dark'
+    const theme = settings.theme === 'light' || settings.theme === 'dark'
       ? settings.theme
       : (themeMql && themeMql.matches ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', t);
+    document.documentElement.setAttribute('data-theme', theme);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', THEME_META[t]);
-    return t;
+    if (meta) meta.setAttribute('content', THEME_META[theme]);
+    return theme;
   }
 
   function syncThemeSeg() {
@@ -3789,9 +3789,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.cfSetup.hidden = on;
     el.cfConnected.hidden = !on;
     if (on) {
-      const t = settings.cfAt ? new Date(settings.cfAt) : null;
-      el.cfStatus.textContent = t
-        ? t('cfStatusAt', { t: t.toLocaleString(localeTag()) })
+      const lastAt = settings.cfAt ? new Date(settings.cfAt) : null;
+      el.cfStatus.textContent = lastAt
+        ? t('cfStatusAt', { time: lastAt.toLocaleString(localeTag()) })
         : t('cfStatusNever');
     }
   }
@@ -4292,9 +4292,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       if (onOneRow()) return;
     }
     box.style.fontSize = '';
-    let t = parseFloat(getComputedStyle(title).fontSize);
-    for (t -= .5; t >= 17; t -= .5) {                      // 三級：縮月標題
-      title.style.fontSize = t + 'px';
+    let titleSize = parseFloat(getComputedStyle(title).fontSize);
+    for (titleSize -= .5; titleSize >= 17; titleSize -= .5) {   // 三級：縮月標題
+      title.style.fontSize = titleSize + 'px';
       if (onOneRow()) return;
     }
     title.style.fontSize = '';
@@ -4710,13 +4710,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   const DESC_SUGGEST_SHOW = 3;
 
   function rememberDesc(kind, text) {
-    const t = (text || '').trim();
-    if (!t) return;
+    const txt = (text || '').trim();
+    if (!txt) return;
     const h = (settings.descHistory = settings.descHistory || DEFAULTS.descHistory);
     const list = h[kind] = h[kind] || [];
-    const i = list.indexOf(t);
+    const i = list.indexOf(txt);
     if (i > -1) list.splice(i, 1);
-    list.unshift(t);
+    list.unshift(txt);
     if (list.length > DESC_HIST_MAX) list.length = DESC_HIST_MAX;
     saveSettings();
   }
@@ -4849,8 +4849,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.prevMonth.addEventListener('click', () => changeMonth(-1, true));
     el.nextMonth.addEventListener('click', () => changeMonth(1, true));
     el.todayBtn.addEventListener('click', () => {
-      const t = new Date();
-      view = new Date(t.getFullYear(), t.getMonth(), 1);
+      const now = new Date();
+      view = new Date(now.getFullYear(), now.getMonth(), 1);
       render();
       toast(t('toastBackToday'));
     });
@@ -5293,7 +5293,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
   function renderVersionInfo() {
     el.verCurrent.textContent = `v${APP_VERSION}`;
-    el.verBuild.textContent = APP_BUILD ? t('verBuildAt', { t: formatBuild(APP_BUILD) }) : '';
+    el.verBuild.textContent = APP_BUILD ? t('verBuildAt', { time: formatBuild(APP_BUILD) }) : '';
   }
 
   /** 向伺服器查詢最新版本（繞過所有快取） */
