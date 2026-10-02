@@ -11,6 +11,20 @@ App 的「雲端備份」功能需要一個備份中轉服務。用你自己的 
 2. 左側選單 → **Storage & Databases** → **KV**
 3. **Create a namespace** → 名稱填 `worktime-backup` → 建立
 
+## 步驟 1.5（推薦）：用腳本一鍵部署
+
+不想手動貼程式碼的話，用 repo 內的腳本（走 Cloudflare API，不需 wrangler）：
+
+```bash
+CLOUDFLARE_API_TOKEN=xxxx bash cloudflare-worker/deploy.sh
+```
+
+Token 在 https://dash.cloudflare.com/profile/api-tokens 生：
+**Create Custom Token** → Permissions 選 `Account | Workers Scripts | Edit`
+→ Account Resources 選你的帳號。腳本會自動上傳並跑四項驗證。
+
+---
+
 ## 步驟 2：建立 Worker
 
 1. 左側選單 → **Workers & Pages** → **Create** → **Create Worker**
@@ -120,5 +134,9 @@ App 端「Worker 網址」直接填：`https://worktime-backup.isearover.workers
 `https://worktime-backup.isearover.workers.dev/api/backup?code=AAAAAAAA`
 看到 `{"found":false}`（404）＝正常。
 
-> 更新 Worker 代碼：改 `worker.js` 後用 Dashboard 的 Edit code 貼上重新 Deploy，
-> 或用同一支部署腳本重新 PUT。
+> **更新 Worker 代碼**（推薦一行搞定）：
+> ```bash
+> CLOUDFLARE_API_TOKEN=xxxx bash cloudflare-worker/deploy.sh
+> ```
+> 或手動：Dashboard 的 Edit code 貼上新的 `worker.js` → Deploy。
+> 腳本會順便驗證 v1/v2 API 與讀寫刪是否都正常。
