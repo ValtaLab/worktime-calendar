@@ -1,0 +1,8 @@
+name = "worktime-backup"
+main = "worker.js"
+compatibility_date = "2024-09-01"
+
+# 既有 KV namespace（沿用 2026-09-18 部署時綁定的同一個，不新建、不搬資料）
+[[kv_namespaces]]
+binding = "BACKUP_KV"
+id = "32ecc1c3302f4b4f9d0bfa725013dfcc"
