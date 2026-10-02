@@ -118,7 +118,7 @@ Worker 網址改了（例如換子域）：App 端填新網址＋原恢復碼即
 
 ---
 
-## ✅ 已部署（2026-09-18，透過 API 自動部署）
+## ✅ 已部署（v2 於 2026-10-02 重新部署）
 
 | 項目 | 值 |
 |---|---|
@@ -127,13 +127,26 @@ Worker 網址改了（例如換子域）：App 端填新網址＋原恢復碼即
 | KV namespace | `worktime-backup`（id `32ecc1c3302f4b4f9d0bfa725013dfcc`） |
 | KV 綁定變數 | `BACKUP_KV` |
 | workers.dev | 已啟用 |
+| 目前版本 | v2（單一 POST API ＋ 寫入金鑰 ＋ 寫入限速；v1 舊 API 保留相容） |
 
 App 端「Worker 網址」直接填：`https://worktime-backup.isearover.workers.dev`
 
-驗證方式：手機瀏覽器打開
-`https://worktime-backup.isearover.workers.dev/api/backup?code=AAAAAAAA`
-看到 `{"found":false}`（404）＝正常。
+驗證方式：
 
+```bash
+bash cloudflare-worker/smoke-v2.sh     # v1＋v2＋CORS 共 14 項健康檢查
+```
+
+或手機瀏覽器打開
+`https://worktime-backup.isearover.workers.dev/api/backup?code=AAAAAAAA`
+看到 `{"found":false}`（404）＝舊 API 正常。
+
+> **線上健康檢查**：
+> ```bash
+> bash cloudflare-worker/smoke-v2.sh
+> ```
+> （沙箱環境連不到 `*.workers.dev`，需在一般網路下執行）
+>
 > **更新 Worker 代碼**（推薦一行搞定）：
 > ```bash
 > CLOUDFLARE_API_TOKEN=xxxx bash cloudflare-worker/deploy.sh
