@@ -65,6 +65,39 @@ curl -X POST https://worktime-backup.<你的子域>.workers.dev/api/backup \
   -d '{"op":"get","tok":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}'
 ```
 
+## 步驟 4.5（選用）：自動健康檢查 Worker
+
+想讓備份服務「自己定期體檢」，再部署一支 `wtc-selfcheck`：
+
+1. 建立 Worker，名稱 `wtc-selfcheck`，貼上 `selfcheck.js` 全部內容 → Deploy
+2. **Settings → Bindings** 加兩個：
+   - KV Namespace：變數名 `BACKUP_KV` → 選步驟 1 的 namespace
+   - **Service Binding**：變數名 `BACKUP` → Service 選 `worktime-backup`，Environment 選 `production`
+3. **Triggers → Cron Triggers** 加一條，例如 `7 * * * *`（每小時的第 7 分）
+
+> ⚠️ **一定要加 Service Binding**：Worker 之間若走公開網址互打，
+> Cloudflare 內部解析不到 `*.workers.dev`，會全部拿到 HTTP 404 `error code: 1042`
+> （看起來像服務掛掉，其實只是內部 DNS 的問題）。Service Binding 是帳號內直連，不受影響。
+
+它每小時會對正式備份 Worker 跑 11 項檢查（v2 建立／讀取／寫入金鑰拒絕／非法輸入／刪除／刪除後讀不到、
+v1 舊協定、CORS preflight），結果寫進 KV 的 `selfcheck:latest`。
+
+查看結果（三選一）：
+
+```bash
+# 瀏覽器直接開（會顯示人類可讀的逐項結果）
+https://wtc-selfcheck.<你的子域>.workers.dev/
+
+# 或用 Cloudflare API 讀 KV
+curl "https://api.cloudflare.com/client/v4/accounts/<ACC>/storage/kv/namespaces/<KV>/values/selfcheck:latest" \
+  -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
+
+# 只想拿到 JSON 格式
+curl -H "Accept: application/json" https://wtc-selfcheck.<你的子域>.workers.dev/
+```
+
+成本：每次約 10 次子請求 + 1 次 KV 寫入，免費額度內可忽略。
+
 ## 步驟 5：填入 App
 
 手機打開工時月曆 → 選單 →「雲端備份（Cloudflare）」→ 貼上 Worker 網址 → 連接。
@@ -140,6 +173,30 @@ bash cloudflare-worker/smoke-v2.sh     # v1＋v2＋CORS 共 14 項健康檢查
 或手機瀏覽器打開
 `https://worktime-backup.isearover.workers.dev/api/backup?code=AAAAAAAA`
 看到 `{"found":false}`（404）＝舊 API 正常。
+
+### 最近一次自動健康檢查（2026-10-02 13:33 UTC，`wtc-selfcheck` 經 Service Binding）
+
+**11/11 全數通過**：
+
+| 檢查項 | 結果 |
+|---|---|
+| v2 get（空） | ✓ 404 |
+| v2 put（建立） | ✓ 200 |
+| v2 get（有資料） | ✓ 200 |
+| v2 put（寫入金鑰錯） | ✓ 403（拒絕覆寫） |
+| v2 非法 tok | ✓ 400 |
+| v2 未知 op | ✓ 400 |
+| v2 delete | ✓ 200 |
+| v2 get（刪除後） | ✓ 404 |
+| v1 get（空，舊協定） | ✓ 404 |
+| v1 非法碼 | ✓ 400 |
+| CORS preflight | ✓ 204，回 `Access-Control-Allow-Origin: https://valtalab.github.io` |
+
+另外也確認了**公網可達性**：從外部網路打
+`https://worktime-backup.isearover.workers.dev/api/backup`
+回 `{"error":"invalid code"}`（400），代表網址與 TLS 都正常。
+KV 裡也看得到 App 用 v2 格式寫入的備份（`wtc2:`／`wtk2:` 各一筆，12:26 UTC），
+端到端流程實際跑通過。
 
 > **線上健康檢查**：
 > ```bash
