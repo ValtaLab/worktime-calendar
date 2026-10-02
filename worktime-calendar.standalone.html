@@ -2596,8 +2596,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.32.1';
-  const APP_BUILD = '20261002-1658';
+  const APP_VERSION = '1.32.2';
+  const APP_BUILD = '20261002-1742';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -4724,16 +4724,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   function renderDescSuggest(ta, box, kind) {
     const list = (settings.descHistory && settings.descHistory[kind]) || [];
     box.innerHTML = '';
-    list.slice(0, DESC_SUGGEST_SHOW).forEach((t) => {
+    // 注意：這裡的 item 不可命名為 t——會遮蔽全域取詞函式 t()（v1.32.1 的 bug 就是這樣來的）
+    list.slice(0, DESC_SUGGEST_SHOW).forEach((item) => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'suggest-chip';
-      chip.textContent = t;
-      chip.title = t;
+      chip.textContent = item;
+      chip.title = item;
       // pointerdown 在 blur 前觸發：先攔下填入並保持 textarea 焦點
       chip.addEventListener('pointerdown', (ev) => {
         ev.preventDefault();
-        ta.value = t;
+        ta.value = item;
         ta.dispatchEvent(new Event('input', { bubbles: true }));
       });
       box.appendChild(chip);
@@ -4750,7 +4751,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     const partHours = getPartHours();
     const otHours = getOtHours();
     const nightHours = getNightHours();
-    const tags = el.tagsInput.value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
+    const tags = el.tagsInput.value.split(/[,，]/).map((s) => s.trim()).filter(Boolean);
 
     const empty = !workDesc && !otDesc && !nightDesc && workUnits === 0 &&
       partHours === 0 && otHours === 0 && nightHours === 0 && tags.length === 0;
@@ -5162,7 +5163,14 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
     /* ---- 匯出 JSON ---- */
     el.exportJson.addEventListener('click', () => {
-      const payload = { app: 'worktime-calendar', v: 1, exportedAt: new Date().toISOString(), settings, data: entries };
+      // 安全：匯出檔不帶雲端連線資訊與螢幕鎖雜湊。
+      // 備份檔常被上傳到雲端硬碟或傳給別人，而 cfCode 就是雲端備份的解密依據，
+      // 外洩等同把雲端資料的主鑰匙交出去（與 cfBackupPayload() 的處理一致）。
+      const safeSettings = {
+        ...settings,
+        cfEndpoint: '', cfCode: '', cfAt: '', cfHash: '', pinHash: '',
+      };
+      const payload = { app: 'worktime-calendar', v: 1, exportedAt: new Date().toISOString(), settings: safeSettings, data: entries };
       download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }),
         t('jsonFilename', { date: todayKey() }));
       toast(t('toastExportedJson'));
@@ -5181,7 +5189,15 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         if (!confirm(t('confirmImport', { n: incoming }))) return;
         // 舊版小時制備份也會自動轉換為「工」
         entries = { ...entries, ...migrate(data).data };
-        if (parsed.settings) settings = { ...settings, ...parsed.settings };
+        if (parsed.settings) {
+          // 安全：雲端連線資訊與螢幕鎖一律留本機現值，不讓匯入檔把它們改到別人的端點
+          // （否則惡意備份檔可把後續自動備份導向攻擊者伺服器，而金鑰由 code＋endpoint 派生，對方解得開）
+          const keep = {
+            cfEndpoint: settings.cfEndpoint, cfCode: settings.cfCode,
+            cfAt: settings.cfAt, cfHash: settings.cfHash, pinHash: settings.pinHash,
+          };
+          settings = { ...settings, ...parsed.settings, ...keep };
+        }
         save(); saveSettings();
         closeDrawer();
         render();
@@ -5221,7 +5237,11 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   }
 
   function csvCell(v) {
-    const s = String(v == null ? '' : v);
+    let s = String(v == null ? '' : v);
+    // 安全：CSV 公式注入防護。描述欄是使用者自填（也可能由匯入／雲端還原帶入），
+    // 若開頭是 = + - @ 或 Tab／CR，Excel／Sheets 會當公式執行（DDE、HYPERLINK 資料外洩等）。
+    // 加一個前導單引號，試算表就會當純文字顯示。
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
     return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   }
 
