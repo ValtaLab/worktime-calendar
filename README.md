@@ -40,7 +40,7 @@
 | **自動檢測更新** | 開啟或回到前景時自動比對版本，有新版本彈出提示並可**一鍵更新** |
 | **可安裝** | 完整 Web App Manifest，加到主畫面後如原生 App |
 | **深色模式** | 跟隨系統自動切換 |
-| **雲端備份** | 主畫面橫幅兩個入口（不需填任何網址，Worker 端點已內置；站長自架見 `cloudflare-worker/DEPLOY.md`）：**第一次使用 → 一鍵開啟**生成恢復碼；**曾開啟過（如刪 App 重裝）→ 輸入恢復碼找回**，資料自動回來並**沿用原碼**，不會另發新碼。開啟後每次修改**自動加密備份**（AES-GCM 端到端加密，伺服器只有密文）；恢復碼是唯一憑證，開通時展示大字碼請截圖保存；內容指紋沒變不重推，切背景前自動補推 |
+| **雲端備份** | 主畫面橫幅兩個入口（不需填任何網址，Worker 端點已內置；站長自架見 `cloudflare-worker/DEPLOY.md`）：**第一次使用 → 一鍵開啟**生成恢復碼；**曾開啟過（如刪 App 重裝）→ 輸入恢復碼找回**，資料自動回來並**沿用原碼**，不會另發新碼。開啟後每次修改**自動加密備份**；恢復碼是唯一憑證，開通時展示大字碼請截圖保存；內容指紋沒變不重推，切背景前自動補推。設定內可**刪除雲端備份**（本機資料不動） |
 | **資料匯出** | 匯出 CSV（工數 + 兼職小時 + 加班小時 + 半夜加班小時）、匯出／匯入 JSON 備份 |
 
 ---
@@ -292,7 +292,7 @@ GITHUB_TOKEN=<你的 token> bash push-api.sh -m "release: 1.6.0"
 | Key | 內容 |
 | --- | --- |
 | `worktime-calendar:v1` | 所有工時記錄，格式 `{ "YYYY-MM-DD": { workDesc, workUnits, otDesc, otHours, tags } }` |
-| `worktime-calendar:settings:v1` | 偏好設定（1 工 = N 小時、顯示選項） |
+| `worktime-calendar:settings:v1` | 偏好設定（1 工 = N 小時、顯示選項、語言、雲端憑證） |
 
 > `workUnits` 單位是「工」（0.5 或 1），`otHours` 單位是「小時」。舊格式在載入與匯入時會自動遷移。
 
@@ -328,6 +328,7 @@ GITHUB_TOKEN=<你的 token> bash push-api.sh -m "release: 1.6.0"
 - **輸入體驗**：數字欄位 `inputmode="decimal"`，行動端彈出數字鍵盤
 - **無障礙**：面板為 `role="dialog"` + `aria-modal`，日期格可 Tab 聚焦並以 `Enter` 開啟，支援 `prefers-reduced-motion`
 - **觸控優化**：44px 以上觸控目標、`env(safe-area-inset-*)` 適配瀏海螢幕
+- **雲端加密（v2）**：三件憑證分工——恢復碼（使用者保管，永遠不上網）、`tok`（PBKDF2 600k 派生，送雲端只做定位與讀取）、`wk` 寫入金鑰（隨機 32B，才能覆寫／刪除）。加密金鑰由「恢復碼＋隨機鹽」經 PBKDF2（600k 次）派生，鹽明碼隨備份走但恢復碼不出裝置，因此伺服器拿得到密文也解不開。通訊走單一 `POST /api/backup`（`op: get/put/delete`），憑證全在 body，不進 URL 與存取日誌；舊版 Worker 回 405 時自動降級回 v1 協定，讀到舊格式會自動重推升級
 - **i18n**：`app.js` 內建 `I18N` 字典（`zh-Hant` / `en`）與 `t(key, vars)` 取詞函式，語言存於 `settings.lang`；`index.html` 靜態文案以 `data-i18n` / `data-i18n-ph` / `data-i18n-aria` / `data-i18n-content` 標記，由 `applyLang()` 一次套用並同步 `<html lang>`（同時驅動 CSS 的語言專屬微調）。香港公眾假期在 `HK_HOLIDAYS` 只存語意鍵，顯示時才依語言取名（並為英文另備格子用短名）
 
 ---

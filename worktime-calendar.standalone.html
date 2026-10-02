@@ -2471,6 +2471,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         <button id="cfBackupNow" class="drawer-btn" type="button" data-i18n="cfBackupNow">立即備份</button>
       </div>
       <button id="cfShowCode" class="drawer-btn" type="button" data-i18n="cfShowCode">查看恢復碼</button>
+      <button id="cfDeleteCloud" class="drawer-btn" type="button" data-i18n="cfDeleteCloud">刪除雲端備份</button>
       <button id="cfDisconnect" class="drawer-btn drawer-btn-danger" type="button" data-i18n="cfDisconnect">斷開</button>
     </div>
     <div id="cfCodeShow" hidden>
@@ -2596,8 +2597,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.32.2';
-  const APP_BUILD = '20261002-1742';
+  const APP_VERSION = '1.33.0';
+  const APP_BUILD = '20261002-1821';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2681,6 +2682,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     cfCode: '',     // 恢復碼（8 位，重裝找回資料的唯一憑證）
     cfAt: '',       // 上次成功備份時間（ISO）
     cfHash: '',     // 上次成功備份的內容指紋（沒變不重推）
+    cfSalt: '',     // 加密鹽（隨機 16 bytes，base64）——只存在本機與備份檔的加密內容裡
+    cfWriteKey: '', // 寫入金鑰（隨機 32 bytes，base64）——有它才能覆寫／刪除雲端備份
+    cfV2: false,    // 是否已經用 v2 新格式備份過（決定還要不要回頭查舊備份）
   };
 
   /* ===================== i18n（繁體中文 / English） =====================
@@ -2803,6 +2807,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       cfBackupNow: '立即備份',
       cfShowCode: '查看恢復碼',
       cfDisconnect: '斷開',
+      cfDeleteCloud: '刪除雲端備份',
       cfCodeHint: '這組恢復碼是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：',
       cfCodeHintSheet: '這組<b>恢復碼</b>是找回資料的唯一憑證，<b>請立即截圖保存</b>（傳給自己／存相簿）：',
       cfSaved: '已保存好',
@@ -2876,6 +2881,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       toastCfBackedUp: '已備份到雲端',
       toastCfBackupFail: '備份失敗：',
       toastCfDisconnected: '已斷開雲端備份',
+      toastCfDeleted: '已刪除雲端備份（本機資料不變）',
+      toastCfDeleteFail: '刪除失敗：',
       toastCfOpenFail: '開啟失敗：',
       toastCfCodeInvalid: '請輸入 8 位恢復碼（格式 XXXX-XXXX）',
       toastCfCodeMissing: '雲端沒有這組恢復碼的備份，請確認有沒有打錯',
@@ -2885,6 +2892,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       msgCfBadResponse: 'Worker 回應異常（{n}）',
       msgCfNoBackup: '雲端沒有這個碼的備份',
       msgCfBadFormat: '備份格式不符',
+      msgCfWorkerOld: '雲端服務版本過舊，請先更新 Worker 再使用此功能',
       cfUnknownTime: '時間不明',
       cfStatusAt: '已連接・上次備份：{time}',
       cfStatusNever: '已連接・尚未備份過',
@@ -2894,7 +2902,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       confirmCfConflict: '雲端已有這個碼的備份（{t}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝把本機推上雲端',
       confirmCfConflictKeep: '雲端已有這個碼的備份（{t}）。\n\n「確定」＝用雲端覆蓋本機\n「取消」＝保留本機，把本機推上雲端',
       confirmCfRestore: '用雲端備份覆蓋本機資料？\n本機目前的記錄會被取代。',
-      confirmCfDisconnect: '斷開雲端備份？\n本機資料不受影響，之後不再自動備份。\n（恢復碼若要繼續使用，請保留截圖）',
+      confirmCfDisconnect: '斷開雲端備份？\n本機資料不受影響，之後不再自動備份。\n（雲端備份會保留；若想一併移除，請先按「刪除雲端備份」）',
+      confirmCfDelete: '確定刪除雲端上的這份備份？\n此動作無法復原，本機資料不受影響。',
       confirmImport: '將匯入 {n} 筆記錄，同名日期會被覆蓋。確定繼續？',
       confirmClearAll: '確定要清除全部工時記錄嗎？此操作無法復原。建議先匯出備份。',
 
@@ -3033,6 +3042,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       cfBackupNow: 'Back Up Now',
       cfShowCode: 'View Recovery Code',
       cfDisconnect: 'Disconnect',
+      cfDeleteCloud: 'Delete Cloud Backup',
       cfCodeHint: 'This recovery code is the only proof of ownership, <b>screenshot it now</b> (send it to yourself / keep it in Photos):',
       cfCodeHintSheet: 'This <b>recovery code</b> is the only proof of ownership, <b>screenshot it now</b> (send it to yourself / keep it in Photos):',
       cfSaved: 'Saved',
@@ -3102,6 +3112,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       toastCfBackedUp: 'Backed up to the cloud',
       toastCfBackupFail: 'Backup failed: ',
       toastCfDisconnected: 'Cloud backup disconnected',
+      toastCfDeleted: 'Cloud backup deleted (local data unchanged)',
+      toastCfDeleteFail: 'Delete failed: ',
       toastCfOpenFail: 'Could not enable: ',
       toastCfCodeInvalid: 'Enter an 8-character recovery code (XXXX-XXXX)',
       toastCfCodeMissing: 'No cloud backup for this code — please check for typos',
@@ -3111,6 +3123,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       msgCfBadResponse: 'Unexpected worker response ({n})',
       msgCfNoBackup: 'No cloud backup for this code',
       msgCfBadFormat: 'Backup format is invalid',
+      msgCfWorkerOld: 'Cloud service is outdated — update the Worker before using this',
       cfUnknownTime: 'unknown time',
       cfStatusAt: 'Connected · last backup: {time}',
       cfStatusNever: 'Connected · no backup yet',
@@ -3119,7 +3132,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       confirmCfConflict: 'A cloud backup for this code already exists ({t}).\n\nOK = overwrite this device with the cloud copy\nCancel = push this device to the cloud',
       confirmCfConflictKeep: 'A cloud backup for this code already exists ({t}).\n\nOK = overwrite this device with the cloud copy\nCancel = keep this device and push it to the cloud',
       confirmCfRestore: 'Overwrite this device with the cloud backup?\nYour current records will be replaced.',
-      confirmCfDisconnect: 'Disconnect cloud backup?\nYour local data is unaffected; auto backup will stop.\n(Keep a screenshot of the recovery code if you still need it)',
+      confirmCfDisconnect: 'Disconnect cloud backup?\nYour local data is unaffected; auto backup will stop.\n(The cloud copy is kept — tap "Delete Cloud Backup" first if you want it removed)',
+      confirmCfDelete: 'Delete this backup from the cloud?\nThis cannot be undone. Data on this device is not affected.',
       confirmImport: 'Import {n} records? Existing dates with the same name will be overwritten.',
       confirmClearAll: 'Clear all work records? This cannot be undone. Export a backup first.',
 
@@ -3558,6 +3572,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     cfBackupNow: $('cfBackupNow'),
     cfShowCode: $('cfShowCode'),
     cfDisconnect: $('cfDisconnect'),
+    cfDeleteCloud: $('cfDeleteCloud'),
     cfCodeShow: $('cfCodeShow'),
     cfCodeText: $('cfCodeText'),
     cfCodeOk: $('cfCodeOk'),
@@ -3665,6 +3680,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   // 站長部署的預設備份端點：用戶一鍵開啟即用，無需填寫
   const CF_DEFAULT_ENDPOINT = 'https://worktime-backup.isearover.workers.dev';
   const CF_DEBOUNCE = 20000;
+  const CF_ITER = 600000;      // PBKDF2 迭代數（OWASP 對 PBKDF2-HMAC-SHA256 的建議值）
+
+  /* 憑證三件組（v2）：
+       tok      由恢復碼派生，送雲端「定位與讀取」用，反推恢復碼的成本極高
+       wk       隨機寫入金鑰，只有持有它才能覆寫／刪除（tok 外洩也不會被毀）
+       加密金鑰 由恢復碼＋隨機鹽派生，永遠不出裝置，雲端只有密文
+     舊版（v1）只有一把由恢復碼直接 SHA-256 出來的金鑰，恢復碼還會出現在 URL，
+     雲端因此有能力解密；v2 就是要拆開這兩件事。 */
+  const deriveCache = new Map();
+  // null=尚未探測 / true=Worker 支援 v2 / false=舊 Worker（自動降級走 v1）
+  let cfWorkerV2 = null;
 
   function genRecoveryCode() {
     const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';  // 去掉易混淆的 I/O/0/1/L
@@ -3695,7 +3721,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     return out;
   }
 
-  async function cfKey(code, endpoint) {
+  /* ---------- v1 加密（舊格式，只為了讀回舊備份做遷移） ---------- */
+  async function cfKeyV1(code, endpoint) {
     const raw = await crypto.subtle.digest(
       'SHA-256',
       new TextEncoder().encode(`${CF_APP}|${code}|${endpoint}`)
@@ -3703,8 +3730,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     return crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
   }
 
-  async function cfEncrypt(state, code, endpoint) {
-    const key = await cfKey(code, endpoint);
+  async function cfEncryptV1(state, code, endpoint) {
+    const key = await cfKeyV1(code, endpoint);
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const ct = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
@@ -3714,8 +3741,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     return { iv: cfB64(iv), data: cfB64(new Uint8Array(ct)) };
   }
 
-  async function cfDecrypt(enc, code, endpoint) {
-    const key = await cfKey(code, endpoint);
+  async function cfDecryptV1(enc, code, endpoint) {
+    const key = await cfKeyV1(code, endpoint);
     const pt = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv: cfUnb64(enc.iv) },
       key,
@@ -3724,17 +3751,97 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     return JSON.parse(new TextDecoder().decode(pt));
   }
 
-  // 備份內容＝全部打卡記錄＋全部設定；連接資訊與 PIN 不上雲
+  /* ---------- v2 派生 ---------- */
+  function cfB64u(bytes) {
+    return cfB64(bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  /** PBKDF2 派生，結果暫存（600k 迭代不算便宜，別每次備份都重算） */
+  async function cfDerive(code, saltBytes, iter) {
+    const key = `${code}|${cfB64(saltBytes)}|${iter}`;
+    if (deriveCache.has(key)) return deriveCache.get(key);
+    const base = await crypto.subtle.importKey(
+      'raw', new TextEncoder().encode(code), 'PBKDF2', false, ['deriveBits']
+    );
+    const p = crypto.subtle.deriveBits(
+      { name: 'PBKDF2', salt: saltBytes, iterations: iter, hash: 'SHA-256' },
+      base, 256
+    );
+    deriveCache.set(key, p);
+    return p;
+  }
+
+  /** 送雲端的定位憑證：由恢復碼派生，但與加密金鑰是不同的輸出 */
+  async function cfAuthTok() {
+    const endpoint = cfNorm(settings.cfEndpoint);
+    const bits = await cfDerive(
+      settings.cfCode,
+      new TextEncoder().encode(`wtc-auth|${endpoint}`),
+      CF_ITER
+    );
+    return cfB64u(new Uint8Array(await bits));
+  }
+
+  /** 本地加密金鑰：恢復碼＋隨機鹽，鹽隨備份明碼存放（鹽不需要保密） */
+  async function cfEncKey(saltB64) {
+    const bits = await cfDerive(
+      settings.cfCode,
+      new Uint8Array(cfUnb64(saltB64)),
+      CF_ITER
+    );
+    return crypto.subtle.importKey('raw', await bits, 'AES-GCM', false, ['encrypt', 'decrypt']);
+  }
+
+  /** 首次啟用時產生鹽與寫入金鑰（之後固定沿用，鹽會隨備份一起上雲以便跨裝置還原） */
+  function ensureCfSecrets() {
+    if (!settings.cfSalt) {
+      settings.cfSalt = cfB64(crypto.getRandomValues(new Uint8Array(16)));
+    }
+    if (!settings.cfWriteKey) {
+      settings.cfWriteKey = cfB64(crypto.getRandomValues(new Uint8Array(32)));
+    }
+  }
+
+  async function cfEncryptV2(state, saltB64) {
+    const key = await cfEncKey(saltB64);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ct = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      new TextEncoder().encode(JSON.stringify(state))
+    );
+    return { iv: cfB64(iv), data: cfB64(new Uint8Array(ct)) };
+  }
+
+  async function cfDecryptV2(enc, saltB64) {
+    const key = await cfEncKey(saltB64);
+    const pt = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: cfUnb64(enc.iv) },
+      key,
+      cfUnb64(enc.data)
+    );
+    return JSON.parse(new TextDecoder().decode(pt));
+  }
+
+  // 備份內容＝全部打卡記錄＋全部設定；連接資訊、鹽、寫入金鑰與 PIN 不上雲
+  // （寫入金鑰改放在頂層 wk：它只存在於加密內容裡，雲端仍看不到，
+  //   但換裝置還原時才拿得回來，否則那台裝置永遠不能覆寫）
   function cfBackupPayload() {
     return {
       entries,
-      settings: { ...settings, cfEndpoint: '', cfCode: '', cfAt: '', cfHash: '', pinHash: '' },
+      settings: {
+        ...settings,
+        cfEndpoint: '', cfCode: '', cfAt: '', cfHash: '',
+        cfSalt: '', cfWriteKey: '', pinHash: '',
+      },
+      wk: settings.cfWriteKey,
     };
   }
 
   function cfHashOfState() {
     const s = { ...settings };
     delete s.cfEndpoint; delete s.cfCode; delete s.cfAt; delete s.cfHash; delete s.pinHash;
+    delete s.cfSalt; delete s.cfWriteKey; delete s.cfV2;
     const str = JSON.stringify({ entries, s });
     // FNV-1a 32 位：夠用於「內容有沒有變」的判斷
     let h = 0x811c9dc5;
@@ -3745,7 +3852,24 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     return String(h);
   }
 
-  async function cfApi(method, body) {
+  /* v2：單一端點、憑證全放 body（不進 URL、不進存取日誌） */
+  async function cfApiPost(body) {
+    const ep = cfNorm(settings.cfEndpoint);
+    const res = await fetch(`${ep}/api/backup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    let j = null;
+    try { j = await res.json(); } catch (e) { /* 非 JSON 回應 */ }
+    // 405＝舊版 Worker（不認得 POST）→ 記下來，之後自動降級走 v1
+    if (res.status === 405) cfWorkerV2 = false;
+    else if (res.status !== 429) cfWorkerV2 = true;
+    return { status: res.status, ok: res.ok, json: j };
+  }
+
+  /* v1：舊 Worker 用的 GET/PUT（恢復碼在 URL 上，僅相容期使用） */
+  async function cfApiLegacy(method, body) {
     const ep = cfNorm(settings.cfEndpoint);
     const res = await fetch(
       `${ep}/api/backup?code=${encodeURIComponent(settings.cfCode)}`,
@@ -3760,18 +3884,78 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     return { status: res.status, ok: res.ok, json: j };
   }
 
+  /** 抓雲端備份：先問 v2；若本機還沒遷移到新格式，再回頭翻 v1 的舊備份 */
+  async function cfFetchBackup() {
+    let r = null;
+    if (cfWorkerV2 !== false) {
+      r = await cfApiPost({ op: 'get', tok: await cfAuthTok() });
+      if (r.status === 200 && r.json && r.json.found) return r;
+      if (r.status === 404 || r.status === 200) cfWorkerV2 = true;
+    }
+    // 還沒用新格式備份過 → 舊備份可能還在 v1 key 底下
+    if (!settings.cfV2) {
+      const legacy = await cfApiLegacy('GET');
+      if (legacy.status === 200 && legacy.json && legacy.json.found) return legacy;
+      if (cfWorkerV2 === false) return legacy;
+    }
+    return r || { status: 404, ok: false, json: { found: false } };
+  }
+
   async function cfPush() {
     const endpoint = cfNorm(settings.cfEndpoint);
     if (!/^https:\/\//.test(endpoint) && !/^http:\/\/(127\.|localhost)/.test(endpoint)) {
       throw new Error(t('msgCfBadEndpoint'));
     }
-    const enc = await cfEncrypt(cfBackupPayload(), settings.cfCode, endpoint);
-    const body = { app: CF_APP, v: 1, savedAt: new Date().toISOString(), enc };
-    const r = await cfApi('PUT', body);
+    ensureCfSecrets();
+    const payload = cfBackupPayload();
+    let r;
+    if (cfWorkerV2 !== false) {
+      const enc = await cfEncryptV2(payload, settings.cfSalt);
+      r = await cfApiPost({
+        op: 'put', tok: await cfAuthTok(), wk: settings.cfWriteKey,
+        app: CF_APP, v: 2, savedAt: new Date().toISOString(),
+        kdf: { salt: settings.cfSalt, iter: CF_ITER },
+        enc,
+      });
+      if (r.status === 405) {
+        // 舊 Worker：改用 v1 格式再推一次
+        const enc1 = await cfEncryptV1(payload, settings.cfCode, endpoint);
+        r = await cfApiLegacy('PUT', { app: CF_APP, v: 1, savedAt: new Date().toISOString(), enc: enc1 });
+      } else {
+        settings.cfV2 = true;   // 已是新格式：之後不必再回頭查舊備份
+      }
+    } else {
+      const enc1 = await cfEncryptV1(payload, settings.cfCode, endpoint);
+      r = await cfApiLegacy('PUT', { app: CF_APP, v: 1, savedAt: new Date().toISOString(), enc: enc1 });
+    }
     if (!r.ok) throw new Error(t('msgCfPushFail', { n: r.status }));
     settings.cfAt = new Date().toISOString();
     settings.cfHash = cfHashOfState();
     saveSettings();
+  }
+
+  /** 刪除雲端備份（需寫入金鑰；本機資料不動） */
+  async function cfDeleteCloud() {
+    const endpoint = cfNorm(settings.cfEndpoint);
+    if (!settings.cfEndpoint || !settings.cfCode) { toast(t('toastCfNotConnected')); return; }
+    if (!confirm(t('confirmCfDelete'))) return;
+    if (!settings.cfWriteKey) { toast(t('msgCfWorkerOld')); return; }
+    el.cfDeleteCloud.disabled = true;
+    try {
+      const r = await cfApiPost({ op: 'delete', tok: await cfAuthTok(), wk: settings.cfWriteKey });
+      if (r.status === 405) { toast(t('msgCfWorkerOld')); return; }
+      if (!r.ok) throw new Error(t('toastCfDeleteFail') + r.status);
+      settings.cfAt = '';
+      settings.cfHash = '';
+      saveSettings();
+      syncCfUI();
+      toast(t('toastCfDeleted'));
+    } catch (e) {
+      console.error(e);
+      toast(t('toastCfDeleteFail') + String(e.message || e).slice(0, 80));
+    } finally {
+      el.cfDeleteCloud.disabled = false;
+    }
   }
 
   let cfTimer = null;
@@ -3819,7 +4003,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     try {
       settings.cfEndpoint = endpoint;
       settings.cfCode = code;
-      const r = await cfApi('GET');
+      const r = await cfFetchBackup();
       if (r.status === 200 && r.json && r.json.found) {
         if (Object.keys(entries).length) {
           const cloudAt = r.json.data && r.json.data.savedAt
@@ -3863,12 +4047,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   async function cfRestore(silent) {
     if (!settings.cfEndpoint || !settings.cfCode) { toast(t('toastCfNotConnected')); return; }
     if (!silent && !confirm(t('confirmCfRestore'))) return;
-    const r = await cfApi('GET');
+    const r = await cfFetchBackup();
     if (r.status !== 200 || !r.json || !r.json.found) {
       throw new Error(t('msgCfNoBackup'));
     }
     const endpoint = cfNorm(settings.cfEndpoint);
-    const state = await cfDecrypt(r.json.data.enc, settings.cfCode, endpoint);
+    const data = r.json.data;
+    // 有 kdf 就是 v2（PBKDF2＋隨機鹽），沒有就是 v1 舊密文
+    const isV2 = !!(data && data.kdf && data.kdf.salt);
+    const state = isV2
+      ? await cfDecryptV2(data.enc, data.kdf.salt)
+      : await cfDecryptV1(data.enc, settings.cfCode, endpoint);
     if (!state || !state.entries) throw new Error(t('msgCfBadFormat'));
     entries = migrate(state.entries).data;   // migrate 回傳 { data, converted }
     if (state.settings) {
@@ -3878,6 +4067,18 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         cfAt: settings.cfAt, cfHash: settings.cfHash, pinHash: settings.pinHash,
       };
       settings = { ...DEFAULTS, ...state.settings, ...keep };
+      // 寫入金鑰藏在加密內容裡：換裝置還原後才還能覆寫／刪除雲端備份
+      if (state.wk) settings.cfWriteKey = state.wk;
+    }
+    // 鹽是明碼隨備份走的（鹽不需要保密）：沿用同一組，之後備份就不用換鹽
+    if (isV2 && data.kdf && data.kdf.salt) settings.cfSalt = data.kdf.salt;
+    ensureCfSecrets();
+    // 讀到舊格式：立刻用新格式重推一次，完成遷移（舊資料仍留著，不會不見）
+    if (!isV2) {
+      try {
+        ensureCfSecrets();
+        await cfPush();
+      } catch (e) { console.warn('[備份] 升級為新格式失敗', e); }
     }
     settings.cfHash = cfHashOfState();  // 剛還原的內容＝雲端內容，避免立刻重推
     save(); saveSettings();
@@ -3940,10 +4141,10 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
       settings.cfCode = genRecoveryCode();
       // 撞碼（機率約 10^-11）就換一碼重試一次
-      let r = await cfApi('GET');
+      let r = await cfFetchBackup();
       if (r.status === 200 && r.json && r.json.found) {
         settings.cfCode = genRecoveryCode();
-        await cfApi('GET');
+        await cfFetchBackup();
       }
       await cfPush();
       saveSettings();
@@ -3982,7 +4183,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     try {
       settings.cfEndpoint = cfNorm(settings.cfEndpoint) || CF_DEFAULT_ENDPOINT;
       settings.cfCode = code;
-      const r = await cfApi('GET');
+      const r = await cfFetchBackup();
       if (r.status === 200 && r.json && r.json.found) {
         if (Object.keys(entries).length) {
           // 本機已有資料：沿用 connectCf 的衝突選擇
@@ -5106,6 +5307,7 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     el.cfConnect.addEventListener('click', connectCf);
     el.cfBackupNow.addEventListener('click', cfBackupNow);
     el.cfDisconnect.addEventListener('click', disconnectCf);
+    el.cfDeleteCloud.addEventListener('click', cfDeleteCloud);
     el.cfShowCode.addEventListener('click', () => showCfCode(false));
     el.cfCodeOk.addEventListener('click', () => { el.cfCodeShow.hidden = true; });
     el.cfBanner.addEventListener('click', openCfSheet);
