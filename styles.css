@@ -762,8 +762,9 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
 }
 
 /* ---- 描述記憶建議 ----
-   點擊（聚焦）描述框時，下方顯示最近儲存過的描述（最新在前、最多 3 條），
-   點一下即填入。玻璃 chips 與面板其他按鈕同一套語彙。 */
+   面板一開啟就常態顯示最近儲存過的描述（最新在前、最多 3 條），
+   不必先點輸入框；點一下 chip 即填入，目前內容命中的那一條會高亮。
+   玻璃 chips 與面板其他按鈕同一套語彙。 */
 .desc-suggest {
   display: flex;
   flex-wrap: wrap;
@@ -793,6 +794,13 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   color: var(--text);
 }
 .suggest-chip:active { transform: scale(.96); }
+/* 目前描述框的內容正好等於這一條 */
+.suggest-chip.is-active {
+  background: color-mix(in srgb, var(--work) 16%, var(--glass-bg-strong));
+  border-color: color-mix(in srgb, var(--work) 32%, transparent);
+  color: var(--text);
+  font-weight: 600;
+}
 
 /* 每組的色塊：描述與數字「上下排列，但同屬一個色塊」。
    .day-groups ─┬─ .day-group.work-group （工時描述 ＋ 工數）

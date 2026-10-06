@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.33.0';
-  const APP_BUILD = '20261002-1821';
+  const APP_VERSION = '1.33.1';
+  const APP_BUILD = '20261006-1856';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -2099,9 +2099,7 @@
     el.workDesc.value = e.workDesc || '';
     el.otDesc.value = e.otDesc || '';
     el.nightDesc.value = e.nightDesc || '';
-    el.suggestWork.hidden = true;   // 開面板先收起描述建議（聚焦時才顯示）
-    el.suggestOt.hidden = true;
-    el.suggestNight.hidden = true;
+    renderDescSuggestAll();   // 描述記憶：一開面板就常態顯示最近描述，不用先點輸入框
     el.tagsInput.value = (e.tags || []).join(', ');
 
     // 工數預設：全新記錄 → 1 工（點開即存的快捷不變）；
@@ -2315,7 +2313,7 @@
   /* ---------------- 描述記憶 ----------------
      儲存記錄時把非空描述記入 settings.descHistory（work／ot／night 各自獨立）：
      最新在前、去重（重複輸入提到首位）、最多存 10 條。
-     描述框聚焦時顯示最近 3 條建議 chips，點一下即填入。
+     面板一開啟就常態顯示最近幾條建議 chips，點一下即填入——不必先點輸入框。
      放在 settings 裡：隨一般設定持久化，也自動納入雲端備份。 */
   const DESC_HIST_MAX = 10;   // 儲存上限；面板內只顯示最近 3 條
   const DESC_SUGGEST_SHOW = 3;
@@ -2334,23 +2332,54 @@
 
   function renderDescSuggest(ta, box, kind) {
     const list = (settings.descHistory && settings.descHistory[kind]) || [];
-    box.innerHTML = '';
     // 注意：這裡的 item 不可命名為 t——會遮蔽全域取詞函式 t()（v1.32.1 的 bug 就是這樣來的）
-    list.slice(0, DESC_SUGGEST_SHOW).forEach((item) => {
+    const shown = list.slice(0, DESC_SUGGEST_SHOW);
+    // 內容沒變就不重建（打字時若每次 input 都重建會閃）
+    const sig = shown.join('\u0000');
+    if (box._sig === sig) {
+      // 仍要處理可見性：closeSheet 會把建議收起來，重開面板不能就這樣留著 hidden
+      box.hidden = box.children.length === 0;
+      updateDescChipActive(ta, box);
+      return;
+    }
+    box._sig = sig;
+    box.innerHTML = '';
+    shown.forEach((item) => {
       const chip = document.createElement('button');
       chip.type = 'button';
       chip.className = 'suggest-chip';
       chip.textContent = item;
       chip.title = item;
-      // pointerdown 在 blur 前觸發：先攔下填入並保持 textarea 焦點
+      // pointerdown 在 blur 前觸發：先攔下填入，並維持原本的聚焦狀態
+      // （已聚焦就繼續打字；沒聚焦就不強迫鍵盤跳出）
       chip.addEventListener('pointerdown', (ev) => {
         ev.preventDefault();
         ta.value = item;
         ta.dispatchEvent(new Event('input', { bubbles: true }));
+        updateDescChipActive(ta, box);
       });
       box.appendChild(chip);
     });
     box.hidden = box.children.length === 0;
+    updateDescChipActive(ta, box);
+  }
+
+  /** 只切換「目前輸入框內容命中哪一條」的高亮，不重建 DOM */
+  function updateDescChipActive(ta, box) {
+    const cur = (ta.value || '').trim();
+    [...box.children].forEach((chip) => {
+      chip.classList.toggle('is-active', chip.textContent === cur);
+    });
+  }
+
+  /** 三組描述建議一次全部更新（開面板時呼叫） */
+  function renderDescSuggestAll() {
+    [[el.workDesc, el.suggestWork, 'work'],
+     [el.otDesc, el.suggestOt, 'ot'],
+     [el.nightDesc, el.suggestNight, 'night'],
+    ].forEach(([ta, box, kind]) => {
+      if (ta && box) renderDescSuggest(ta, box, kind);
+    });
   }
 
   function saveEntry() {
@@ -2673,17 +2702,16 @@
       else if (themeMql.addListener) themeMql.addListener(onSchemeChange);   // 舊 Safari
     }
 
-    /* ---- 描述記憶：聚焦顯示最近描述建議 ----
-       建議顯示後**保持到面板關閉**（失焦不收起）：面板底部對齊、高度隨內容
-       變化，若 blur 時收起，點右上角 X 的瞬間面板頂邊會下移，瀏覽器把
-       touchstart→touchend 的位移判定為手勢而取消 click，變成要按兩次才關。
-       開／關面板時統一收起（openSheet／closeSheet）。 */
+    /* ---- 描述記憶：常態顯示 ----
+       清單在 openSheet 開啟面板時就 renderDescSuggestAll() 一次，不需要聚焦。
+       這裡只補一件事：打字時更新「目前內容命中哪一條」的高亮。
+       不要在 input 時重建整組 chips——會閃，而且輸入內容跟建議清單本來就無關。 */
     [[el.workDesc, el.suggestWork, 'work'],
      [el.otDesc, el.suggestOt, 'ot'],
      [el.nightDesc, el.suggestNight, 'night'],
     ].forEach(([ta, box, kind]) => {
       if (!ta || !box) return;
-      ta.addEventListener('focus', () => renderDescSuggest(ta, box, kind));
+      ta.addEventListener('input', () => updateDescChipActive(ta, box));
     });
 
     /* ---- 收入金額：點一下切換顯示 / 遮蔽 ----
