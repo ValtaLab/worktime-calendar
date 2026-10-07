@@ -20,9 +20,11 @@ last_update_by: HermesBPi
 
 ---
 
-### 2026-10-07（下午）| GSC 擁有權驗證 tag 上線
+### 2026-10-07（下午）| GSC 擁有權驗證 tag 上線 + sitemap 已提交
 - Ken 喺 Google Search Console（URL 前置字元：`https://valtalab.github.io/worktime-calendar/`）揀「HTML 標記」驗證，拎到 tag
 - tag 已加入 `index.html` head（`google-site-verification`）——**唔可以改或刪**，否則會失去 GSC 擁有權
+- **Ken 回報已提交 sitemap**（`sitemap.xml`）——⚠️ 呢個係用戶回報，Pi 側無法獨立驗證 Google 嘅狀態
+- Pi 側驗證：用 Googlebot UA 抓 `?x=<cachebuster>` → **200**，`google-site-verification` / `.site-about` / JSON-LD 全部在；`sitemap.xml` 200 且 `<loc>` 正確；冇 `X-Robots-Tag` 阻擋
 - 驗證方式選擇過程：先試自動登入（headless 被 Google 攔）→ 試 Xvfb headful（成功到密碼頁）→ vault 遮罩輸入喺 Telegram 唔支援 → passkey QR 卡喺「connecting」（要藍牙近距離）→ 最後由 Ken 喺手機自己拎 tag
 - 相關技能：`headful-browser-login-walls`、`worktime-calendar-seo`
 
