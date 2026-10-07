@@ -4,14 +4,65 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=5.0">
 <meta name="theme-color" content="#2563eb">
-<meta name="description" content="工時月曆 — 快速記錄每日工時與加班，月曆一目了然" data-i18n-content="metaDesc">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="工時月曆">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
 <link rel="icon" href="./icons/icon-192.png">
-<title>工時月曆</title>
+<title>工時月曆｜工時、加班、兼職記錄 App</title>
+
+<!-- ===================== SEO／社群分享 =====================
+     搜尋引擎只讀得到 HTML 裡的真實文字：這裡把「這個 App 是什麼、
+     有咩功能」寫進 meta 與結構化資料（JSON-LD），頁尾另有一段
+     給訪客與爬蟲看的簡介（見 .site-about）。
+     canonical 指向 GitHub Pages 正式位址，避免重複內容分散權重。 -->
+<meta name="description" content="工時月曆 — 免費的工時與加班記錄 App（PWA）。用月曆記錄每日工數、兼職時數、加班與半夜加班時數，自動計算每月收入；支援香港公眾假期、中英文介面、深色模式與離線使用，記錄只存在你的裝置。" data-i18n-content="metaDesc">
+<link rel="canonical" href="https://valtalab.github.io/worktime-calendar/">
+<link rel="alternate" hreflang="zh-Hant" href="https://valtalab.github.io/worktime-calendar/">
+<link rel="alternate" hreflang="en" href="https://valtalab.github.io/worktime-calendar/">
+<link rel="alternate" hreflang="x-default" href="https://valtalab.github.io/worktime-calendar/">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="工時月曆">
+<meta property="og:title" content="工時月曆 — 工時、加班記錄 App">
+<meta property="og:description" content="月曆式工時與加班記錄：工數、兼職時數、加班、半夜加班，自動計算每月收入，支援香港公眾假期與離線使用。">
+<meta property="og:url" content="https://valtalab.github.io/worktime-calendar/">
+<meta property="og:image" content="https://valtalab.github.io/worktime-calendar/icons/icon-512.png">
+<meta property="og:locale" content="zh_HK">
+<meta property="og:locale:alternate" content="en">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="工時月曆 — 工時、加班記錄 App">
+<meta name="twitter:description" content="月曆式工時與加班記錄，自動計算每月收入，支援香港公眾假期與離線使用。">
+<meta name="twitter:image" content="https://valtalab.github.io/worktime-calendar/icons/icon-512.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "工時月曆",
+  "alternateName": "Worktime Calendar",
+  "url": "https://valtalab.github.io/worktime-calendar/",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Web",
+  "browserRequirements": "需要支援 JavaScript 的現代瀏覽器",
+  "inLanguage": ["zh-Hant", "en"],
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "HKD" },
+  "description": "免費的工時與加班記錄 App：以月曆記錄每日工數、兼職時數、加班與半夜加班時數，依日薪與時薪自動計算每月收入，支援香港公眾假期、中英文介面、深色模式與離線使用。",
+  "featureList": [
+    "月曆式工時與加班記錄",
+    "工數／兼職時數分開記錄",
+    "加班與半夜加班以 0.5 小時為單位",
+    "依日薪與時薪自動計算每月收入",
+    "香港公眾假期 2025–2027",
+    "中英文介面",
+    "深色模式",
+    "離線可用（PWA，可加到主畫面）",
+    "匯出 CSV／JSON 備份",
+    "雲端端到端加密備份"
+  ]
+}
+</script>
 <script>
 /* 主題預設置：樣式表套用前就依設定（theme: auto/light/dark）掛上 data-theme，
    深色系統下重新載入才不會先閃一幀淺色。之後由 app.js 接手管理。 */
@@ -77,6 +128,31 @@
     <span class="hint-mark" aria-hidden="true"></span>
     <span id="hintText" data-i18n="hintMouse">雙擊日期可新增或編輯工時／兼職／加班／半夜記錄</span>
   </footer>
+
+  <!-- 頁尾簡介：搜尋引擎要讀到真實文字才排得前面，同時讓第一次打開的人
+       知道這個 App 做什麼。樣式刻意低調（細字、次要色、髮絲線分隔），
+       不搶月曆的視覺重心。 -->
+  <section class="site-about" aria-labelledby="aboutTitle">
+    <h2 class="about-title" id="aboutTitle" data-i18n="aboutTitle">關於工時月曆</h2>
+    <p class="about-text" data-i18n="aboutIntro">工時月曆是一個免費的網頁 App（PWA），用月曆記錄每日工數、兼職時數、加班與半夜加班時數，並依你設定的日薪與時薪自動計算每月收入。雙擊任何一天即可新增記錄，支援香港公眾假期顯示、中英文介面、深色模式與離線使用；所有記錄只保存在你的裝置，可隨時匯出 CSV 或 JSON 備份。</p>
+
+    <details class="about-more">
+      <summary data-i18n="aboutFaq">常見問題</summary>
+      <dl class="about-faq">
+        <dt data-i18n="aboutQ1">需要安裝嗎？</dt>
+        <dd data-i18n="aboutA1">不需要。用瀏覽器打開即可使用；想當成 App 用，可「加到主畫面」，之後即使離線也開得起來。</dd>
+
+        <dt data-i18n="aboutQ2">記錄會上傳到伺服器嗎？</dt>
+        <dd data-i18n="aboutA2">不會。記錄只存在你裝置的瀏覽器內。若自行開啟雲端備份，資料會以端到端加密上傳，伺服器只有密文。</dd>
+
+        <dt data-i18n="aboutQ3">加班與收入怎樣計算？</dt>
+        <dd data-i18n="aboutA3">加班與半夜加班以 0.5 小時為單位。在「薪資設定」填好日薪、時薪、加班時薪與半夜加班時薪後，月曆下方與每日格子會自動顯示當月與當日收入。</dd>
+
+        <dt data-i18n="aboutQ4">有香港公眾假期嗎？</dt>
+        <dd data-i18n="aboutA4">已內置 2025–2027 年香港公眾假期，假期日會以紅字顯示假期名稱，可在設定中關閉。</dd>
+      </dl>
+    </details>
+  </section>
 </div>
 
 <!-- ============ 編輯面板 ============ -->

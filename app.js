@@ -107,7 +107,21 @@
   const I18N = {
     'zh-Hant': {
       appName: '工時月曆',
-      metaDesc: '工時月曆 — 快速記錄每日工時與加班，月曆一目了然',
+      docTitle: '工時月曆｜工時、加班、兼職記錄 App',
+      metaDesc: '工時月曆 — 免費的工時與加班記錄 App（PWA）。用月曆記錄每日工數、兼職時數、加班與半夜加班時數，自動計算每月收入；支援香港公眾假期、中英文介面、深色模式與離線使用，記錄只存在你的裝置。',
+
+      // 頁尾簡介（SEO 用；同時俾第一次打開嘅人睇）
+      aboutTitle: '關於工時月曆',
+      aboutIntro: '工時月曆是一個免費的網頁 App（PWA），用月曆記錄每日工數、兼職時數、加班與半夜加班時數，並依你設定的日薪與時薪自動計算每月收入。雙擊任何一天即可新增記錄，支援香港公眾假期顯示、中英文介面、深色模式與離線使用；所有記錄只保存在你的裝置，可隨時匯出 CSV 或 JSON 備份。',
+      aboutFaq: '常見問題',
+      aboutQ1: '需要安裝嗎？',
+      aboutA1: '不需要。用瀏覽器打開即可使用；想當成 App 用，可「加到主畫面」，之後即使離線也開得起來。',
+      aboutQ2: '記錄會上傳到伺服器嗎？',
+      aboutA2: '不會。記錄只存在你裝置的瀏覽器內。若自行開啟雲端備份，資料會以端到端加密上傳，伺服器只有密文。',
+      aboutQ3: '加班與收入怎樣計算？',
+      aboutA3: '加班與半夜加班以 0.5 小時為單位。在「薪資設定」填好日薪、時薪、加班時薪與半夜加班時薪後，月曆下方與每日格子會自動顯示當月與當日收入。',
+      aboutQ4: '有香港公眾假期嗎？',
+      aboutA4: '已內置 2025–2027 年香港公眾假期，假期日會以紅字顯示假期名稱，可在設定中關閉。',
       today: '今天',
       monthNav: '月份切換',
       prevMonth: '上一個月',
@@ -348,7 +362,20 @@
 
     en: {
       appName: 'Worktime Calendar',
-      metaDesc: 'Worktime Calendar — log daily work hours and overtime at a glance',
+      docTitle: 'Worktime Calendar — Work Hours & Overtime Tracker',
+      metaDesc: 'Worktime Calendar — a free work-hours and overtime tracker (PWA). Log day units, part-time hours, overtime and late-night overtime on a calendar and let it total your monthly pay. Hong Kong public holidays, Chinese/English UI, dark mode, offline use; your records stay on your device.',
+
+      aboutTitle: 'About Worktime Calendar',
+      aboutIntro: 'Worktime Calendar is a free web app (PWA) that logs your daily work units, part-time hours, overtime and late-night overtime on a calendar, and totals your monthly pay from the day rate and hourly rates you set. Double-click any date to add a record. It shows Hong Kong public holidays, works in Chinese or English, supports dark mode and works offline; all records stay on your device and can be exported as CSV or JSON at any time.',
+      aboutFaq: 'Frequently asked questions',
+      aboutQ1: 'Do I need to install anything?',
+      aboutA1: 'No. Just open it in a browser. To use it like an app, add it to your home screen — it then opens offline as well.',
+      aboutQ2: 'Are my records uploaded to a server?',
+      aboutA2: 'No. Records live in your browser on your device. If you turn on cloud backup, they are uploaded end-to-end encrypted and the server only holds ciphertext.',
+      aboutQ3: 'How are overtime and pay calculated?',
+      aboutA3: 'Overtime and late-night overtime are counted in 0.5-hour steps. Set your day rate, hourly rate, overtime rate and late-night rate under Pay settings, and the app totals both the month and each day for you.',
+      aboutQ4: 'Does it include Hong Kong public holidays?',
+      aboutA4: 'Yes — public holidays for 2025–2027 are built in, shown in red with the holiday name, and can be turned off in settings.',
       today: 'Today',
       monthNav: 'Month navigation',
       prevMonth: 'Previous month',
@@ -889,7 +916,9 @@
     lang = normalizeLang(settings.lang);
     document.documentElement.setAttribute('lang', lang === 'en' ? 'en' : 'zh-Hant');
     // 瀏覽器／iOS 加入主畫面時會讀 title 與這些 meta
-    document.title = t('appName');
+    // 分頁標題用 docTitle（帶關鍵字，方便搜尋引擎理解），
+    // 加到主畫面的名稱仍用 appName（短，圖示下面放得落）。
+    document.title = t('docTitle');
     const setMeta = (sel, attr, value) => {
       const m = document.head.querySelector(sel);
       if (m) m.setAttribute(attr, value);
