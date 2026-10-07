@@ -9,7 +9,10 @@ last_update_by: HermesBPi
 # 工時月曆 · 項目進展日誌
 
 ## 🚀 最新狀態
-**版本:** `1.32.0`（線上）｜**本地待部署:** `1.33.0`｜**狀態:** 開發中
+**版本:** `1.34.0`（線上，commit `ebef544`，2026-10-07 08:23 HKT 部署成功）｜**狀態:** 運行中
+
+> ⚠️ **開始改嘢前一定要先 `git fetch`**：remote 曾經領先本機 6 個 commit（v1.33.1），
+> 我最初喺 10 月 2 日嘅舊底上做嘢，好彩 push 被 reject 先發現。詳見下面 2026-10-07 條目。
 
 - 線上：https://valtalab.github.io/worktime-calendar/
 - Repo：ValtaLab/worktime-calendar（public，GitHub Pages + GitHub Actions 部署）
@@ -17,7 +20,13 @@ last_update_by: HermesBPi
 
 ---
 
-### 2026-10-07 | SEO：令 Google／Bing 搜得到（v1.33.0，本地完成待推）
+### 2026-10-07（下午）| GSC 擁有權驗證 tag 上線
+- Ken 喺 Google Search Console（URL 前置字元：`https://valtalab.github.io/worktime-calendar/`）揀「HTML 標記」驗證，拎到 tag
+- tag 已加入 `index.html` head（`google-site-verification`）——**唔可以改或刪**，否則會失去 GSC 擁有權
+- 驗證方式選擇過程：先試自動登入（headless 被 Google 攔）→ 試 Xvfb headful（成功到密碼頁）→ vault 遮罩輸入喺 Telegram 唔支援 → passkey QR 卡喺「connecting」（要藍牙近距離）→ 最後由 Ken 喺手機自己拎 tag
+- 相關技能：`headful-browser-login-walls`、`worktime-calendar-seo`
+
+### 2026-10-07 | SEO：令 Google／Bing 搜得到（v1.34.0）
 - **起因**：Ken 要求「喺 Google 都搜尋到」。檢查：Bing `site:valtalab.github.io` 零結果（未收錄）；站上冇 sitemap、冇任何外部連結、頁面幾乎冇靜態文字。
 - **改動**
   - `sitemap.xml`（新）：列出正式網址，供 GSC 提交
