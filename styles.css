@@ -931,7 +931,10 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 10px 16px calc(12px + var(--safe-b));
+  /* 底部安全區（iPhone home indicator）由最下方的 .site-about 統一負責。
+     之前這裡與 .site-about 各加一次 var(--safe-b)，等於白食一個
+     home indicator 的高度（約 34px）——那些高度本來可以給月曆格仔。 */
+  padding: 8px 16px 9px;
   font-size: 14.5px;
   color: var(--text-3);
   text-align: center;
@@ -1627,6 +1630,24 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     border-bottom: 1px solid var(--grid-line);
     padding-top: 6px;
   }
+
+  /* ---- 壓縮月曆下方的「非月曆」區塊（手機版） ----
+     手機版 .calendar-grid 用 align-content: stretch，容器剩餘高度會平均
+     分給每一列 —— 所以這裡省下的每一 px，都會直接變成格仔高度。
+     取捨原則不變：描述要看得到 > 色塊數字要完整 > 不用滾動。 */
+  .weekday-row { padding-bottom: 4px; }
+  .hint-bar {
+    /* 12.5px 令提示剛好收成一行（原本 14.5px 會折成兩行 ≈ 多佔 22px） */
+    font-size: 12.5px;
+    padding: 5px 12px 6px;
+    gap: 6px;
+  }
+  .cf-banner { margin-top: 2px; padding: 8px 10px; }
+  .site-about {
+    margin: 2px auto calc(6px + var(--safe-b));
+    padding: 9px 14px 10px;
+  }
+  .calendar-wrap { padding-bottom: 6px; }
 
   .day {
     min-height: 72px;

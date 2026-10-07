@@ -28,6 +28,16 @@ last_update_by: HermesBPi
 - 驗證方式選擇過程：先試自動登入（headless 被 Google 攔）→ 試 Xvfb headful（成功到密碼頁）→ vault 遮罩輸入喺 Telegram 唔支援 → passkey QR 卡喺「connecting」（要藍牙近距離）→ 最後由 Ken 喺手機自己拎 tag
 - 相關技能：`headful-browser-login-walls`、`worktime-calendar-seo`
 
+### 2026-10-07 | v1.34.2：手機版壓縮月曆下方區塊（Ken：「下方太多空白，留多啲俾格仔」）
+- **量度基準**（390×844，改動前）：格仔 104px、底部提示 60px（兩行）、備份橫幅 38px、關於卡 51px+22px 邊距、月曆底部 padding 10px → 月曆下方合共 **185px**
+- **改動（純 CSS，冇郁邏輯）**
+  - `.hint-bar`：手機字級 14.5px → **12.5px**（提示由兩行收成一行）、padding 10/12 → 5/6
+  - **移除 `.hint-bar` 重複嘅 `var(--safe-b)`** —— 底部安全區統一由最底嘅 `.site-about` 負責（之前兩個元素各加一次，白食一個 home indicator ≈34px）
+  - `.site-about` / `.cf-banner` / `.calendar-wrap` / `.weekday-row` 邊距收緊
+- **結果**：格仔 **104 → 113px（+9%）**、月曆總高 527 → 571px、下方 185 → **143px**；iPhone（safe-area 34px）再多賺 34px → 約 **+15px/格（+14%）**
+- **跨寬度驗證**：320/360/390/430 全部無橫向溢出；360px 以上提示單行（320 舊細機仍兩行，同改動前一樣）；**0 JS error**
+- 關鍵機制：手機版 `.calendar-grid` 用 `align-content: stretch`，下方省落嘅每一 px 都會自動平均分入每一列 —— 所以呢類「壓縮」嘅效益係即時的
+
 ### 2026-10-07 | v1.34.1：頁尾介紹預設折疊（Ken 要求）
 - `.site-about` 由 `<section>` 改為 `<details>` —— 默認收合，卡片高度由 589px 縮到 **51px**（只剩一行「關於工時月曆 ⌄」）
 - FAQ 由嵌套 `<details>` 改為直接內容（一層 toggle 就夠，唔使開兩次）
