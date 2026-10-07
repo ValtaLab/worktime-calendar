@@ -28,6 +28,13 @@ last_update_by: HermesBPi
 - 驗證方式選擇過程：先試自動登入（headless 被 Google 攔）→ 試 Xvfb headful（成功到密碼頁）→ vault 遮罩輸入喺 Telegram 唔支援 → passkey QR 卡喺「connecting」（要藍牙近距離）→ 最後由 Ken 喺手機自己拎 tag
 - 相關技能：`headful-browser-login-walls`、`worktime-calendar-seo`
 
+### 2026-10-07 | v1.34.1：頁尾介紹預設折疊（Ken 要求）
+- `.site-about` 由 `<section>` 改為 `<details>` —— 默認收合，卡片高度由 589px 縮到 **51px**（只剩一行「關於工時月曆 ⌄」）
+- FAQ 由嵌套 `<details>` 改為直接內容（一層 toggle 就夠，唔使開兩次）
+- **SEO 不受影響**：段落（140 字）同 4 條 FAQ 仍然完整留在 HTML DOM，Google 讀得到 `<details>` 內容
+- summary 右側加 chevron，展開時旋轉 180°；跟隨 `prefers-reduced-motion`
+- 本地實測：收合/展開來回正常、中英雙語正常、**0 JS error**
+
 ### 2026-10-07 | SEO：令 Google／Bing 搜得到（v1.34.0）
 - **起因**：Ken 要求「喺 Google 都搜尋到」。檢查：Bing `site:valtalab.github.io` 零結果（未收錄）；站上冇 sitemap、冇任何外部連結、頁面幾乎冇靜態文字。
 - **改動**

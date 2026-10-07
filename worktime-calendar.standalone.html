@@ -2226,17 +2226,17 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   .lock-pad { gap: 8px; }
 }
 
-/* ===================== 頁尾簡介（SEO 內容） =====================
+/* ===================== 頁尾簡介（SEO 內容，預設收合） =====================
    搜尋引擎需要頁面有可讀的真實文字；這段同時讓第一次打開的人
    一眼知道這個 App 做什麼。
-   視覺處理：沿用月曆格子的液態玻璃卡片（同一組漸層與內高光），
-   比上方月曆窄一點、居中，讀起來是「頁尾資訊卡」而不是散落文字；
-   字級與顏色比主介面低一級，月曆永遠是第一眼看到的東西。 */
+   預設**收合**：月曆永遠是第一眼看到的東西，介紹要人主動打開。
+   收合不會傷 SEO —— 文字完整留在 HTML 內，Google 讀得到 <details> 內容。
+   視覺沿用月曆格子的液態玻璃卡片（同一組漸層與內高光）。 */
 .site-about {
   width: calc(100% - 20px);
   max-width: 720px;
   margin: 4px auto calc(18px + var(--safe-b));
-  padding: 16px 16px 18px;
+  padding: 12px 16px 14px;
   border-radius: var(--radius-sm);
   background: linear-gradient(180deg, var(--glass-cell-hi), var(--glass-cell-lo));
   box-shadow: inset 0 1px 0 var(--glass-highlight), 0 1px 3px rgba(31, 41, 55, .05);
@@ -2245,28 +2245,47 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   line-height: 1.8;
   text-align: left;
 }
+/* summary 只留一行：標題在左、箭嘴在右 */
+.site-about > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;                       /* Firefox */
+}
+.site-about > summary::-webkit-details-marker { display: none; }  /* Safari */
 .site-about .about-title {
-  margin: 0 0 6px;
-  font-size: 14.5px;
+  margin: 0;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: .3px;
   color: var(--text);
 }
+.about-chevron {
+  flex: 0 0 auto;
+  color: var(--text-3);
+  transition: transform .2s ease;
+}
+.site-about[open] .about-chevron { transform: rotate(180deg); }
+.about-body { margin-top: 10px; }
 .site-about .about-text { margin: 0; }
-.site-about .about-more { margin-top: 10px; }
-.site-about summary {
-  padding: 4px 0;
+.about-faq-title {
+  margin: 12px 0 0;
   font-weight: 600;
   color: var(--text);
-  cursor: pointer;
 }
-.about-faq { margin: 6px 0 0; }
+.about-faq { margin: 4px 0 0; }
 .about-faq dt {
   margin-top: 10px;
   font-weight: 600;
   color: var(--text);
 }
 .about-faq dd { margin: 2px 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .about-chevron { transition: none; }
+}
 
 </style>
 </head>
@@ -2320,15 +2339,19 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     <span id="hintText" data-i18n="hintMouse">雙擊日期可新增或編輯工時／兼職／加班／半夜記錄</span>
   </footer>
 
-  <!-- 頁尾簡介：搜尋引擎要讀到真實文字才排得前面，同時讓第一次打開的人
-       知道這個 App 做什麼。樣式刻意低調（細字、次要色、髮絲線分隔），
-       不搶月曆的視覺重心。 -->
-  <section class="site-about" aria-labelledby="aboutTitle">
-    <h2 class="about-title" id="aboutTitle" data-i18n="aboutTitle">關於工時月曆</h2>
-    <p class="about-text" data-i18n="aboutIntro">工時月曆是一個免費的網頁 App（PWA），用月曆記錄每日工數、兼職時數、加班與半夜加班時數，並依你設定的日薪與時薪自動計算每月收入。雙擊任何一天即可新增記錄，支援香港公眾假期顯示、中英文介面、深色模式與離線使用；所有記錄只保存在你的裝置，可隨時匯出 CSV 或 JSON 備份。</p>
+  <!-- 頁尾簡介：預設收合（月曆永遠是主角），要人主動打開。
+       內容仍然完整保留在 HTML 裡 —— 搜尋引擎讀得到 <details> 內的文字，
+       所以「收合」唔會影響 SEO 收錄。 -->
+  <details class="site-about">
+    <summary class="about-summary">
+      <h2 class="about-title" data-i18n="aboutTitle">關於工時月曆</h2>
+      <svg class="about-chevron" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </summary>
 
-    <details class="about-more">
-      <summary data-i18n="aboutFaq">常見問題</summary>
+    <div class="about-body">
+      <p class="about-text" data-i18n="aboutIntro">工時月曆是一個免費的網頁 App（PWA），用月曆記錄每日工數、兼職時數、加班與半夜加班時數，並依你設定的日薪與時薪自動計算每月收入。雙擊任何一天即可新增記錄，支援香港公眾假期顯示、中英文介面、深色模式與離線使用；所有記錄只保存在你的裝置，可隨時匯出 CSV 或 JSON 備份。</p>
+
+      <p class="about-faq-title" data-i18n="aboutFaq">常見問題</p>
       <dl class="about-faq">
         <dt data-i18n="aboutQ1">需要安裝嗎？</dt>
         <dd data-i18n="aboutA1">不需要。用瀏覽器打開即可使用；想當成 App 用，可「加到主畫面」，之後即使離線也開得起來。</dd>
@@ -2342,8 +2365,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
         <dt data-i18n="aboutQ4">有香港公眾假期嗎？</dt>
         <dd data-i18n="aboutA4">已內置 2025–2027 年香港公眾假期，假期日會以紅字顯示假期名稱，可在設定中關閉。</dd>
       </dl>
-    </details>
-  </section>
+    </div>
+  </details>
 </div>
 
 <!-- ============ 編輯面板 ============ -->
@@ -2726,8 +2749,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.0';
-  const APP_BUILD = '20261007-0822';
+  const APP_VERSION = '1.34.1';
+  const APP_BUILD = '20261007-1256';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
