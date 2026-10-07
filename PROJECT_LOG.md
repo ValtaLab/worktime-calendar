@@ -28,6 +28,16 @@ last_update_by: HermesBPi
 - 驗證方式選擇過程：先試自動登入（headless 被 Google 攔）→ 試 Xvfb headful（成功到密碼頁）→ vault 遮罩輸入喺 Telegram 唔支援 → passkey QR 卡喺「connecting」（要藍牙近距離）→ 最後由 Ken 喺手機自己拎 tag
 - 相關技能：`headful-browser-login-walls`、`worktime-calendar-seo`
 
+### 2026-10-07 | v1.34.3：關於卡貼底 + 修正「手機覆寫被蓋過」嘅真 bug
+- **Bug（重要）**：v1.34.2 對 `.site-about` 嘅手機覆寫**從來冇生效** —— 全域 `.site-about` 基礎規則在檔案**最尾**，
+  同特異度（0,1,0）下後宣告者勝，媒體查詢唔會加特異度 → 覆寫被蓋過。
+  發現方法：改完之後**量度數字前後一樣**（113px／18px）才察覺。`.hint-bar`／`.cf-banner` 冇事（基礎規則在手機區塊之前）。
+  修法：把 `.site-about` 手機覆寫搬到**檔案最尾**，並在手機區塊加註解防止再犯。
+- **結果（390×844）**：格仔 113 → **119px（+5%）**、關於卡 51 → **42px**、卡底距螢幕底 18 → **0px**；
+  iPhone 安全區下 = **剛好 34px**（只剩 home indicator），即「貼底」
+- **驗證**：safe-b 0 / 34 兩種情境都量過、`--safe-b` 用注入 `<style>` 模擬、0 JS error
+- 教訓已寫入 `~/.hermes/.learnings/LRN-20261007-css-media-query-order.md`
+
 ### 2026-10-07 | v1.34.2：手機版壓縮月曆下方區塊（Ken：「下方太多空白，留多啲俾格仔」）
 - **量度基準**（390×844，改動前）：格仔 104px、底部提示 60px（兩行）、備份橫幅 38px、關於卡 51px+22px 邊距、月曆底部 padding 10px → 月曆下方合共 **185px**
 - **改動（純 CSS，冇郁邏輯）**

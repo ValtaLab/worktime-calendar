@@ -1643,10 +1643,9 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     gap: 6px;
   }
   .cf-banner { margin-top: 2px; padding: 8px 10px; }
-  .site-about {
-    margin: 2px auto calc(6px + var(--safe-b));
-    padding: 9px 14px 10px;
-  }
+  /* 注意：`.site-about` 的手機覆寫**不能放在這裡** —— 全域 `.site-about`
+     規則在檔案末段（同特異度、後者勝），放在這裡會被蓋過。
+     該處的覆寫見檔案最尾「關於卡（手機版）」一段。 */
   .calendar-wrap { padding-bottom: 6px; }
 
   .day {
@@ -2224,4 +2223,15 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
 
 @media (prefers-reduced-motion: reduce) {
   .about-chevron { transition: none; }
+}
+
+/* ===================== 關於卡（手機版：貼底） =====================
+   刻意放在**檔案最尾**：全域 `.site-about` 的 margin/padding 在同特異度下
+   會蓋過較早宣告的媒體查詢覆寫（見手機段落末尾的註解）。
+   貼底＝卡片底部只保留 iPhone 安全區（home indicator），其餘邊距全部還給月曆。 */
+@media (max-width: 480px) {
+  .site-about {
+    margin: 2px auto var(--safe-b);
+    padding: 9px 14px 8px;
+  }
 }
