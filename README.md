@@ -175,10 +175,10 @@ npx http-server -p 8099
  │   └─ .day-units            工數「1工」（藍字）
 ├─ .day-group.ot-group      加班組（橘色塊）
 │   ├─ .day-desc.ot-text     加班描述（橘字）
-│   └─ .day-units.ot-units   「OT3h 加班」（橘字）
+│   └─ .day-units.ot-units   「3h OT 加班」（橘字｜數字在前、OT 後綴）
 └─ .day-group.night-group   半夜加班組（紫色塊）
     ├─ .day-desc.night-text   半夜加班描述（紫字）
-    └─ .day-units.night-units「OT2h 半夜」（紫字）
+    └─ .day-units.night-units「2h OT 半夜」（紫字）
 ```
 
 **色塊（底色＋圓角＋內距）掛在 `.day-group` 上**，不是掛在 `.day-units` 上——

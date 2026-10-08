@@ -896,11 +896,12 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   margin-left: 1px;
   opacity: .8;
 }
-/* 「OT」前綴：不加粗（數字保持 800 粗體），與數字形成主次對比 */
+/* 「OT」後綴：緊跟數字之後，間距用 em 隨字級縮放
+   （≥1000px 時 .uv 是 inline-flex，空白字元會被吃掉，所以靠 margin 而唔靠空格） */
 .day-units .ot-pre {
   font-weight: 500;
   letter-spacing: .3px;
-  margin-right: 1px;
+  margin-left: .25em;
 }
 /* 加班 / 半夜組的色塊底色與數字顏色（色塊在 .day-group 上） */
 .day-group.part-group {
