@@ -1,8 +1,8 @@
 ---
 project: worktime-calendar
 status: active
-last_deploy: （2026-10-02，v1.32.0）
-last_version: 1.32.0
+last_deploy: （2026-10-08，v1.34.4）
+last_version: 1.34.4
 last_update_by: HermesBPi
 ---
 
@@ -68,3 +68,13 @@ last_update_by: HermesBPi
 - **本地驗證**：本機 8099 伺服器 → HTTP 200；JSON-LD 可 parse；`about` 卡桌面／手機／深色渲染正常、無 console error；中英切換正常；字距 padding 左右實測各 16px。
 - **未完成**：push 上 GitHub（等 Ken 確認）→ 之後到 Google Search Console 驗證 + 提交 sitemap。
 - **教訓**：驗證本地改動前要先清 Service Worker 快取，否則會睇到舊 CSS（第一次截圖就中招）。
+
+### 2026-10-08 | v1.34.4：格仔加班／半夜改為「時數行先、OT 做後綴」
+- **起因**：Ken 要求「格仔的 OT 字移去後面，小時數排前面」
+- **改動**
+  - `app.js`：`.ot-units` 同 `.night-units` 嘅 `.uv` 由 `<ot-pre>OT</ot-pre> {n}h` 改為 `{n}h<ot-pre>OT</ot-pre>`
+  - `styles.css`：`.ot-pre` 由 `margin-right: 1px`（前綴）改為 `margin-left: .25em`（後綴）
+  - `README.md`：更新格子標記說明
+  - `version.json` / `sw.js` / `app.js` 單檔版：bump 至 1.34.4（build 20261008-1232）
+- **關鍵機制（易踩）**：`.uv` 在 `@media (min-width: 1000px)` 係 `display: inline-flex` —— flex container 會**食掉純空白字元**，所以 markup 入面寫 `</span> <span>` 係冇用嘅，間距一定要靠 CSS `margin`。舊版就係因為咁，桌面版實際 render 成「OT3h」（冇空格）。今次改用 `.25em` em 單位，令 11px（手機）到 19px（桌面）嘅間距都跟字級縮放。
+- **驗證**：本地 8099（清 SW 後）＋ 線上 `valtalab.github.io` 兩邊都實測 —— 桌面 5/6/7 號讀「3h OT 加班」「2.5h OT 加班」「5h OT 加班」；手機 390px 讀「3h OT」「2.5h OT」「5h OT」，0 格橫向溢出、0 JS error；單檔版內容一致；GH Actions 綠燈、線上 `version.json` = 1.34.4、`sw.js` CACHE = v1.34.4。
