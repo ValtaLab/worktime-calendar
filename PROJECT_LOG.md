@@ -1,8 +1,8 @@
 ---
 project: worktime-calendar
 status: active
-last_deploy: （2026-10-08，v1.34.4）
-last_version: 1.34.4
+last_deploy: （2026-10-08，v1.34.5）
+last_version: 1.34.5
 last_update_by: HermesBPi
 ---
 
@@ -78,3 +78,13 @@ last_update_by: HermesBPi
   - `version.json` / `sw.js` / `app.js` 單檔版：bump 至 1.34.4（build 20261008-1232）
 - **關鍵機制（易踩）**：`.uv` 在 `@media (min-width: 1000px)` 係 `display: inline-flex` —— flex container 會**食掉純空白字元**，所以 markup 入面寫 `</span> <span>` 係冇用嘅，間距一定要靠 CSS `margin`。舊版就係因為咁，桌面版實際 render 成「OT3h」（冇空格）。今次改用 `.25em` em 單位，令 11px（手機）到 19px（桌面）嘅間距都跟字級縮放。
 - **驗證**：本地 8099（清 SW 後）＋ 線上 `valtalab.github.io` 兩邊都實測 —— 桌面 5/6/7 號讀「3h OT 加班」「2.5h OT 加班」「5h OT 加班」；手機 390px 讀「3h OT」「2.5h OT」「5h OT」，0 格橫向溢出、0 JS error；單檔版內容一致；GH Actions 綠燈、線上 `version.json` = 1.34.4、`sw.js` CACHE = v1.34.4。
+
+### 2026-10-08 | v1.34.5：加班行刪走重複標籤（3h OT）；半夜行標籤縮短為「半夜」
+- **起因**：v1.34.4 之後桌面版讀成「3h OT 加班」——「OT」同「加班」講同一件事。Ken 確認「刪走加班」。
+- **改動**
+  - `app.js`：`.ot-units` 移除整個 `<span class="ut">`（加班標籤）；`.night-units` 的 `.ut` 由 `cellNight` 改用新 key `cellNightTag`
+  - `app.js` i18n：新增 `cellNightTag`（zh「半夜」／en「Night」）。`cellNight` 保留，因為 aria-label 仍然用佢（「半夜加班 2 小時」對讀屏仍然最清楚）
+  - `README.md`：更新格子標記說明
+  - `version.json` / `sw.js` / 單檔版：bump 至 1.34.5（build 20261008-1300）
+- **為何半夜行唔可以一併刪乾淨**：`.ut` 喺 ≤480px 係 `display: none`，所以手機版向來只見到「3h OT」「2h OT」。桌面版如果半夜行都刪清光，就會同加班行一模一樣（只有顏色唔同），但兩者計薪唔同（加班 1.5x vs 午夜後 2x），所以留「半夜」保底。
+- **驗證**：本地 8099（清 SW 後）桌面 5/6/7 號讀「3h OT」「2.5h OT」「2h OT 半夜」「5h OT」；手機 390px 冇變、0 格溢出、0 JS error；v1.34.4→1.34.5 before/after 對照圖已出。
