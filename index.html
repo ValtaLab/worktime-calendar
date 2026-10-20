@@ -380,7 +380,14 @@
       <span id="lockState" class="lock-state" data-i18n="lockOff">未啟用</span>
       <button id="lockBtn" class="drawer-btn" type="button" data-i18n="lockSet">設定密碼</button>
     </div>
-    <p class="drawer-help" data-i18n="lockHelp">啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。</p>
+    <p class="drawer-help" data-i18n="lockHelp">啟用後，每次開啟 App 或切回前台都需要解鎖。可選 Face ID／Touch ID／Windows Hello（WebAuthn），或以 4 位數字密碼作為後備。密碼與生物辨識憑證只存本機，不會離開此裝置。</p>
+    <div id="lockBioSection" class="lock-bio-section" hidden>
+      <div class="lock-row">
+        <span id="lockBioState" class="lock-state" data-i18n="lockBioOff">生物辨識：未啟用</span>
+        <button id="lockBioBtn" class="drawer-btn" type="button" data-i18n="lockBioEnable">啟用 Face ID / 生物辨識</button>
+      </div>
+      <p class="drawer-help" data-i18n="lockBioHelp">使用裝置內建 Face ID、Touch ID 或 Windows Hello 解鎖；僅儲存 WebAuthn 憑識別碼，不儲存指紋或臉部資料。</p>
+    </div>
   </div>
 
   <div class="drawer-section">
@@ -511,8 +518,10 @@
       <circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/>
     </svg>
     <h2 id="lockTitle" data-i18n="lockTitleUnlock">輸入密碼</h2>
+    <button id="lockBioUnlock" class="lock-bio-btn" type="button" hidden data-i18n="lockBioUnlock">Face ID / 生物辨識解鎖</button>
     <div class="lock-dots" id="lockDots" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <p id="lockMsg" class="lock-msg" role="alert"></p>
+    <button id="lockBioUsePin" class="lock-bio-link" type="button" hidden data-i18n="lockBioUsePin">改用數字密碼</button>
     <div class="lock-pad" id="lockPad">
       <button class="lock-key" type="button" data-k="1">1</button>
       <button class="lock-key" type="button" data-k="2">2</button>

@@ -2158,6 +2158,31 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   gap: 10px;
 }
 .lock-state { font-size: 13.5px; color: var(--text-2); }
+.lock-bio-section { margin-top: 10px; }
+.lock-bio-btn {
+  width: 100%;
+  margin: 2px 0 4px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--work) 45%, transparent);
+  background: color-mix(in srgb, var(--work) 12%, var(--glass-cell));
+  color: var(--work);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.lock-bio-btn:active { transform: scale(.98); opacity: .92; }
+.lock-bio-link {
+  margin: -2px 0 4px;
+  padding: 4px 8px;
+  border: none;
+  background: none;
+  color: var(--text-3);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.lock-bio-link:active { opacity: .75; }
 
 @media (max-height: 700px) {
   .lock-card { padding: 18px 18px 14px; gap: 8px; }
