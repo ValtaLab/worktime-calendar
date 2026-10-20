@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.5';
-  const APP_BUILD = '20261008-1300';
+  const APP_VERSION = '1.34.6';
+  const APP_BUILD = '20261020-0202';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -87,6 +87,8 @@
     otPay: 0,       // 加班時薪
     nightPay: 0,    // 半夜加班時薪
     pinHash: '',    // 螢幕鎖定密碼（SHA-256 雜湊）；空字串＝未啟用
+    bioCredId: '',  // WebAuthn 憑證 id（base64url）；空＝未啟用生物辨識解鎖
+    bioUserId: '',  // WebAuthn user handle（base64url）；僅本機，不離開裝置
     descHistory: { work: [], ot: [], night: [] },  // 描述記憶：各欄最近輸入（新在前，存 10 顯 3）
     cfEndpoint: '', // 雲端備份 Worker 網址
     cfCode: '',     // 恢復碼（8 位，重裝找回資料的唯一憑證）
@@ -215,7 +217,20 @@
       lockOff: '未啟用',
       lockSet: '設定密碼',
       lockDisable: '關閉鎖定',
-      lockHelp: '啟用後，每次開啟 App 或切回前台都需要輸入 4 位數字密碼。密碼以雜湊儲存，不會離開此裝置。',
+      lockHelp: '啟用後，每次開啟 App 或切回前台都需要解鎖。可選 Face ID／Touch ID／Windows Hello（WebAuthn），或以 4 位數字密碼作為後備。密碼與生物辨識憑證只存本機，不會離開此裝置。',
+      lockBioOn: '生物辨識：已啟用',
+      lockBioOff: '生物辨識：未啟用',
+      lockBioEnable: '啟用 Face ID / 生物辨識',
+      lockBioDisable: '關閉生物辨識',
+      lockBioHelp: '使用裝置內建 Face ID、Touch ID 或 Windows Hello 解鎖；僅儲存 WebAuthn 憑識別碼，不儲存指紋或臉部資料。',
+      lockBioUnlock: 'Face ID / 生物辨識解鎖',
+      lockBioUsePin: '改用數字密碼',
+      lockBioEnabled: '生物辨識解鎖已啟用',
+      lockBioDisabled: '生物辨識解鎖已關閉',
+      lockBioUnavailable: '此裝置或瀏覽器不支援生物辨識解鎖',
+      lockBioFailed: '生物辨識失敗，請輸入密碼',
+      lockBioOffer: '可在選單啟用 Face ID / 生物辨識解鎖',
+      lockBioUserDisplay: '工時月曆螢幕鎖',
       secData: '資料',
       exportCsv: '匯出 CSV（本月）',
       exportJson: '匯出備份 JSON',
@@ -464,7 +479,20 @@
       lockOff: 'Not enabled',
       lockSet: 'Set Passcode',
       lockDisable: 'Turn Off Lock',
-      lockHelp: 'Once enabled, you must enter a 4-digit passcode each time you open the app or return to it. The passcode is stored only as a hash and never leaves this device.',
+      lockHelp: 'Once enabled, you must unlock each time you open the app or return to it. Optionally use Face ID, Touch ID, or Windows Hello (WebAuthn), with a 4-digit passcode as fallback. Passcode and biometric credentials stay on this device only.',
+      lockBioOn: 'Biometrics: on',
+      lockBioOff: 'Biometrics: off',
+      lockBioEnable: 'Enable Face ID / Biometrics',
+      lockBioDisable: 'Turn Off Biometrics',
+      lockBioHelp: 'Unlock with your device’s Face ID, Touch ID, or Windows Hello. Only a WebAuthn credential ID is stored — never fingerprint or face data.',
+      lockBioUnlock: 'Unlock with Face ID / Biometrics',
+      lockBioUsePin: 'Use passcode instead',
+      lockBioEnabled: 'Biometric unlock enabled',
+      lockBioDisabled: 'Biometric unlock turned off',
+      lockBioUnavailable: 'Biometric unlock is not available on this device or browser',
+      lockBioFailed: 'Biometrics failed — enter your passcode',
+      lockBioOffer: 'You can enable Face ID / biometric unlock in the menu',
+      lockBioUserDisplay: 'Worktime Calendar lock',
       secData: 'Data',
       exportCsv: 'Export CSV (this month)',
       exportJson: 'Export Backup JSON',
@@ -951,6 +979,11 @@
     lockPad: $('lockPad'),
     lockState: $('lockState'),
     lockBtn: $('lockBtn'),
+    lockBioSection: $('lockBioSection'),
+    lockBioState: $('lockBioState'),
+    lockBioBtn: $('lockBioBtn'),
+    lockBioUnlock: $('lockBioUnlock'),
+    lockBioUsePin: $('lockBioUsePin'),
     weekdayRow: $('weekdayRow'),
     calendarGrid: $('calendarGrid'),
     prevMonth: $('prevMonth'),
@@ -1273,7 +1306,7 @@
       settings: {
         ...settings,
         cfEndpoint: '', cfCode: '', cfAt: '', cfHash: '',
-        cfSalt: '', cfWriteKey: '', pinHash: '',
+        cfSalt: '', cfWriteKey: '', pinHash: '', bioCredId: '', bioUserId: '',
       },
       wk: settings.cfWriteKey,
     };
@@ -1282,6 +1315,7 @@
   function cfHashOfState() {
     const s = { ...settings };
     delete s.cfEndpoint; delete s.cfCode; delete s.cfAt; delete s.cfHash; delete s.pinHash;
+    delete s.bioCredId; delete s.bioUserId;
     delete s.cfSalt; delete s.cfWriteKey; delete s.cfV2;
     const str = JSON.stringify({ entries, s });
     // FNV-1a 32 位：夠用於「內容有沒有變」的判斷
@@ -1506,6 +1540,7 @@
       const keep = {
         cfEndpoint: settings.cfEndpoint, cfCode: settings.cfCode,
         cfAt: settings.cfAt, cfHash: settings.cfHash, pinHash: settings.pinHash,
+        bioCredId: settings.bioCredId, bioUserId: settings.bioUserId,
       };
       settings = { ...DEFAULTS, ...state.settings, ...keep };
       // 寫入金鑰藏在加密內容裡：換裝置還原後才還能覆寫／刪除雲端備份
@@ -1666,8 +1701,10 @@
   /* ===================== 螢幕鎖定 =====================
      啟用後：每次載入 App（init）、以及每次從背景回到前台（PWA 掛起
      不會重載頁面，靠 visibilitychange 補上「每次開 App 都要解鎖」），
-     都要先輸入 4 位數字密碼。密碼只存 SHA-256 雜湊（settings.pinHash），
-     不存明文、不離開裝置。連錯 5 次鎖鍵盤 30 秒（防瞎猜）。 */
+     都要先解鎖。優先嘗試 WebAuthn 平台驗證器（Face ID / Touch ID / Hello），
+     失敗或未啟用時改輸入 4 位數字密碼。密碼只存 SHA-256 雜湊（settings.pinHash），
+     生物辨識只存 WebAuthn 憑證 id（settings.bioCredId），不存明文、不離開裝置。
+     連錯 5 次鎖鍵盤 30 秒（防瞎猜）。 */
   const LOCK_MAX = 4;
   let lockMode = '';        // '' 無 | 'unlock' | 'set1' | 'set2' | 'off'
   let lockBuf = '';
@@ -1675,6 +1712,9 @@
   let lockWrong = 0;
   let lockCooldown = 0;
   let lockTimer = null;
+  let bioPlatformAvail = null;  // null＝未探測 | true/false
+  let bioUnlockTimer = null;
+  let bioUnlockInFlight = false;
 
   async function sha256Hex(s) {
     try {
@@ -1690,6 +1730,155 @@
       h2 = ((h2 + s.charCodeAt(i) * (i + 7)) * 0x85ebca6b) >>> 0;
     }
     return 'fb' + h1.toString(16).padStart(8, '0') + h2.toString(16).padStart(8, '0');
+  }
+
+  /* ---------------- 生物辨識解鎖（WebAuthn 平台驗證器） ---------------- */
+  const BIO_RP_NAME = 'Worktime Calendar';
+
+  function bioRpId() {
+    const h = location.hostname;
+    return h || 'localhost';
+  }
+
+  function bioRandomBytes(n) {
+    const a = new Uint8Array(n);
+    crypto.getRandomValues(a);
+    return a;
+  }
+
+  function bioB64url(buf) {
+    const u8 = buf instanceof ArrayBuffer ? new Uint8Array(buf) : buf;
+    let s = '';
+    for (let i = 0; i < u8.length; i++) s += String.fromCharCode(u8[i]);
+    return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function bioB64urlDecode(s) {
+    let t = s.replace(/-/g, '+').replace(/_/g, '/');
+    while (t.length % 4) t += '=';
+    const bin = atob(t);
+    const out = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  function clearBioCreds() {
+    settings.bioCredId = '';
+    settings.bioUserId = '';
+  }
+
+  async function bioPlatformAvailable() {
+    if (!window.isSecureContext || !window.PublicKeyCredential) return false;
+    try {
+      if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable === 'function') {
+        return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      }
+    } catch (e) { /* 不支援 */ }
+    return false;
+  }
+
+  async function refreshBioPlatformAvail() {
+    bioPlatformAvail = await bioPlatformAvailable();
+    syncLockBioUI();
+  }
+
+  async function bioRegister() {
+    if (!settings.pinHash) return false;
+    if (!(await bioPlatformAvailable())) {
+      toast(t('lockBioUnavailable'));
+      return false;
+    }
+    let userId;
+    try {
+      userId = settings.bioUserId ? bioB64urlDecode(settings.bioUserId) : bioRandomBytes(32);
+      if (!settings.bioUserId) settings.bioUserId = bioB64url(userId);
+      const cred = await navigator.credentials.create({
+        publicKey: {
+          challenge: bioRandomBytes(32),
+          rp: { name: BIO_RP_NAME, id: bioRpId() },
+          user: {
+            id: userId,
+            name: 'worktime-lock',
+            displayName: t('lockBioUserDisplay'),
+          },
+          pubKeyCredParams: [
+            { type: 'public-key', alg: -7 },
+            { type: 'public-key', alg: -257 },
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            userVerification: 'required',
+            residentKey: 'discouraged',
+          },
+          timeout: 60000,
+          attestation: 'none',
+        },
+      });
+      if (!cred || !cred.rawId) return false;
+      settings.bioCredId = bioB64url(cred.rawId);
+      saveSettings();
+      syncLockUI();
+      toast(t('lockBioEnabled'));
+      return true;
+    } catch (e) {
+      console.warn('[工時月曆] 生物辨識註冊失敗', e);
+      return false;
+    }
+  }
+
+  async function bioUnlock(fromUserGesture) {
+    if (!settings.bioCredId || lockMode !== 'unlock') return false;
+    if (Date.now() < lockCooldown || bioUnlockInFlight) return false;
+    bioUnlockInFlight = true;
+    try {
+      const assertion = await navigator.credentials.get({
+        publicKey: {
+          challenge: bioRandomBytes(32),
+          rpId: bioRpId(),
+          allowCredentials: [{
+            type: 'public-key',
+            id: bioB64urlDecode(settings.bioCredId),
+          }],
+          userVerification: 'required',
+          timeout: 60000,
+        },
+      });
+      if (assertion) {
+        lockWrong = 0;
+        closeLock();
+        return true;
+      }
+    } catch (e) {
+      if (e && e.name !== 'NotAllowedError') console.warn('[工時月曆] 生物辨識解鎖失敗', e);
+      if (fromUserGesture && e && e.name !== 'NotAllowedError') lockMsg(t('lockBioFailed'));
+    } finally {
+      bioUnlockInFlight = false;
+    }
+    return false;
+  }
+
+  function scheduleBioUnlock() {
+    clearTimeout(bioUnlockTimer);
+    if (!settings.bioCredId || lockMode !== 'unlock') return;
+    bioUnlockTimer = setTimeout(() => { bioUnlock(false); }, 350);
+  }
+
+  function syncLockBioUI() {
+    const on = !!settings.pinHash;
+    const avail = bioPlatformAvail === true;
+    if (el.lockBioSection) el.lockBioSection.hidden = !on || !avail;
+    if (on && avail && el.lockBioState && el.lockBioBtn) {
+      const bioOn = !!settings.bioCredId;
+      el.lockBioState.textContent = bioOn ? t('lockBioOn') : t('lockBioOff');
+      el.lockBioBtn.textContent = bioOn ? t('lockBioDisable') : t('lockBioEnable');
+    }
+    syncLockBioUnlockBtn();
+  }
+
+  function syncLockBioUnlockBtn() {
+    const showBio = lockMode === 'unlock' && !!settings.bioCredId;
+    if (el.lockBioUnlock) el.lockBioUnlock.hidden = !showBio;
+    if (el.lockBioUsePin) el.lockBioUsePin.hidden = !showBio;
   }
 
   /* ---------------- 觸覺回饋（震動） ----------------
@@ -1739,11 +1928,18 @@
     el.lockScreen.classList.remove('unlocked', 'shake');
     if (Date.now() < lockCooldown) lockTickCooldown();
     else { el.lockPad.classList.remove('locked'); lockMsg(''); }
-    if (mode === 'unlock') { el.lockTitle.textContent = t('lockTitleUnlock'); lockMsg(''); }
-    else if (mode === 'set1') { el.lockTitle.textContent = t('lockTitleSet'); lockMsg(t('lockPrompt4'), true); }
-    else if (mode === 'set2') { el.lockTitle.textContent = t('lockTitleConfirm'); lockMsg(''); }
-    else if (mode === 'off') { el.lockTitle.textContent = t('lockTitleOff'); lockMsg(t('lockPromptCurrent'), true); }
+    if (mode === 'unlock') {
+      el.lockTitle.textContent = t('lockTitleUnlock');
+      lockMsg('');
+      scheduleBioUnlock();
+    } else {
+      clearTimeout(bioUnlockTimer);
+      if (mode === 'set1') { el.lockTitle.textContent = t('lockTitleSet'); lockMsg(t('lockPrompt4'), true); }
+      else if (mode === 'set2') { el.lockTitle.textContent = t('lockTitleConfirm'); lockMsg(''); }
+      else if (mode === 'off') { el.lockTitle.textContent = t('lockTitleOff'); lockMsg(t('lockPromptCurrent'), true); }
+    }
     lockRenderDots();
+    syncLockBioUnlockBtn();
   }
   function closeLock() {
     lockMode = ''; lockBuf = ''; lockTemp = '';
@@ -1787,13 +1983,19 @@
       lockTemp = pin; openLock('set2');
     } else if (lockMode === 'set2') {
       if (pin === lockTemp) {
+        clearBioCreds();   // 新設密碼：舊生物辨識憑證作廢，需重新啟用
         settings.pinHash = await sha256Hex(pin);
         saveSettings(); syncLockUI();
-        closeLock(); toast(t('lockEnabled'));
+        closeLock();
+        toast(t('lockEnabled'));
+        refreshBioPlatformAvail().then(() => {
+          if (bioPlatformAvail) toast(t('lockBioOffer'));
+        });
       } else { haptic(HAPTIC_ERR); openLock('set1'); lockMsg(t('lockMismatch')); }
     } else if (lockMode === 'off') {
       if (pin && await sha256Hex(pin) === settings.pinHash) {
         settings.pinHash = '';
+        clearBioCreds();
         saveSettings(); syncLockUI();
         closeLock(); toast(t('lockDisabled'));
       } else lockFail(t('lockWrong'));
@@ -1826,6 +2028,8 @@
     const on = !!settings.pinHash;
     el.lockState.textContent = on ? t('lockOn') : t('lockOff');
     el.lockBtn.textContent = on ? t('lockDisable') : t('lockSet');
+    syncLockBioUI();
+    if (bioPlatformAvail === null) refreshBioPlatformAvail();
   }
 
   /* 收入金額的顯示狀態：session 內記憶、每次載入 App 都預設隱藏
@@ -2763,6 +2967,21 @@
       closeDrawer();
       openLock(settings.pinHash ? 'off' : 'set1');
     });
+    el.lockBioBtn.addEventListener('click', async () => {
+      if (!settings.pinHash) return;
+      if (settings.bioCredId) {
+        clearBioCreds();
+        saveSettings();
+        syncLockUI();
+        toast(t('lockBioDisabled'));
+        return;
+      }
+      closeDrawer();
+      const ok = await bioRegister();
+      if (!ok) toast(t('lockBioUnavailable'));
+    });
+    el.lockBioUnlock.addEventListener('click', () => bioUnlock(true));
+    el.lockBioUsePin.addEventListener('click', () => lockMsg(t('lockBioUsePin'), true));
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState !== 'visible') return;
       if (!settings.pinHash) return;                 // 未啟用：不鎖
@@ -2840,6 +3059,7 @@
       const safeSettings = {
         ...settings,
         cfEndpoint: '', cfCode: '', cfAt: '', cfHash: '', pinHash: '',
+        bioCredId: '', bioUserId: '',
       };
       const payload = { app: 'worktime-calendar', v: 1, exportedAt: new Date().toISOString(), settings: safeSettings, data: entries };
       download(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }),
@@ -2866,6 +3086,7 @@
           const keep = {
             cfEndpoint: settings.cfEndpoint, cfCode: settings.cfCode,
             cfAt: settings.cfAt, cfHash: settings.cfHash, pinHash: settings.pinHash,
+            bioCredId: settings.bioCredId, bioUserId: settings.bioUserId,
           };
           settings = { ...settings, ...parsed.settings, ...keep };
         }
