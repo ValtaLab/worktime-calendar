@@ -89,7 +89,7 @@
     pinHash: '',    // 螢幕鎖定密碼（SHA-256 雜湊）；空字串＝未啟用
     bioCredId: '',  // WebAuthn 憑證 id（base64url）；空＝未啟用生物辨識解鎖
     bioUserId: '',  // WebAuthn user handle（base64url）；僅本機，不離開裝置
-    descHistory: { work: [], ot: [], night: [] },  // 描述記憶：各欄最近輸入（新在前，存 10 顯 3）
+    descHistory: { work: [], ot: [], night: [] },  // 描述記憶：各欄最近輸入（新在前，存 5 顯 5）
     cfEndpoint: '', // 雲端備份 Worker 網址
     cfCode: '',     // 恢復碼（8 位，重裝找回資料的唯一憑證）
     cfAt: '',       // 上次成功備份時間（ISO）
@@ -2547,11 +2547,11 @@
   /* ---------------- 儲存 / 刪除 ---------------- */
   /* ---------------- 描述記憶 ----------------
      儲存記錄時把非空描述記入 settings.descHistory（work／ot／night 各自獨立）：
-     最新在前、去重（重複輸入提到首位）、最多存 10 條。
+     最新在前、去重（重複輸入提到首位）、最多存 5 條。
      面板一開啟就常態顯示最近幾條建議 chips，點一下即填入——不必先點輸入框。
      放在 settings 裡：隨一般設定持久化，也自動納入雲端備份。 */
-  const DESC_HIST_MAX = 10;   // 儲存上限；面板內只顯示最近 3 條
-  const DESC_SUGGEST_SHOW = 3;
+  const DESC_HIST_MAX = 5;    // 儲存上限；面板內顯示最近 5 條
+  const DESC_SUGGEST_SHOW = 5;
 
   function rememberDesc(kind, text) {
     const txt = (text || '').trim();
