@@ -830,7 +830,7 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   /* 色塊本體：整組（描述＋數字）共用一個底色與圓角 */
   padding: 3px 6px;
   border-radius: 5px;
-  background: color-mix(in srgb, var(--work) 11%, transparent);
+  background: color-mix(in srgb, var(--work) 7%, transparent);
 }
 
 /* ---- 每日收入（格子底部小字）----
@@ -905,13 +905,13 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
 }
 /* 加班 / 半夜組的色塊底色與數字顏色（色塊在 .day-group 上） */
 .day-group.part-group {
-  background: color-mix(in srgb, var(--part) 13%, transparent);
+  background: color-mix(in srgb, var(--part) 8%, transparent);
 }
 .day-group.ot-group {
-  background: color-mix(in srgb, var(--ot) 13%, transparent);
+  background: color-mix(in srgb, var(--ot) 8%, transparent);
 }
 .day-group.night-group {
-  background: color-mix(in srgb, var(--night) 13%, transparent);
+  background: color-mix(in srgb, var(--night) 8%, transparent);
 }
 .day-units.part-units {
   color: var(--part);
@@ -1720,19 +1720,19 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     gap: 0;
     padding: 3px 3px;
     border-radius: 3px;
-    /* 手機版欄寬僅約 46px，色塊必須夠明顯才有辨識度。
-       深淺以 var(--surface)（白）為底混色，色偏要一眼看出是哪一組；
-       格子本身已不再上底色，色塊是格子裡唯一的顏色來源。 */
-    background: color-mix(in srgb, var(--work) 34%, var(--surface));
+    /* 手機版欄寬僅約 46px：色塊仍要可辨，但底色不能搶走描述／工數字色。
+       以 var(--surface) 混色（深淺模式自動跟隨），比例低於舊版 34–40%，
+       讓日期數字與組內文字成為視覺焦點。 */
+    background: color-mix(in srgb, var(--work) 18%, var(--surface));
   }
   .day-group.part-group {
-    background: color-mix(in srgb, var(--part) 40%, var(--surface));
+    background: color-mix(in srgb, var(--part) 20%, var(--surface));
   }
   .day-group.ot-group {
-    background: color-mix(in srgb, var(--ot) 40%, var(--surface));
+    background: color-mix(in srgb, var(--ot) 20%, var(--surface));
   }
   .day-group.night-group {
-    background: color-mix(in srgb, var(--night) 40%, var(--surface));
+    background: color-mix(in srgb, var(--night) 20%, var(--surface));
   }
   /* 描述：色塊內的一行，用完整寬度 */
   .day-desc {
