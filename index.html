@@ -352,6 +352,8 @@
       </div>
     </div>
     <p class="drawer-help" data-i18n="payHelp">設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。</p>
+    <button id="openIncomeChartBtn" class="drawer-btn drawer-btn-accent" type="button" data-i18n="incomeChartOpen">查看月份收入圖表</button>
+    <p class="drawer-help" data-i18n="incomeChartOpenHelp">以長條圖比較各月收入，沿用上方薪資設定與工時記錄計算。</p>
   </div>
 
   <div class="drawer-section">
@@ -508,6 +510,34 @@
       <button id="cfSheetDone" class="btn btn-primary" type="button" data-i18n="cfDone">已截圖保存，完成</button>
     </div>
   </div>
+</section>
+
+<!-- ============ 月份收入圖表 ============ -->
+<div id="incomeChartBackdrop" class="sheet-backdrop" hidden></div>
+<section id="incomeChartSheet" class="sheet income-chart-sheet" role="dialog" aria-modal="true" aria-labelledby="incomeChartTitle" hidden>
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <header class="sheet-head">
+    <div>
+      <p class="sheet-date" data-i18n="secPay">薪資設定</p>
+      <h3 id="incomeChartTitle" class="sheet-title" data-i18n="incomeChartTitle">月份收入圖表</h3>
+    </div>
+    <button id="incomeChartClose" class="icon-btn" type="button" data-i18n-aria="close" aria-label="關閉">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </header>
+  <div class="sheet-body income-chart-body">
+    <div id="incomeChartRangeSeg" class="seg-row" role="radiogroup" data-i18n-aria="incomeChartRangeGroup" aria-label="圖表月份範圍">
+      <button class="seg-btn" data-chart-span="6" type="button" role="radio" data-i18n="incomeChartRange6">近 6 個月</button>
+      <button class="seg-btn" data-chart-span="12" type="button" role="radio" data-i18n="incomeChartRange12">近 12 個月</button>
+      <button class="seg-btn" data-chart-span="0" type="button" role="radio" data-i18n="incomeChartRangeAll">全部</button>
+    </div>
+    <p class="field-help income-chart-range-help" data-i18n="incomeChartRangeHelp">依工時記錄與薪資設定彙總；點選長條可跳到該月。</p>
+    <div id="incomeChartPanel" class="income-chart-panel"><!-- 圖表由 JS 產生 --></div>
+  </div>
+  <footer class="sheet-foot income-chart-foot">
+    <button id="incomeChartBackSettings" class="btn btn-ghost" type="button" data-i18n="incomeChartBackSettings">返回設定</button>
+    <button id="incomeChartBackCalendar" class="btn btn-primary" type="button" data-i18n="incomeChartBackCalendar">返回月曆</button>
+  </footer>
 </section>
 
 <div id="lockScreen" class="lock-screen" hidden role="dialog" aria-modal="true" data-i18n-aria="lockAria" aria-label="螢幕鎖定">
