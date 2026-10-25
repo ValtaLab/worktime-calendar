@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.8';
-  const APP_BUILD = '20261024-0915';
+  const APP_VERSION = '1.34.9';
+  const APP_BUILD = '20261025-1546';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -207,6 +207,20 @@
       payOt: '加班時薪',
       payNight: '半夜加班時薪',
       payHelp: '設定後，月曆下方會顯示本月收入總計（工數 × 日薪 ＋ 兼職時數 × 時薪 ＋ 加班時數 × 加班時薪 ＋ 半夜加班時數 × 半夜加班時薪）。留空或 0 則不顯示。',
+      incomeChartOpen: '查看月份收入圖表',
+      incomeChartOpenHelp: '以長條圖比較各月收入，沿用上方薪資設定與工時記錄計算。',
+      incomeChartTitle: '月份收入圖表',
+      incomeChartRangeGroup: '圖表月份範圍',
+      incomeChartRange6: '近 6 個月',
+      incomeChartRange12: '近 12 個月',
+      incomeChartRangeAll: '全部',
+      incomeChartRangeHelp: '依工時記錄與薪資設定彙總；點選長條可跳到該月。',
+      incomeChartNoRates: '請先在上方填寫日薪或時薪，才能顯示收入圖表。',
+      incomeChartNoData: '所選範圍內尚無可計算收入的工時記錄。',
+      incomeChartSummary: '期間合計',
+      incomeChartBackSettings: '返回設定',
+      incomeChartBackCalendar: '返回月曆',
+      incomeChartAria: '月份收入長條圖',
       secDisplay: '顯示選項',
       optHoliday: '顯示香港公眾假期',
       optWeekend: '顯示週末',
@@ -469,6 +483,20 @@
       payOt: 'Overtime hourly rate',
       payNight: 'Night overtime hourly rate',
       payHelp: 'Once set, the monthly income total appears below the calendar (day units × daily rate + part-time hours × hourly rate + overtime hours × overtime rate + night hours × night rate). Leave blank or 0 to hide.',
+      incomeChartOpen: 'View Monthly Income Chart',
+      incomeChartOpenHelp: 'Compare monthly pay in a bar chart using the rates above and your logged hours.',
+      incomeChartTitle: 'Monthly Income Chart',
+      incomeChartRangeGroup: 'Chart range',
+      incomeChartRange6: 'Last 6 months',
+      incomeChartRange12: 'Last 12 months',
+      incomeChartRangeAll: 'All',
+      incomeChartRangeHelp: 'Totals use the same pay rules as the calendar; tap a bar to jump to that month.',
+      incomeChartNoRates: 'Set a daily or hourly rate above to show the income chart.',
+      incomeChartNoData: 'No billable hours in this range yet.',
+      incomeChartSummary: 'Period total',
+      incomeChartBackSettings: 'Back to Settings',
+      incomeChartBackCalendar: 'Back to Calendar',
+      incomeChartAria: 'Monthly income bar chart',
       secDisplay: 'Display Options',
       optHoliday: 'Show Hong Kong public holidays',
       optWeekend: 'Show weekends',
@@ -964,6 +992,7 @@
     updateHintText();
     setupInstallHint();
     render();
+    if (el.incomeChartSheet && !el.incomeChartSheet.hidden) renderIncomeChart();
   }
 
   /* ---------------- 畫面元素 ---------------- */
@@ -1075,6 +1104,15 @@
     updateNowBtn: $('updateNowBtn'),
     updateLaterBtn: $('updateLaterBtn'),
 
+    openIncomeChartBtn: $('openIncomeChartBtn'),
+    incomeChartBackdrop: $('incomeChartBackdrop'),
+    incomeChartSheet: $('incomeChartSheet'),
+    incomeChartClose: $('incomeChartClose'),
+    incomeChartRangeSeg: $('incomeChartRangeSeg'),
+    incomeChartPanel: $('incomeChartPanel'),
+    incomeChartBackSettings: $('incomeChartBackSettings'),
+    incomeChartBackCalendar: $('incomeChartBackCalendar'),
+
     toast: $('toast'),
   };
 
@@ -1141,6 +1179,142 @@
     const total = wu * dayPay + ph * hourlyPay + oh * otPay + nh * nightPay;
     if (total <= 0) return null;
     return total;
+  }
+
+  /* ---------------- 月份收入圖表 ----------------
+     彙總邏輯完全重用 incomeOfMonth；圖表僅負責依月份範圍取數與呈現。 */
+  let incomeChartSpan = 6;   // 6 | 12 | 0（0＝自最早記錄至本月）
+
+  function hasPayRates() {
+    return num(settings.dayPay) > 0
+      || num(settings.hourlyPay) > 0
+      || num(settings.otPay) > 0
+      || num(settings.nightPay) > 0;
+  }
+
+  /** 依目前 incomeChartSpan 產生 { y, m } 月份序列（含首尾、按時間正序） */
+  function incomeChartMonthList() {
+    const now = new Date();
+    const endY = now.getFullYear();
+    const endM = now.getMonth();
+    let startY = endY;
+    let startM = endM;
+
+    if (incomeChartSpan === 0) {
+      const keys = Object.keys(entries).sort();
+      if (keys.length) {
+        const [sy, sm] = keys[0].split('-').map(Number);
+        startY = sy;
+        startM = sm - 1;
+      }
+    } else {
+      const n = Math.max(1, incomeChartSpan);
+      const d = new Date(endY, endM - (n - 1), 1);
+      startY = d.getFullYear();
+      startM = d.getMonth();
+    }
+
+    const out = [];
+    let y = startY;
+    let m = startM;
+    while (y < endY || (y === endY && m <= endM)) {
+      out.push({ y, m });
+      m += 1;
+      if (m > 11) { m = 0; y += 1; }
+    }
+    return out;
+  }
+
+  function fmtChartMonthLabel(y, m, multiYear) {
+    if (lang === 'en') {
+      const mon = MONTHS_EN[m].slice(0, 3);
+      return multiYear ? `${mon} '${String(y).slice(-2)}` : mon;
+    }
+    return multiYear ? `${y}年${m + 1}月` : `${m + 1}月`;
+  }
+
+  function syncIncomeChartSpan() {
+    if (!el.incomeChartRangeSeg) return;
+    el.incomeChartRangeSeg.querySelectorAll('.seg-btn').forEach((btn) => {
+      const on = String(incomeChartSpan) === (btn.dataset.chartSpan || '');
+      btn.classList.toggle('is-active', on);
+      btn.setAttribute('aria-checked', on ? 'true' : 'false');
+    });
+  }
+
+  function renderIncomeChart() {
+    if (!el.incomeChartPanel) return;
+    if (!hasPayRates()) {
+      el.incomeChartPanel.innerHTML = `<p class="income-chart-empty">${escapeHtml(t('incomeChartNoRates'))}</p>`;
+      return;
+    }
+
+    const months = incomeChartMonthList();
+    const multiYear = months.length > 0
+      && (months[0].y !== months[months.length - 1].y);
+    const viewY = view.getFullYear();
+    const viewM = view.getMonth();
+
+    const data = months.map(({ y, m }) => {
+      const inc = incomeOfMonth(y, m);
+      return {
+        y, m,
+        total: inc ? inc.total : 0,
+        label: fmtChartMonthLabel(y, m, multiYear),
+        isCurrent: y === viewY && m === viewM,
+      };
+    });
+
+    if (!data.some((d) => d.total > 0)) {
+      el.incomeChartPanel.innerHTML = `<p class="income-chart-empty">${escapeHtml(t('incomeChartNoData'))}</p>`;
+      return;
+    }
+
+    const max = Math.max(...data.map((d) => d.total), 1);
+    const periodTotal = data.reduce((s, d) => s + d.total, 0);
+    const shown = incomeShown;
+    const totalHtml = shown
+      ? `$${fmtMoney(periodTotal)}`
+      : `<span class="income-chart-val is-masked" aria-hidden="true">••••••</span>`;
+
+    const bars = data.map((d) => {
+      const pct = Math.max(2, (d.total / max) * 100);
+      const val = shown
+        ? `$${fmtMoney(d.total)}`
+        : '•••';
+      const valClass = shown ? 'income-chart-val' : 'income-chart-val is-masked';
+      const aria = shown ? `$${fmtMoney(d.total)}` : t('incomeHideWord');
+      return `<button type="button" class="income-chart-col${d.isCurrent ? ' is-current' : ''}"
+              data-y="${d.y}" data-m="${d.m}"
+              aria-label="${escapeAttr(fmtMonthTitle(d.y, d.m))} ${aria}">
+        <span class="${valClass}">${escapeHtml(val)}</span>
+        <span class="income-chart-bar-track" aria-hidden="true">
+          <span class="income-chart-bar" style="--bar-h:${pct.toFixed(1)}%"></span>
+        </span>
+        <span class="income-chart-lbl" aria-hidden="true">${escapeHtml(d.label)}</span>
+      </button>`;
+    }).join('');
+
+    el.incomeChartPanel.innerHTML = `
+      <div class="income-chart-summary">
+        <span>${escapeHtml(t('incomeChartSummary'))} <strong>${totalHtml}</strong></span>
+        <button type="button" class="income-chart-toggle" id="incomeChartToggle">
+          ${escapeHtml(shown ? t('incomeHideWord') : t('incomeShowWord'))}
+        </button>
+      </div>
+      <div class="income-chart-plot" role="img" aria-label="${escapeAttr(t('incomeChartAria'))}">
+        ${bars}
+      </div>`;
+  }
+
+  function openIncomeChart() {
+    syncIncomeChartSpan();
+    renderIncomeChart();
+    showOverlay(el.incomeChartBackdrop, el.incomeChartSheet);
+  }
+
+  function closeIncomeChart(done) {
+    hideOverlay(el.incomeChartBackdrop, el.incomeChartSheet, done);
   }
 
   /* ===================== 雲端備份（Cloudflare Worker） =====================
@@ -2315,6 +2489,7 @@
     renderCalendar();
     renderStats();
     renderIncome();
+    if (el.incomeChartSheet && !el.incomeChartSheet.hidden) renderIncomeChart();
   }
 
   /* ---------------- 面板：開啟 / 關閉 ---------------- */
@@ -2880,6 +3055,7 @@
         const v = raw === '' ? 0 : Math.max(0, num(raw));
         settings[name] = v;
         renderIncome();
+        if (el.incomeChartSheet && !el.incomeChartSheet.hidden) renderIncomeChart();
       };
       input.addEventListener('input', apply);
       input.addEventListener('change', () => {
@@ -2888,8 +3064,67 @@
         input.value = settings[name] > 0 ? settings[name] : '';
         saveSettings();
         renderIncome();
+        if (el.incomeChartSheet && !el.incomeChartSheet.hidden) renderIncomeChart();
       });
     });
+
+    /* ---- 月份收入圖表 ---- */
+    if (el.openIncomeChartBtn) {
+      el.openIncomeChartBtn.addEventListener('click', () => openIncomeChart());
+    }
+    if (el.incomeChartRangeSeg) {
+      el.incomeChartRangeSeg.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('.seg-btn');
+        if (!btn) return;
+        const span = parseInt(btn.dataset.chartSpan, 10);
+        if (Number.isNaN(span)) return;
+        incomeChartSpan = span;
+        syncIncomeChartSpan();
+        renderIncomeChart();
+      });
+    }
+    if (el.incomeChartPanel) {
+      el.incomeChartPanel.addEventListener('click', (ev) => {
+        if (ev.target.closest('#incomeChartToggle')) {
+          incomeShown = !incomeShown;
+          renderIncome();
+          renderCalendar();
+          renderIncomeChart();
+          return;
+        }
+        const col = ev.target.closest('.income-chart-col');
+        if (!col) return;
+        const y = parseInt(col.dataset.y, 10);
+        const m = parseInt(col.dataset.m, 10);
+        if (Number.isNaN(y) || Number.isNaN(m)) return;
+        view = new Date(y, m, 1);
+        closeIncomeChart(() => {
+          closeDrawer();
+          render();
+        });
+      });
+    }
+    if (el.incomeChartClose) {
+      el.incomeChartClose.addEventListener('click', () => closeIncomeChart());
+    }
+    if (el.incomeChartBackdrop) {
+      el.incomeChartBackdrop.addEventListener('click', () => closeIncomeChart());
+    }
+    if (el.incomeChartBackCalendar) {
+      el.incomeChartBackCalendar.addEventListener('click', () => closeIncomeChart());
+    }
+    if (el.incomeChartBackSettings) {
+      el.incomeChartBackSettings.addEventListener('click', () => {
+        closeIncomeChart(() => {
+          if (el.drawer.hidden) showOverlay(el.drawerBackdrop, el.drawer);
+        });
+      });
+    }
+    if (el.incomeChartSheet) {
+      el.incomeChartSheet.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Escape') { ev.preventDefault(); closeIncomeChart(); }
+      });
+    }
 
     const toggleMap = [
       [el.optWeekend, 'showWeekend'],
@@ -2956,6 +3191,7 @@
       incomeShown = !incomeShown;   // 只記在記憶體：重載 App 回到預設隱藏
       renderIncome();
       renderCalendar();   // 格子底部的每日收入同步顯示／遮蔽
+      if (el.incomeChartSheet && !el.incomeChartSheet.hidden) renderIncomeChart();
     });
 
     /* ---- 螢幕鎖定：鍵盤（點擊委派）、選單入口、回前台重鎖 ---- */
@@ -3114,7 +3350,7 @@
 
     /* ---- 全域快捷鍵 ---- */
     document.addEventListener('keydown', (ev) => {
-      if (el.sheet.hidden && el.drawer.hidden) {
+      if (el.sheet.hidden && el.drawer.hidden && el.incomeChartSheet.hidden) {
         if (ev.key === 'ArrowLeft') el.prevMonth.click();
         if (ev.key === 'ArrowRight') el.nextMonth.click();
         if (ev.key.toLowerCase() === 't') el.todayBtn.click();
@@ -3123,6 +3359,7 @@
 
     // 瀏覽器返回鍵關閉面板
     window.addEventListener('popstate', () => {
+      if (!el.incomeChartSheet.hidden) closeIncomeChart();
       if (!el.sheet.hidden) closeSheet();
       if (!el.drawer.hidden) closeDrawer();
     });
