@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.9';
-  const APP_BUILD = '20261025-1546';
+  const APP_VERSION = '1.34.10';
+  const APP_BUILD = '20261029-1052';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1127,6 +1127,116 @@
       el.toast.classList.remove('show');
       setTimeout(() => { el.toast.hidden = true; }, 220);
     }, 2000);
+  }
+
+  /* ---------------- 收入金幣慶祝動畫 ---------------- */
+  let coinFxLayer = null;
+  let coinFxRun = 0;
+
+  function ensureCoinFxLayer() {
+    if (coinFxLayer) return coinFxLayer;
+    coinFxLayer = document.createElement('div');
+    coinFxLayer.id = 'coinFxLayer';
+    coinFxLayer.className = 'coin-fx-layer';
+    coinFxLayer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(coinFxLayer);
+    return coinFxLayer;
+  }
+
+  /** 新增／儲存工時且本月收入增加時：五枚金幣依序飛入「收入總計」後消失 */
+  function scheduleIncomeCoinFx(dayKey) {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    requestAnimationFrame(() => requestAnimationFrame(() => playIncomeCoinFx(dayKey)));
+  }
+
+  function playIncomeCoinFx(dayKey) {
+    const target = document.getElementById('incomeToggle');
+    if (!target || el.incomeBar.hidden) return;
+
+    const layer = ensureCoinFxLayer();
+    const runId = ++coinFxRun;
+    layer.replaceChildren();
+
+    const tr = target.getBoundingClientRect();
+    const tx = tr.left + tr.width * 0.58;
+    const ty = tr.top + tr.height * 0.52;
+
+    const cell = document.querySelector(`.day[data-key="${dayKey}"]`);
+    let sx;
+    let sy;
+    if (cell) {
+      const cr = cell.getBoundingClientRect();
+      sx = cr.left + cr.width / 2;
+      sy = cr.top + cr.height * 0.62;
+    } else {
+      const gr = el.calendarGrid.getBoundingClientRect();
+      sx = gr.left + gr.width / 2;
+      sy = gr.top + gr.height * 0.42;
+    }
+
+    const COINS = 5;
+    const STAGGER = 108;
+    const DURATION = 720;
+
+    for (let i = 0; i < COINS; i++) {
+      const spread = (i - (COINS - 1) / 2) * 14;
+      const startX = sx + spread + (i % 2 ? 6 : -4);
+      const startY = sy + (i % 3) * 5;
+      const endX = tx + (i - 2) * 3;
+      const endY = ty;
+
+      const coin = document.createElement('div');
+      coin.className = 'income-coin';
+      coin.innerHTML = '<div class="income-coin-inner"><span class="income-coin-face" aria-hidden="true">$</span></div>';
+      layer.appendChild(coin);
+      const inner = coin.firstElementChild;
+
+      const midX = (startX + endX) / 2 + spread * 0.6;
+      const midY = Math.min(startY, endY) - 56 - i * 4;
+
+      window.setTimeout(() => {
+        if (runId !== coinFxRun) return;
+
+        const fly = coin.animate([
+          {
+            transform: `translate3d(${startX}px, ${startY}px, 0) rotateX(62deg) rotateY(0deg) scale(0.35)`,
+            opacity: 0,
+          },
+          {
+            offset: 0.14,
+            transform: `translate3d(${startX}px, ${startY}px, 90px) rotateX(48deg) rotateY(120deg) scale(1.05)`,
+            opacity: 1,
+          },
+          {
+            offset: 0.55,
+            transform: `translate3d(${midX}px, ${midY}px, 140px) rotateX(28deg) rotateY(420deg) scale(0.92)`,
+            opacity: 1,
+          },
+          {
+            offset: 0.88,
+            transform: `translate3d(${endX}px, ${endY}px, 24px) rotateX(12deg) rotateY(780deg) scale(0.5)`,
+            opacity: 1,
+          },
+          {
+            transform: `translate3d(${endX}px, ${endY}px, 0) rotateX(0deg) rotateY(900deg) scale(0)`,
+            opacity: 0,
+          },
+        ], { duration: DURATION, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
+
+        inner.animate([
+          { transform: 'rotateY(0deg)' },
+          { transform: 'rotateY(540deg)' },
+        ], { duration: DURATION, easing: 'linear', fill: 'forwards' });
+
+        fly.onfinish = () => {
+          coin.remove();
+          target.classList.remove('coin-absorb-pulse');
+          void target.offsetWidth;
+          target.classList.add('coin-absorb-pulse');
+          target.addEventListener('animationend', () => target.classList.remove('coin-absorb-pulse'), { once: true });
+        };
+      }, i * STAGGER);
+    }
   }
 
   /* ---------------- 月曆渲染 ---------------- */
@@ -2794,6 +2904,15 @@
 
   function saveEntry() {
     if (!editingKey) return;
+    const saveKey = editingKey;
+    const saveDate = new Date(saveKey + 'T00:00:00');
+    const saveY = saveDate.getFullYear();
+    const saveM = saveDate.getMonth();
+    const incomeMonthVisible = saveY === view.getFullYear() && saveM === view.getMonth();
+    const monthIncomeBefore = incomeMonthVisible
+      ? (incomeOfMonth(saveY, saveM)?.total ?? 0)
+      : 0;
+
     const workDesc = el.workDesc.value.trim();
     const otDesc = el.otDesc.value.trim();
     const nightDesc = el.nightDesc.value.trim();
@@ -2822,6 +2941,13 @@
     closeSheet();
     render();
     toast(empty ? t('toastCleared') : t('toastSaved'));
+
+    if (!empty && incomeMonthVisible) {
+      const monthIncomeAfter = incomeOfMonth(saveY, saveM)?.total ?? 0;
+      if (monthIncomeAfter > monthIncomeBefore + 0.001) {
+        scheduleIncomeCoinFx(saveKey);
+      }
+    }
   }
 
   function deleteEntry() {

@@ -602,6 +602,74 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   align-self: center;
 }
 
+/* 儲存工時後：五金幣飛入「本月收入總計」（JS 驅動 transform；層本身不攔截點擊） */
+.coin-fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 180;
+  pointer-events: none;
+  perspective: 920px;
+  overflow: hidden;
+}
+.income-coin {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 36px;
+  height: 36px;
+  pointer-events: none;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 6px 10px rgba(15, 23, 42, .32));
+}
+.income-coin-inner {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+.income-coin-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: -.5px;
+  color: #6b4a0a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .5);
+  background:
+    radial-gradient(ellipse 78% 52% at 26% 20%, rgba(255, 255, 255, .88), transparent 52%),
+    radial-gradient(circle at 50% 62%, #ffe566 0%, #f5b731 42%, #c8860f 94%);
+  border: 2px solid #e6a817;
+  box-shadow:
+    inset 0 -4px 7px rgba(120, 72, 8, .38),
+    inset 0 2px 5px rgba(255, 255, 255, .58);
+  backface-visibility: hidden;
+}
+html[data-theme="dark"] .income-coin-face {
+  color: #f2d998;
+  border-color: #c99220;
+  background:
+    radial-gradient(ellipse 78% 52% at 26% 20%, rgba(255, 255, 255, .35), transparent 52%),
+    radial-gradient(circle at 50% 62%, #ffd54a 0%, #e6a020 42%, #9a6510 94%);
+  box-shadow:
+    inset 0 -4px 7px rgba(0, 0, 0, .45),
+    inset 0 2px 4px rgba(255, 255, 255, .22);
+}
+.income-total.coin-absorb-pulse {
+  animation: incomeCoinAbsorb .45s cubic-bezier(.22, 1, .36, 1);
+}
+@keyframes incomeCoinAbsorb {
+  0% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+  38% {
+    transform: scale(1.07);
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--work) 50%, transparent));
+  }
+  100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+}
+
 .day {
   position: relative;
   min-height: 78px;
