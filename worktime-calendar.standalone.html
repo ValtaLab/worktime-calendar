@@ -3080,8 +3080,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.11';
-  const APP_BUILD = '20261029-1119';
+  const APP_VERSION = '1.34.12';
+  const APP_BUILD = '20261029-1130';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -4222,6 +4222,38 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     requestAnimationFrame(() => requestAnimationFrame(() => playIncomeCoinFx(dayKey)));
   }
 
+  /** 二次 Bézier 上的點（t∈[0,1]）→ 平滑拋物線軌跡 */
+  function quadBezierPoint(t, p0, p1, p2) {
+    const u = 1 - t;
+    return {
+      x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
+      y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y,
+    };
+  }
+
+  /** 沿拋物線採樣成 WAAPI keyframes（位置連續、唔折線） */
+  function coinParabolaKeyframes(p0, p1, p2, narrow) {
+    const steps = narrow ? 32 : 28;
+    const frames = [];
+    for (let s = 0; s <= steps; s++) {
+      const tm = s / steps;
+      const pt = quadBezierPoint(tm, p0, p1, p2);
+      const z = Math.sin(Math.PI * tm) * (narrow ? 82 : 68);
+      const rotY = tm * 720;
+      const rotX = 48 * (1 - tm) + 10 * tm;
+      const scale = 0.68 + Math.sin(Math.PI * tm) * 0.34;
+      let opacity = 1;
+      if (tm < 0.04) opacity = tm / 0.04;
+      else if (tm > 0.97) opacity = (1 - tm) / 0.03;
+      frames.push({
+        offset: tm,
+        transform: `translate3d(${pt.x}px, ${pt.y}px, ${z}px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale})`,
+        opacity,
+      });
+    }
+    return frames;
+  }
+
   function playIncomeCoinFx(dayKey) {
     const target = document.getElementById('incomeToggle');
     if (!target || el.incomeBar.hidden) return;
@@ -4237,22 +4269,18 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     const vH = vp ? vp.height : window.innerHeight;
     const edgePad = 20;
     const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
-    const clampInView = (x, y) => ({
-      x: clamp(x, vLeft + edgePad, vLeft + vW - edgePad),
-      y: clamp(y, vTop + edgePad, vTop + vH - edgePad),
-    });
 
     const tr = target.getBoundingClientRect();
-    const endBase = clampInView(tr.left + tr.width * 0.55, tr.top + tr.height * 0.5);
+    const endCenter = { x: tr.left + tr.width / 2, y: tr.top + tr.height / 2 };
 
     const cell = document.querySelector(`.day[data-key="${dayKey}"]`);
-    let startBase;
+    let startCenter;
     if (cell) {
       const cr = cell.getBoundingClientRect();
-      startBase = clampInView(cr.left + cr.width / 2, cr.top + cr.height * 0.58);
+      startCenter = { x: cr.left + cr.width / 2, y: cr.top + cr.height / 2 };
     } else {
       const gr = el.calendarGrid.getBoundingClientRect();
-      startBase = clampInView(gr.left + gr.width / 2, gr.top + gr.height * 0.45);
+      startCenter = { x: gr.left + gr.width / 2, y: gr.top + gr.height / 2 };
     }
 
     const narrow = vW <= 480;
@@ -4261,12 +4289,20 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
     const DURATION = narrow ? 1380 : 1180;
 
     for (let i = 0; i < COINS; i++) {
-      const spread = (i - (COINS - 1) / 2) * (narrow ? 18 : 14);
-      const start = clampInView(
-        startBase.x + spread + (i % 2 ? 5 : -5),
-        startBase.y + (i % 3) * 4,
+      const lane = (i - (COINS - 1) / 2) * (narrow ? 7 : 5);
+      const p0 = { x: startCenter.x + lane, y: startCenter.y };
+      const p2 = { x: endCenter.x + lane * 0.35, y: endCenter.y };
+
+      const spanY = Math.abs(p2.y - p0.y);
+      const spanX = Math.abs(p2.x - p0.x);
+      const arcLift = clamp(
+        spanY * 0.42 + spanX * 0.08 + (narrow ? 54 : 42),
+        68,
+        narrow ? 148 : 128,
       );
-      const end = clampInView(endBase.x + (i - 2) * 4, endBase.y);
+      let ctrlY = Math.min(p0.y, p2.y) - arcLift;
+      ctrlY = clamp(ctrlY, vTop + edgePad, vTop + vH - edgePad);
+      const p1 = { x: (p0.x + p2.x) / 2, y: ctrlY };
 
       const coin = document.createElement('div');
       coin.className = 'income-coin';
@@ -4274,48 +4310,13 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
       layer.appendChild(coin);
       const inner = coin.firstElementChild;
 
-      const lowerY = Math.max(start.y, end.y);
-      const upperY = Math.min(start.y, end.y);
-      const spanY = lowerY - upperY;
-      const arcLift = clamp(spanY * 0.38 + (narrow ? 48 : 36), 56, narrow ? 140 : 120);
-      const mid = clampInView(
-        (start.x + end.x) / 2 + spread * 0.45,
-        upperY + spanY * 0.32 - arcLift,
-      );
-
       window.setTimeout(() => {
         if (runId !== coinFxRun) return;
 
-        const fly = coin.animate([
-          {
-            transform: `translate3d(${start.x}px, ${start.y}px, 0) rotateX(58deg) rotateY(0deg) scale(0.55)`,
-            opacity: 0,
-          },
-          {
-            offset: 0.08,
-            transform: `translate3d(${start.x}px, ${start.y}px, 70px) rotateX(50deg) rotateY(90deg) scale(1)`,
-            opacity: 1,
-          },
-          {
-            offset: 0.42,
-            transform: `translate3d(${mid.x}px, ${mid.y}px, 120px) rotateX(32deg) rotateY(360deg) scale(${narrow ? 1.05 : 0.98})`,
-            opacity: 1,
-          },
-          {
-            offset: 0.78,
-            transform: `translate3d(${end.x}px, ${end.y}px, 40px) rotateX(18deg) rotateY(640deg) scale(0.72)`,
-            opacity: 1,
-          },
-          {
-            offset: 0.94,
-            transform: `translate3d(${end.x}px, ${end.y}px, 8px) rotateX(8deg) rotateY(720deg) scale(0.55)`,
-            opacity: 1,
-          },
-          {
-            transform: `translate3d(${end.x}px, ${end.y}px, 0) rotateX(0deg) rotateY(780deg) scale(0)`,
-            opacity: 0,
-          },
-        ], { duration: DURATION, easing: 'cubic-bezier(0.18, 0.85, 0.32, 1)', fill: 'forwards' });
+        const fly = coin.animate(
+          coinParabolaKeyframes(p0, p1, p2, narrow),
+          { duration: DURATION, easing: 'linear', fill: 'forwards' },
+        );
 
         inner.animate([
           { transform: 'rotateY(0deg)' },
