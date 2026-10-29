@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.10';
-  const APP_BUILD = '20261029-1052';
+  const APP_VERSION = '1.34.11';
+  const APP_BUILD = '20261029-1119';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1157,33 +1157,43 @@
     const runId = ++coinFxRun;
     layer.replaceChildren();
 
+    const vp = window.visualViewport;
+    const vLeft = vp ? vp.offsetLeft : 0;
+    const vTop = vp ? vp.offsetTop : 0;
+    const vW = vp ? vp.width : window.innerWidth;
+    const vH = vp ? vp.height : window.innerHeight;
+    const edgePad = 20;
+    const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+    const clampInView = (x, y) => ({
+      x: clamp(x, vLeft + edgePad, vLeft + vW - edgePad),
+      y: clamp(y, vTop + edgePad, vTop + vH - edgePad),
+    });
+
     const tr = target.getBoundingClientRect();
-    const tx = tr.left + tr.width * 0.58;
-    const ty = tr.top + tr.height * 0.52;
+    const endBase = clampInView(tr.left + tr.width * 0.55, tr.top + tr.height * 0.5);
 
     const cell = document.querySelector(`.day[data-key="${dayKey}"]`);
-    let sx;
-    let sy;
+    let startBase;
     if (cell) {
       const cr = cell.getBoundingClientRect();
-      sx = cr.left + cr.width / 2;
-      sy = cr.top + cr.height * 0.62;
+      startBase = clampInView(cr.left + cr.width / 2, cr.top + cr.height * 0.58);
     } else {
       const gr = el.calendarGrid.getBoundingClientRect();
-      sx = gr.left + gr.width / 2;
-      sy = gr.top + gr.height * 0.42;
+      startBase = clampInView(gr.left + gr.width / 2, gr.top + gr.height * 0.45);
     }
 
+    const narrow = vW <= 480;
     const COINS = 5;
-    const STAGGER = 108;
-    const DURATION = 720;
+    const STAGGER = narrow ? 260 : 220;
+    const DURATION = narrow ? 1380 : 1180;
 
     for (let i = 0; i < COINS; i++) {
-      const spread = (i - (COINS - 1) / 2) * 14;
-      const startX = sx + spread + (i % 2 ? 6 : -4);
-      const startY = sy + (i % 3) * 5;
-      const endX = tx + (i - 2) * 3;
-      const endY = ty;
+      const spread = (i - (COINS - 1) / 2) * (narrow ? 18 : 14);
+      const start = clampInView(
+        startBase.x + spread + (i % 2 ? 5 : -5),
+        startBase.y + (i % 3) * 4,
+      );
+      const end = clampInView(endBase.x + (i - 2) * 4, endBase.y);
 
       const coin = document.createElement('div');
       coin.className = 'income-coin';
@@ -1191,41 +1201,52 @@
       layer.appendChild(coin);
       const inner = coin.firstElementChild;
 
-      const midX = (startX + endX) / 2 + spread * 0.6;
-      const midY = Math.min(startY, endY) - 56 - i * 4;
+      const lowerY = Math.max(start.y, end.y);
+      const upperY = Math.min(start.y, end.y);
+      const spanY = lowerY - upperY;
+      const arcLift = clamp(spanY * 0.38 + (narrow ? 48 : 36), 56, narrow ? 140 : 120);
+      const mid = clampInView(
+        (start.x + end.x) / 2 + spread * 0.45,
+        upperY + spanY * 0.32 - arcLift,
+      );
 
       window.setTimeout(() => {
         if (runId !== coinFxRun) return;
 
         const fly = coin.animate([
           {
-            transform: `translate3d(${startX}px, ${startY}px, 0) rotateX(62deg) rotateY(0deg) scale(0.35)`,
+            transform: `translate3d(${start.x}px, ${start.y}px, 0) rotateX(58deg) rotateY(0deg) scale(0.55)`,
             opacity: 0,
           },
           {
-            offset: 0.14,
-            transform: `translate3d(${startX}px, ${startY}px, 90px) rotateX(48deg) rotateY(120deg) scale(1.05)`,
+            offset: 0.08,
+            transform: `translate3d(${start.x}px, ${start.y}px, 70px) rotateX(50deg) rotateY(90deg) scale(1)`,
             opacity: 1,
           },
           {
-            offset: 0.55,
-            transform: `translate3d(${midX}px, ${midY}px, 140px) rotateX(28deg) rotateY(420deg) scale(0.92)`,
+            offset: 0.42,
+            transform: `translate3d(${mid.x}px, ${mid.y}px, 120px) rotateX(32deg) rotateY(360deg) scale(${narrow ? 1.05 : 0.98})`,
             opacity: 1,
           },
           {
-            offset: 0.88,
-            transform: `translate3d(${endX}px, ${endY}px, 24px) rotateX(12deg) rotateY(780deg) scale(0.5)`,
+            offset: 0.78,
+            transform: `translate3d(${end.x}px, ${end.y}px, 40px) rotateX(18deg) rotateY(640deg) scale(0.72)`,
             opacity: 1,
           },
           {
-            transform: `translate3d(${endX}px, ${endY}px, 0) rotateX(0deg) rotateY(900deg) scale(0)`,
+            offset: 0.94,
+            transform: `translate3d(${end.x}px, ${end.y}px, 8px) rotateX(8deg) rotateY(720deg) scale(0.55)`,
+            opacity: 1,
+          },
+          {
+            transform: `translate3d(${end.x}px, ${end.y}px, 0) rotateX(0deg) rotateY(780deg) scale(0)`,
             opacity: 0,
           },
-        ], { duration: DURATION, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' });
+        ], { duration: DURATION, easing: 'cubic-bezier(0.18, 0.85, 0.32, 1)', fill: 'forwards' });
 
         inner.animate([
           { transform: 'rotateY(0deg)' },
-          { transform: 'rotateY(540deg)' },
+          { transform: 'rotateY(720deg)' },
         ], { duration: DURATION, easing: 'linear', fill: 'forwards' });
 
         fly.onfinish = () => {

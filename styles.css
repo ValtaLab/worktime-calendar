@@ -609,18 +609,21 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   z-index: 180;
   pointer-events: none;
   perspective: 920px;
-  overflow: hidden;
+  /* 不可 hidden：窄屏弧線會被裁切，看起來像「中間唔見咗」 */
+  overflow: visible;
 }
 .income-coin {
   position: fixed;
   left: 0;
   top: 0;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  margin-top: -19px;
   pointer-events: none;
   transform-style: preserve-3d;
   will-change: transform, opacity;
-  filter: drop-shadow(0 6px 10px rgba(15, 23, 42, .32));
+  filter: drop-shadow(0 7px 12px rgba(15, 23, 42, .38));
 }
 .income-coin-inner {
   width: 100%;
@@ -668,6 +671,31 @@ html[data-theme="dark"] .income-coin-face {
     filter: drop-shadow(0 0 14px color-mix(in srgb, var(--work) 50%, transparent));
   }
   100% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); }
+}
+
+@media (max-width: 480px) {
+  .coin-fx-layer { perspective: 760px; }
+  .income-coin {
+    width: 46px;
+    height: 46px;
+    margin-left: -23px;
+    margin-top: -23px;
+    filter: drop-shadow(0 8px 14px rgba(15, 23, 42, .45));
+  }
+  .income-coin-face {
+    font-size: 18px;
+    border-width: 2.5px;
+    box-shadow:
+      inset 0 -5px 9px rgba(120, 72, 8, .42),
+      inset 0 3px 6px rgba(255, 255, 255, .62),
+      0 0 0 1px rgba(255, 220, 120, .35);
+  }
+  html[data-theme="dark"] .income-coin-face {
+    box-shadow:
+      inset 0 -5px 9px rgba(0, 0, 0, .5),
+      inset 0 3px 5px rgba(255, 255, 255, .25),
+      0 0 0 1px rgba(255, 200, 80, .28);
+  }
 }
 
 .day {
