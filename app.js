@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.13';
-  const APP_BUILD = '20261029-1138';
+  const APP_VERSION = '1.34.14';
+  const APP_BUILD = '20261029-1144';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1129,9 +1129,12 @@
     }, 2000);
   }
 
-  /* ---------------- 收入金幣慶祝動畫 ---------------- */
+  /* ---------------- 收入金幣慶祝動畫（Three.js） ---------------- */
+  const THREE_CDN = 'https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js';
   let coinFxLayer = null;
   let coinFxRun = 0;
+  let threeModulePromise = null;
+  let coinThreeActive = null;
 
   function ensureCoinFxLayer() {
     if (coinFxLayer) return coinFxLayer;
@@ -1143,10 +1146,17 @@
     return coinFxLayer;
   }
 
+  function loadThreeModule() {
+    if (!threeModulePromise) {
+      threeModulePromise = import(/* webpackIgnore: true */ THREE_CDN);
+    }
+    return threeModulePromise;
+  }
+
   /** 新增／儲存工時且本月收入增加時：五枚金幣依序飛入「收入總計」後消失 */
   function scheduleIncomeCoinFx(dayKey) {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    requestAnimationFrame(() => requestAnimationFrame(() => playIncomeCoinFx(dayKey)));
+    requestAnimationFrame(() => requestAnimationFrame(() => { playIncomeCoinFx(dayKey); }));
   }
 
   /** 二次 Bézier 上的點（t∈[0,1]）→ 平滑拋物線軌跡 */
@@ -1158,77 +1168,44 @@
     };
   }
 
-  /** 沿拋物線採樣成 WAAPI keyframes（外層只負責位移；旋轉喺 3D 模型） */
-  function coinParabolaKeyframes(p0, p1, p2, narrow) {
-    const steps = narrow ? 32 : 28;
-    const frames = [];
-    for (let s = 0; s <= steps; s++) {
-      const tm = s / steps;
-      const pt = quadBezierPoint(tm, p0, p1, p2);
-      const z = Math.sin(Math.PI * tm) * (narrow ? 82 : 68);
-      const scale = 0.68 + Math.sin(Math.PI * tm) * 0.34;
-      let opacity = 1;
-      if (tm < 0.04) opacity = tm / 0.04;
-      else if (tm > 0.97) opacity = (1 - tm) / 0.03;
-      frames.push({
-        offset: tm,
-        transform: `translate3d(${pt.x}px, ${pt.y}px, ${z}px) scale(${scale})`,
-        opacity,
-      });
-    }
-    return frames;
-  }
-
-  const COIN_EDGE_SEGS = 14;
-
-  /** 建立有厚度嘅 3D 金幣（正反面 + 側面環） */
-  function createIncomeCoin3D() {
-    const coin = document.createElement('div');
-    coin.className = 'income-coin';
-    const inner = document.createElement('div');
-    inner.className = 'income-coin-inner';
-    const model = document.createElement('div');
-    model.className = 'income-coin-model';
-
-    const front = document.createElement('span');
-    front.className = 'income-coin-face income-coin-front';
-    front.setAttribute('aria-hidden', 'true');
-    front.textContent = '$';
-
-    const back = document.createElement('span');
-    back.className = 'income-coin-face income-coin-back';
-    back.setAttribute('aria-hidden', 'true');
-
-    const ring = document.createElement('div');
-    ring.className = 'income-coin-edge-ring';
-    for (let i = 0; i < COIN_EDGE_SEGS; i++) {
-      const seg = document.createElement('span');
-      seg.className = 'income-coin-edge-seg';
-      ring.appendChild(seg);
-    }
-
-    model.append(front, back, ring);
-    inner.appendChild(model);
-    coin.appendChild(inner);
-    return { coin, model, ring };
-  }
-
-  function layoutIncomeCoinEdge(coin, ring) {
-    const r = parseFloat(getComputedStyle(coin).getPropertyValue('--coin-r')) || 19;
-    const n = ring.children.length;
-    const tz = Math.max(r - 1.2, 14);
-    for (let i = 0; i < n; i++) {
-      ring.children[i].style.transform =
-        `rotateY(${(360 / n) * i}deg) translateZ(${tz}px)`;
+  function disposeCoinThreeSession(session) {
+    if (!session) return;
+    cancelAnimationFrame(session.raf);
+    session.meshes.forEach((mesh) => {
+      session.scene.remove(mesh);
+    });
+    session.geometry.dispose();
+    session.material.dispose();
+    if (session.rimMaterial) session.rimMaterial.dispose();
+    if (session.rimGeometry) session.rimGeometry.dispose();
+    session.lights.forEach((l) => session.scene.remove(l));
+    session.renderer.dispose();
+    if (session.renderer.domElement.parentNode) {
+      session.renderer.domElement.parentNode.removeChild(session.renderer.domElement);
     }
   }
 
-  function playIncomeCoinFx(dayKey) {
+  function pulseIncomeToggle(target) {
+    target.classList.remove('coin-absorb-pulse');
+    void target.offsetWidth;
+    target.classList.add('coin-absorb-pulse');
+    target.addEventListener('animationend', () => target.classList.remove('coin-absorb-pulse'), { once: true });
+  }
+
+  async function playIncomeCoinFx(dayKey) {
     const target = document.getElementById('incomeToggle');
     if (!target || el.incomeBar.hidden) return;
 
+    let THREE;
+    try {
+      THREE = await loadThreeModule();
+    } catch {
+      return;
+    }
+
     const layer = ensureCoinFxLayer();
     const runId = ++coinFxRun;
+    if (coinThreeActive) disposeCoinThreeSession(coinThreeActive);
     layer.replaceChildren();
 
     const vp = window.visualViewport;
@@ -1256,12 +1233,14 @@
     const COINS = 5;
     const STAGGER = narrow ? 260 : 220;
     const DURATION = narrow ? 1380 : 1180;
+    const coinRadius = narrow ? 23 : 19;
+    const coinThick = narrow ? 6.5 : 5.5;
 
+    const paths = [];
     for (let i = 0; i < COINS; i++) {
       const lane = (i - (COINS - 1) / 2) * (narrow ? 7 : 5);
       const p0 = { x: startCenter.x + lane, y: startCenter.y };
       const p2 = { x: endCenter.x + lane * 0.35, y: endCenter.y };
-
       const spanY = Math.abs(p2.y - p0.y);
       const spanX = Math.abs(p2.x - p0.x);
       const arcLift = clamp(
@@ -1271,36 +1250,137 @@
       );
       let ctrlY = Math.min(p0.y, p2.y) - arcLift;
       ctrlY = clamp(ctrlY, vTop + edgePad, vTop + vH - edgePad);
-      const p1 = { x: (p0.x + p2.x) / 2, y: ctrlY };
-
-      const { coin, model, ring } = createIncomeCoin3D();
-      layer.appendChild(coin);
-      layoutIncomeCoinEdge(coin, ring);
-
-      window.setTimeout(() => {
-        if (runId !== coinFxRun) return;
-        layoutIncomeCoinEdge(coin, ring);
-
-        const tilt = narrow ? 62 : 58;
-        const fly = coin.animate(
-          coinParabolaKeyframes(p0, p1, p2, narrow),
-          { duration: DURATION, easing: 'linear', fill: 'forwards' },
-        );
-
-        model.animate([
-          { transform: `rotateX(${tilt}deg) rotateY(0deg) rotateZ(-8deg)` },
-          { transform: `rotateX(${tilt}deg) rotateY(1080deg) rotateZ(12deg)` },
-        ], { duration: DURATION, easing: 'linear', fill: 'forwards' });
-
-        fly.onfinish = () => {
-          coin.remove();
-          target.classList.remove('coin-absorb-pulse');
-          void target.offsetWidth;
-          target.classList.add('coin-absorb-pulse');
-          target.addEventListener('animationend', () => target.classList.remove('coin-absorb-pulse'), { once: true });
-        };
-      }, i * STAGGER);
+      paths.push({
+        p0, p1: { x: (p0.x + p2.x) / 2, y: ctrlY }, p2,
+        delay: i * STAGGER,
+        spin: Math.PI * 2 * (3.2 + i * 0.15),
+      });
     }
+
+    const dpr = Math.min(window.devicePixelRatio || 1, narrow ? 1.75 : 2);
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'high-performance' });
+    renderer.setPixelRatio(dpr);
+    renderer.setSize(vW, vH, false);
+    renderer.setClearColor(0x000000, 0);
+    layer.appendChild(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(42, vW / vH, 8, 5000);
+    camera.up.set(0, -1, 0);
+    camera.position.set(vLeft + vW / 2, vTop + vH / 2, Math.max(vW, vH) * 0.95);
+    camera.lookAt(vLeft + vW / 2, vTop + vH / 2, 0);
+
+    const lights = [];
+    lights.push(new THREE.AmbientLight(0xffffff, narrow ? 0.62 : 0.55));
+    const key = new THREE.DirectionalLight(0xfff0c8, 1.15);
+    key.position.set(vLeft + vW * 0.25, vTop + vH * 0.18, 420);
+    lights.push(key);
+    const fill = new THREE.DirectionalLight(0xb8c8ff, 0.42);
+    fill.position.set(vLeft + vW * 0.82, vTop + vH * 0.55, 280);
+    lights.push(fill);
+    lights.forEach((l) => scene.add(l));
+
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const material = new THREE.MeshStandardMaterial({
+      color: dark ? 0xf0b830 : 0xf5b731,
+      metalness: 0.93,
+      roughness: 0.2,
+      emissive: dark ? 0x2a1800 : 0x3a2800,
+      emissiveIntensity: 0.1,
+      transparent: true,
+    });
+    const geometry = new THREE.CylinderGeometry(coinRadius, coinRadius, coinThick, 40, 1);
+    const rimGeometry = new THREE.TorusGeometry(coinRadius * 0.88, coinThick * 0.22, 8, 40);
+    const rimMaterial = new THREE.MeshStandardMaterial({
+      color: dark ? 0xd4a017 : 0xe8b020,
+      metalness: 0.95,
+      roughness: 0.18,
+    });
+
+    const meshes = paths.map((path) => {
+      const group = new THREE.Group();
+      const body = new THREE.Mesh(geometry, material);
+      body.rotation.x = Math.PI / 2;
+      const rim = new THREE.Mesh(rimGeometry, rimMaterial);
+      rim.rotation.x = Math.PI / 2;
+      group.add(body, rim);
+      group.visible = false;
+      scene.add(group);
+      return { group, path };
+    });
+
+    const session = {
+      runId, scene, camera, renderer, geometry, material, rimGeometry, rimMaterial,
+      meshes, lights, raf: 0, t0: 0,
+    };
+    coinThreeActive = session;
+
+    const screenToWorld = (() => {
+      const ndc = new THREE.Vector3();
+      const dir = new THREE.Vector3();
+      const planeZ = 0;
+      return (sx, sy) => {
+        ndc.set(
+          ((sx - vLeft) / vW) * 2 - 1,
+          ((sy - vTop) / vH) * 2 - 1,
+          0.5,
+        );
+        ndc.unproject(camera);
+        dir.copy(ndc).sub(camera.position).normalize();
+        const dist = (planeZ - camera.position.z) / dir.z;
+        return camera.position.clone().add(dir.multiplyScalar(dist));
+      };
+    })();
+
+    const finish = () => {
+      if (coinThreeActive === session) coinThreeActive = null;
+      disposeCoinThreeSession(session);
+      layer.replaceChildren();
+      pulseIncomeToggle(target);
+    };
+
+    const allDoneAt = STAGGER * (COINS - 1) + DURATION;
+
+    const tick = (now) => {
+      if (runId !== coinFxRun) {
+        if (coinThreeActive === session) coinThreeActive = null;
+        disposeCoinThreeSession(session);
+        layer.replaceChildren();
+        return;
+      }
+      if (!session.t0) session.t0 = now;
+      const elapsed = now - session.t0;
+      let anyVisible = false;
+
+      meshes.forEach(({ group, path }) => {
+        const local = elapsed - path.delay;
+        if (local < 0) return;
+        let t = local / DURATION;
+        if (t >= 1) {
+          group.visible = false;
+          return;
+        }
+        anyVisible = true;
+        group.visible = true;
+        const te = t < 0.04 ? t / 0.04 * 0.04 : t;
+        const pt = quadBezierPoint(te, path.p0, path.p1, path.p2);
+        const pos = screenToWorld(pt.x, pt.y);
+        pos.z += Math.sin(Math.PI * t) * (narrow ? 55 : 42);
+        group.position.copy(pos);
+        const scale = (0.72 + Math.sin(Math.PI * t) * 0.3) * (t > 0.94 ? (1 - t) / 0.06 : 1);
+        group.scale.setScalar(Math.max(scale, 0.01));
+        group.rotation.x = Math.PI / 2 + Math.sin(t * Math.PI) * 0.55;
+        group.rotation.y = t * path.spin;
+        group.rotation.z = Math.sin(t * Math.PI * 2) * 0.35;
+      });
+
+      renderer.render(scene, camera);
+
+      if (elapsed >= totalMs && !anyVisible) finish();
+      else session.raf = requestAnimationFrame(tick);
+    };
+
+    session.raf = requestAnimationFrame(tick);
   }
 
   /* ---------------- 月曆渲染 ---------------- */
