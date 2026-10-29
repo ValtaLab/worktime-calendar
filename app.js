@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.12';
-  const APP_BUILD = '20261029-1130';
+  const APP_VERSION = '1.34.13';
+  const APP_BUILD = '20261029-1138';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1158,7 +1158,7 @@
     };
   }
 
-  /** 沿拋物線採樣成 WAAPI keyframes（位置連續、唔折線） */
+  /** 沿拋物線採樣成 WAAPI keyframes（外層只負責位移；旋轉喺 3D 模型） */
   function coinParabolaKeyframes(p0, p1, p2, narrow) {
     const steps = narrow ? 32 : 28;
     const frames = [];
@@ -1166,19 +1166,61 @@
       const tm = s / steps;
       const pt = quadBezierPoint(tm, p0, p1, p2);
       const z = Math.sin(Math.PI * tm) * (narrow ? 82 : 68);
-      const rotY = tm * 720;
-      const rotX = 48 * (1 - tm) + 10 * tm;
       const scale = 0.68 + Math.sin(Math.PI * tm) * 0.34;
       let opacity = 1;
       if (tm < 0.04) opacity = tm / 0.04;
       else if (tm > 0.97) opacity = (1 - tm) / 0.03;
       frames.push({
         offset: tm,
-        transform: `translate3d(${pt.x}px, ${pt.y}px, ${z}px) rotateX(${rotX}deg) rotateY(${rotY}deg) scale(${scale})`,
+        transform: `translate3d(${pt.x}px, ${pt.y}px, ${z}px) scale(${scale})`,
         opacity,
       });
     }
     return frames;
+  }
+
+  const COIN_EDGE_SEGS = 14;
+
+  /** 建立有厚度嘅 3D 金幣（正反面 + 側面環） */
+  function createIncomeCoin3D() {
+    const coin = document.createElement('div');
+    coin.className = 'income-coin';
+    const inner = document.createElement('div');
+    inner.className = 'income-coin-inner';
+    const model = document.createElement('div');
+    model.className = 'income-coin-model';
+
+    const front = document.createElement('span');
+    front.className = 'income-coin-face income-coin-front';
+    front.setAttribute('aria-hidden', 'true');
+    front.textContent = '$';
+
+    const back = document.createElement('span');
+    back.className = 'income-coin-face income-coin-back';
+    back.setAttribute('aria-hidden', 'true');
+
+    const ring = document.createElement('div');
+    ring.className = 'income-coin-edge-ring';
+    for (let i = 0; i < COIN_EDGE_SEGS; i++) {
+      const seg = document.createElement('span');
+      seg.className = 'income-coin-edge-seg';
+      ring.appendChild(seg);
+    }
+
+    model.append(front, back, ring);
+    inner.appendChild(model);
+    coin.appendChild(inner);
+    return { coin, model, ring };
+  }
+
+  function layoutIncomeCoinEdge(coin, ring) {
+    const r = parseFloat(getComputedStyle(coin).getPropertyValue('--coin-r')) || 19;
+    const n = ring.children.length;
+    const tz = Math.max(r - 1.2, 14);
+    for (let i = 0; i < n; i++) {
+      ring.children[i].style.transform =
+        `rotateY(${(360 / n) * i}deg) translateZ(${tz}px)`;
+    }
   }
 
   function playIncomeCoinFx(dayKey) {
@@ -1231,23 +1273,23 @@
       ctrlY = clamp(ctrlY, vTop + edgePad, vTop + vH - edgePad);
       const p1 = { x: (p0.x + p2.x) / 2, y: ctrlY };
 
-      const coin = document.createElement('div');
-      coin.className = 'income-coin';
-      coin.innerHTML = '<div class="income-coin-inner"><span class="income-coin-face" aria-hidden="true">$</span></div>';
+      const { coin, model, ring } = createIncomeCoin3D();
       layer.appendChild(coin);
-      const inner = coin.firstElementChild;
+      layoutIncomeCoinEdge(coin, ring);
 
       window.setTimeout(() => {
         if (runId !== coinFxRun) return;
+        layoutIncomeCoinEdge(coin, ring);
 
+        const tilt = narrow ? 62 : 58;
         const fly = coin.animate(
           coinParabolaKeyframes(p0, p1, p2, narrow),
           { duration: DURATION, easing: 'linear', fill: 'forwards' },
         );
 
-        inner.animate([
-          { transform: 'rotateY(0deg)' },
-          { transform: 'rotateY(720deg)' },
+        model.animate([
+          { transform: `rotateX(${tilt}deg) rotateY(0deg) rotateZ(-8deg)` },
+          { transform: `rotateX(${tilt}deg) rotateY(1080deg) rotateZ(12deg)` },
         ], { duration: DURATION, easing: 'linear', fill: 'forwards' });
 
         fly.onfinish = () => {
