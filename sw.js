@@ -8,7 +8,7 @@
  *   4. controllerchange 觸發，頁面重新載入即為新版
  * ========================================================= */
 
-const CACHE = 'worktime-calendar-v1.34.17';
+const CACHE = 'worktime-calendar-v1.34.18';
 const PRECACHE = [
   './',
   './index.html',
@@ -19,6 +19,7 @@ const PRECACHE = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
+  './assets/coin-spin-24.png',
 ];
 
 /* ---------------- 安裝：預快取並回報進度 ---------------- */
