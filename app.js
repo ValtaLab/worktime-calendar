@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.16';
-  const APP_BUILD = '20261029-1554';
+  const APP_VERSION = '1.34.17';
+  const APP_BUILD = '20261031-1013';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1167,73 +1167,76 @@
     target.addEventListener('animationend', () => target.classList.remove('coin-absorb-pulse'), { once: true });
   }
 
-  /** 快取金幣正／背面 sprite（瑪利歐式厚邊、高飽和金屬） */
+  /** 厚圓餅金幣：外圈凸起 rim、內凹面、浮雕 $（參考 Ken 核准造型） */
   function getCoinFaceSprites() {
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (coinFaceSprites && coinFaceSprites.dark === dark) return coinFaceSprites;
 
     function paintFace(back) {
-      const size = 168;
+      const size = 192;
       const c = document.createElement('canvas');
       c.width = c.height = size;
       const ctx = c.getContext('2d');
       const cx = size / 2;
       const cy = size / 2;
-      const r = size / 2 - 3;
+      const rOuter = size / 2 - 2;
+      const rInner = rOuter * 0.86;
 
-      const rimGrad = ctx.createLinearGradient(cx, cy - r, cx, cy + r);
-      rimGrad.addColorStop(0, dark ? '#c77800' : '#e68900');
-      rimGrad.addColorStop(0.45, dark ? '#ffd54f' : '#ffe566');
-      rimGrad.addColorStop(1, dark ? '#a65f00' : '#c77800');
+      const rimGrad = ctx.createLinearGradient(cx - rOuter, cy - rOuter, cx + rOuter, cy + rOuter);
+      rimGrad.addColorStop(0, dark ? '#ffe082' : '#fff176');
+      rimGrad.addColorStop(0.42, dark ? '#ffc107' : '#ffd54f');
+      rimGrad.addColorStop(0.72, dark ? '#ff9800' : '#ffb300');
+      rimGrad.addColorStop(1, dark ? '#8a5a08' : '#a65f00');
       ctx.beginPath();
-      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
       ctx.fillStyle = rimGrad;
       ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = dark ? '#8a4f00' : '#bf5f00';
-      ctx.stroke();
 
-      const innerR = r * 0.8;
-      const faceGrad = ctx.createRadialGradient(
-        cx - innerR * 0.32, cy - innerR * 0.36, innerR * 0.06,
-        cx, cy, innerR,
+      const fieldGrad = ctx.createRadialGradient(
+        cx - rInner * 0.34, cy - rInner * 0.38, rInner * 0.05,
+        cx, cy, rInner * 0.96,
       );
-      faceGrad.addColorStop(0, dark ? '#fff9c4' : '#fffde7');
-      faceGrad.addColorStop(0.28, dark ? '#ffeb3b' : '#fff176');
-      faceGrad.addColorStop(0.58, dark ? '#ffc107' : '#ffd54f');
-      faceGrad.addColorStop(1, dark ? '#ff8f00' : '#ffb300');
+      fieldGrad.addColorStop(0, dark ? '#fff8e1' : '#fffde7');
+      fieldGrad.addColorStop(0.35, dark ? '#ffecb3' : '#fff9c4');
+      fieldGrad.addColorStop(0.65, dark ? '#ffc107' : '#ffe082');
+      fieldGrad.addColorStop(1, dark ? '#e65100' : '#ff8f00');
       ctx.beginPath();
-      ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
-      ctx.fillStyle = faceGrad;
+      ctx.arc(cx, cy, rInner * 0.96, 0, Math.PI * 2);
+      ctx.fillStyle = fieldGrad;
       ctx.fill();
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = dark ? '#e65100' : '#f57c00';
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+      ctx.strokeStyle = dark ? 'rgba(62,39,0,.45)' : 'rgba(93,58,0,.38)';
+      ctx.lineWidth = 5;
       ctx.stroke();
 
       ctx.beginPath();
-      ctx.ellipse(cx - innerR * 0.34, cy - innerR * 0.38, innerR * 0.26, innerR * 0.15, -0.35, 0, Math.PI * 2);
-      ctx.fillStyle = dark ? 'rgba(255,255,255,.42)' : 'rgba(255,255,255,.62)';
-      ctx.fill();
+      ctx.arc(cx, cy, rOuter - 3, -2.5, -0.6);
+      ctx.strokeStyle = dark ? 'rgba(255,255,255,.38)' : 'rgba(255,255,255,.58)';
+      ctx.lineWidth = 6;
+      ctx.lineCap = 'round';
+      ctx.stroke();
 
       if (!back) {
-        ctx.font = '900 62px system-ui, sans-serif';
+        ctx.font = '900 68px system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = dark ? '#5d4037' : '#bf360c';
-        ctx.fillStyle = dark ? '#e65100' : '#e65100';
-        ctx.strokeText('$', cx, cy + 3);
-        ctx.fillText('$', cx, cy + 3);
+        ctx.fillStyle = dark ? 'rgba(40,20,0,.42)' : 'rgba(62,39,0,.38)';
+        ctx.fillText('$', cx + 2.5, cy + 5);
+        ctx.fillStyle = dark ? '#5d4037' : '#6d4c0a';
+        ctx.fillText('$', cx + 1.2, cy + 3.5);
+        ctx.fillStyle = dark ? '#ffb300' : '#ffc107';
+        ctx.fillText('$', cx, cy + 2.5);
+        ctx.fillStyle = dark ? '#fff8e1' : '#fffde7';
+        ctx.globalAlpha = 0.35;
+        ctx.fillText('$', cx - 0.8, cy + 1.2);
+        ctx.globalAlpha = 1;
       } else {
-        ctx.lineWidth = 5;
+        ctx.lineWidth = 4.5;
         ctx.strokeStyle = dark ? '#ef6c00' : '#e65100';
         ctx.beginPath();
-        ctx.arc(cx, cy, innerR * 0.38, 0, Math.PI * 2);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(cx, cy, innerR * 0.22, 0, Math.PI * 2);
-        ctx.strokeStyle = dark ? 'rgba(255,213,79,.55)' : 'rgba(255,235,59,.65)';
-        ctx.lineWidth = 3;
+        ctx.arc(cx, cy, rInner * 0.34, 0, Math.PI * 2);
         ctx.stroke();
       }
       return c;
@@ -1243,84 +1246,132 @@
     return coinFaceSprites;
   }
 
-  /** 側視：厚邊 + 直紋（瑪利歐金幣翻轉感） */
-  function drawMarioCoinEdge(ctx, radius, squeeze) {
-    const thick = radius * 0.46;
-    const halfW = radius * Math.max(squeeze, 0.13);
-    const stripes = 10;
-    const stripeW = (halfW * 2) / stripes;
-    for (let i = 0; i < stripes; i++) {
-      const sx = -halfW + stripeW * i;
-      ctx.fillStyle = i % 2 ? '#ffb300' : '#ff8f00';
-      ctx.fillRect(sx, -thick, stripeW + 0.5, thick * 2);
+  /** 圓餅厚度（直徑約 10–12%） */
+  function coinDiscThickness(radius) {
+    return radius * 0.24;
+  }
+
+  /** 側視：平滑圓柱邊（無直紋），上下圓帽 */
+  function drawSmoothDiscEdge(ctx, radius) {
+    const thick = coinDiscThickness(radius);
+    const halfH = radius;
+    const halfW = thick * 0.52;
+    const edgeGrad = ctx.createLinearGradient(-halfW, 0, halfW, 0);
+    edgeGrad.addColorStop(0, '#5d4037');
+    edgeGrad.addColorStop(0.22, '#ffb300');
+    edgeGrad.addColorStop(0.5, '#ffe082');
+    edgeGrad.addColorStop(0.78, '#ffc107');
+    edgeGrad.addColorStop(1, '#6d4c0a');
+    ctx.fillStyle = edgeGrad;
+    ctx.beginPath();
+    if (typeof ctx.roundRect === 'function') {
+      ctx.roundRect(-halfW, -halfH, halfW * 2, halfH * 2, halfW * 0.9);
+    } else {
+      ctx.rect(-halfW, -halfH, halfW * 2, halfH * 2);
     }
-    const capGrad = ctx.createLinearGradient(0, -thick, 0, thick);
+    ctx.fill();
+
+    const capGrad = ctx.createLinearGradient(0, -halfH, 0, halfH);
     capGrad.addColorStop(0, '#fff59d');
     capGrad.addColorStop(0.5, '#ffca28');
     capGrad.addColorStop(1, '#ff8f00');
     ctx.fillStyle = capGrad;
     ctx.beginPath();
-    ctx.ellipse(0, -thick, halfW, thick * 0.26, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, -halfH, halfW * 0.98, halfW * 0.34, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(0, thick, halfW, thick * 0.26, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, halfH, halfW * 0.98, halfW * 0.34, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#e65100';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(93,58,0,.35)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.ellipse(0, -thick, halfW, thick * 0.26, 0, 0, Math.PI);
+    ctx.ellipse(0, -halfH, halfW * 0.98, halfW * 0.34, 0, Math.PI, 0);
     ctx.stroke();
     ctx.beginPath();
-    ctx.ellipse(0, thick, halfW, thick * 0.26, 0, Math.PI, Math.PI * 2);
+    ctx.ellipse(0, halfH, halfW * 0.98, halfW * 0.34, 0, Math.PI, Math.PI * 2);
     ctx.stroke();
   }
 
-  /** 非正面時上下露出的厚邊（過渡更立體） */
-  function drawMarioCoinRimCaps(ctx, radius, squeeze) {
-    const halfW = radius * squeeze;
-    const capH = radius * 0.16;
-    ctx.fillStyle = '#ff8f00';
+  /** 翻轉時連接正反面嘅側帶（圓餅厚度） */
+  function drawDiscSideBands(ctx, radius, faceHalfW, shift) {
+    const thick = coinDiscThickness(radius);
+    const topY = -radius;
+    const botY = radius;
+    const bandGrad = ctx.createLinearGradient(shift, 0, -shift, 0);
+    bandGrad.addColorStop(0, '#8a5a08');
+    bandGrad.addColorStop(0.5, '#ffc107');
+    bandGrad.addColorStop(1, '#6d4c0a');
+    ctx.fillStyle = bandGrad;
     ctx.beginPath();
-    ctx.ellipse(0, -radius + capH * 0.55, halfW, capH, 0, Math.PI, 0);
+    ctx.moveTo(-faceHalfW + shift, topY);
+    ctx.lineTo(faceHalfW + shift, topY);
+    ctx.lineTo(faceHalfW - shift, topY + thick * 0.55);
+    ctx.lineTo(-faceHalfW - shift, topY + thick * 0.55);
+    ctx.closePath();
     ctx.fill();
     ctx.beginPath();
-    ctx.ellipse(0, radius - capH * 0.55, halfW, capH, 0, 0, Math.PI);
+    ctx.moveTo(-faceHalfW + shift, botY);
+    ctx.lineTo(faceHalfW + shift, botY);
+    ctx.lineTo(faceHalfW - shift, botY - thick * 0.55);
+    ctx.lineTo(-faceHalfW - shift, botY - thick * 0.55);
+    ctx.closePath();
     ctx.fill();
-    ctx.strokeStyle = '#e65100';
-    ctx.lineWidth = 1.8;
-    ctx.beginPath();
-    ctx.ellipse(0, -radius + capH * 0.55, halfW, capH, 0, Math.PI, 0);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.ellipse(0, radius - capH * 0.55, halfW, capH, 0, 0, Math.PI);
-    ctx.stroke();
   }
 
   function drawCoin2D(ctx, x, y, radius, flip, alpha, sprites) {
     const cos = Math.cos(flip);
-    const squeeze = Math.abs(cos);
-    const edgeView = squeeze < 0.36;
+    const sin = Math.sin(flip);
+    const absCos = Math.abs(cos);
+    const absSin = Math.abs(sin);
+    const thick = coinDiscThickness(radius);
 
     ctx.save();
-    ctx.globalAlpha = alpha * 0.35;
-    ctx.translate(x, y + radius * 0.14);
-    ctx.scale(1, 0.26);
-    ctx.fillStyle = '#1f2937';
+    ctx.globalAlpha = alpha * 0.32;
+    ctx.translate(x, y + radius * 0.15);
+    ctx.scale(1, 0.25);
+    ctx.fillStyle = '#111827';
     ctx.beginPath();
-    ctx.arc(0, 0, radius * 0.92, 0, Math.PI * 2);
+    ctx.arc(0, 0, radius * 0.9, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
     ctx.save();
     ctx.globalAlpha = alpha;
     ctx.translate(x, y);
-    if (edgeView) {
-      drawMarioCoinEdge(ctx, radius, squeeze);
+
+    if (absSin > 0.5) {
+      drawSmoothDiscEdge(ctx, radius);
     } else {
+      const faceHalfW = radius * Math.max(absCos, 0.14);
+      const shift = sin * thick * 0.45;
+
+      if (absSin > 0.1) {
+        ctx.save();
+        ctx.globalAlpha = alpha * 0.88;
+        ctx.translate(shift * 0.55, 0);
+        const back = cos >= 0 ? sprites.back : sprites.front;
+        const bw = faceHalfW * 2 * 0.96;
+        ctx.drawImage(back, -bw / 2, -radius, bw, radius * 2);
+        ctx.restore();
+        drawDiscSideBands(ctx, radius, faceHalfW, shift);
+      }
+
       const face = cos >= 0 ? sprites.front : sprites.back;
-      const w = radius * 2 * Math.max(squeeze, 0.2);
-      ctx.drawImage(face, -w / 2, -radius, w, radius * 2);
-      if (squeeze < 0.94) drawMarioCoinRimCaps(ctx, radius, squeeze);
+      ctx.translate(-shift * 0.35, 0);
+      const fw = faceHalfW * 2;
+      ctx.drawImage(face, -fw / 2, -radius, fw, radius * 2);
+
+      if (absCos < 0.92) {
+        const capW = faceHalfW;
+        const capH = thick * 0.42;
+        ctx.fillStyle = '#ff8f00';
+        ctx.beginPath();
+        ctx.ellipse(0, -radius + capH * 0.5, capW, capH, 0, Math.PI, 0);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(0, radius - capH * 0.5, capW, capH, 0, 0, Math.PI);
+        ctx.fill();
+      }
     }
     ctx.restore();
   }
@@ -1366,7 +1417,7 @@
     const COINS = 5;
     const STAGGER = narrow ? 260 : 220;
     const DURATION = narrow ? 1380 : 1180;
-    const coinRadius = narrow ? 24 : 20;
+    const coinRadius = narrow ? 26 : 21;
     const sprites = getCoinFaceSprites();
 
     const paths = [];
