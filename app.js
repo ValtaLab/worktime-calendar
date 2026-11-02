@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.20';
-  const APP_BUILD = '20261102-0931';
+  const APP_VERSION = '1.34.21';
+  const APP_BUILD = '20261102-1618';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1511,7 +1511,7 @@
     const shown = incomeShown;
     const totalHtml = shown
       ? `$${fmtMoney(periodTotal)}`
-      : `<span class="income-chart-val is-masked" aria-hidden="true">••••••</span>`;
+      : `<span class="income-chart-summary-mask" aria-hidden="true">••••••</span>`;
 
     const bars = data.map((d) => {
       const pct = Math.max(2, (d.total / max) * 100);
@@ -1533,7 +1533,7 @@
 
     el.incomeChartPanel.innerHTML = `
       <div class="income-chart-summary">
-        <span>${escapeHtml(t('incomeChartSummary'))} <strong>${totalHtml}</strong></span>
+        <span class="income-chart-summary-period">${escapeHtml(t('incomeChartSummary'))} <strong>${totalHtml}</strong></span>
         <button type="button" class="income-chart-toggle" id="incomeChartToggle">
           ${escapeHtml(shown ? t('incomeHideWord') : t('incomeShowWord'))}
         </button>
