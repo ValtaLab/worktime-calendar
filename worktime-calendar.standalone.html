@@ -575,7 +575,7 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
 .income-chart-plot-inner {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   min-width: min-content;
   padding-top: 34px;
   overflow: visible;
@@ -590,7 +590,8 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   position: relative;
   z-index: 2;
   min-height: 30px;
-  margin-bottom: 2px;
+  /* -42deg 以底部為軸時，長金額會向下伸入此區；勿與 bar-row 重疊（v1.34.22 z-index 會蓋住長條） */
+  padding-bottom: 26px;
   pointer-events: none;
   overflow: visible;
 }
@@ -642,7 +643,8 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   overflow: visible;
   white-space: nowrap;
   display: block;
-  /* 傾斜單行完整顯示金額；val-row 固定高度維持各柱長條底部對齊 */
+  /* 傾斜單行完整顯示金額；val-row 固定高度＋padding-bottom 維持各柱長條底部對齊 */
+  min-height: 30px;
   transform: rotate(-42deg);
   transform-origin: 50% 100%;
   position: relative;
@@ -3063,8 +3065,8 @@ textarea::placeholder, input::placeholder { color: var(--text-3); }
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.22';
-  const APP_BUILD = '20261102-1647';
+  const APP_VERSION = '1.34.23';
+  const APP_BUILD = '20261102-1747';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
