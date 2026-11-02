@@ -484,13 +484,46 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
 }
 .income-chart-toggle:active { transform: scale(.98); }
 .income-chart-plot {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
   min-height: 168px;
   overflow-x: auto;
-  padding: 4px 2px 8px;
+  padding: 0 4px 8px;
   -webkit-overflow-scrolling: touch;
+}
+/* 內層不裁切傾斜標籤；外層 overflow-x 會使 overflow-y 變 auto，故用 padding-top 預留旋轉後高度 */
+.income-chart-plot-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: min-content;
+  padding-top: 34px;
+  overflow: visible;
+}
+.income-chart-val-row,
+.income-chart-bar-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.income-chart-val-row {
+  position: relative;
+  z-index: 2;
+  min-height: 30px;
+  margin-bottom: 2px;
+  pointer-events: none;
+  overflow: visible;
+}
+.income-chart-val-cell {
+  flex: 1 1 0;
+  min-width: 52px;
+  max-width: 88px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  overflow: visible;
+}
+.income-chart-bar-row {
+  position: relative;
+  z-index: 1;
 }
 .income-chart-col {
   flex: 1 1 0;
@@ -527,11 +560,11 @@ html[lang="en"] .brand h1 { font-size: 16px; letter-spacing: -.3px; }
   overflow: visible;
   white-space: nowrap;
   display: block;
-  /* 傾斜單行完整顯示金額，固定高度維持各柱長條底部對齊 */
-  min-height: 30px;
-  margin-bottom: 2px;
+  /* 傾斜單行完整顯示金額；val-row 固定高度維持各柱長條底部對齊 */
   transform: rotate(-42deg);
   transform-origin: 50% 100%;
+  position: relative;
+  z-index: 1;
 }
 .income-chart-val.is-masked { letter-spacing: 1px; color: var(--text-3); }
 .income-chart-bar-track {

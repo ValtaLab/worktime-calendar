@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.21';
-  const APP_BUILD = '20261102-1618';
+  const APP_VERSION = '1.34.22';
+  const APP_BUILD = '20261102-1647';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1513,23 +1513,24 @@
       ? `$${fmtMoney(periodTotal)}`
       : `<span class="income-chart-summary-mask" aria-hidden="true">••••••</span>`;
 
-    const bars = data.map((d) => {
+    const cols = data.map((d) => {
       const pct = Math.max(2, (d.total / max) * 100);
       const val = shown
         ? `$${fmtMoney(d.total)}`
         : '•••';
       const valClass = shown ? 'income-chart-val' : 'income-chart-val is-masked';
       const aria = shown ? `$${fmtMoney(d.total)}` : t('incomeHideWord');
-      return `<button type="button" class="income-chart-col${d.isCurrent ? ' is-current' : ''}"
+      const valCell = `<div class="income-chart-val-cell"><span class="${valClass}">${escapeHtml(val)}</span></div>`;
+      const barCol = `<button type="button" class="income-chart-col${d.isCurrent ? ' is-current' : ''}"
               data-y="${d.y}" data-m="${d.m}"
               aria-label="${escapeAttr(fmtMonthTitle(d.y, d.m))} ${aria}">
-        <span class="${valClass}">${escapeHtml(val)}</span>
         <span class="income-chart-bar-track" aria-hidden="true">
           <span class="income-chart-bar" style="--bar-h:${pct.toFixed(1)}%"></span>
         </span>
         <span class="income-chart-lbl" aria-hidden="true">${escapeHtml(d.label)}</span>
       </button>`;
-    }).join('');
+      return { valCell, barCol };
+    });
 
     el.incomeChartPanel.innerHTML = `
       <div class="income-chart-summary">
@@ -1539,7 +1540,10 @@
         </button>
       </div>
       <div class="income-chart-plot" role="img" aria-label="${escapeAttr(t('incomeChartAria'))}">
-        ${bars}
+        <div class="income-chart-plot-inner">
+          <div class="income-chart-val-row" aria-hidden="true">${cols.map((c) => c.valCell).join('')}</div>
+          <div class="income-chart-bar-row">${cols.map((c) => c.barCol).join('')}</div>
+        </div>
       </div>`;
   }
 
