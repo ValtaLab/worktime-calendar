@@ -7,8 +7,8 @@
   'use strict';
 
   // 由 bump-version.sh 自動維護
-  const APP_VERSION = '1.34.23';
-  const APP_BUILD = '20261102-1747';
+  const APP_VERSION = '1.34.24';
+  const APP_BUILD = '20261107-0956';
 
   const STORE_KEY = 'worktime-calendar:v1';
   const SETTINGS_KEY = 'worktime-calendar:settings:v1';
@@ -1145,9 +1145,11 @@
   }
 
   /** 新增／儲存工時且本月收入增加時：五枚金幣依序飛入「收入總計」後消失 */
-  function scheduleIncomeCoinFx(dayKey) {
+  function scheduleIncomeCoinFx(dayKey, incomeBefore, incomeAfter) {
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    requestAnimationFrame(() => requestAnimationFrame(() => { playIncomeCoinFx(dayKey); }));
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      playIncomeCoinFx(dayKey, incomeBefore, incomeAfter);
+    }));
   }
 
   /** 二次 Bézier 上的點（t∈[0,1]）→ 平滑拋物線軌跡 */
@@ -1164,6 +1166,21 @@
     void target.offsetWidth;
     target.classList.add('coin-absorb-pulse');
     target.addEventListener('animationend', () => target.classList.remove('coin-absorb-pulse'), { once: true });
+  }
+
+  /** 金幣飛入過程中逐步更新「收入總計」數字（不重建整條 incomeBar） */
+  function updateIncomeTotalDisplay(total) {
+    const btn = document.getElementById('incomeToggle');
+    if (!btn || btn.classList.contains('is-masked')) return;
+    const cur = btn.querySelector('.income-cur');
+    if (!cur) return;
+    const text = fmtMoney(total);
+    const next = cur.nextSibling;
+    if (next && next.nodeType === Node.TEXT_NODE) next.textContent = text;
+    else {
+      const eye = btn.querySelector('.income-eye');
+      btn.insertBefore(document.createTextNode(text), eye);
+    }
   }
 
   /** Ken 核准預覽片擷取：24 格旋轉 sprite sheet（厚圓餅 3D 金幣） */
@@ -1224,9 +1241,14 @@
     if (session.canvas.parentNode) session.canvas.parentNode.removeChild(session.canvas);
   }
 
-  async function playIncomeCoinFx(dayKey) {
+  async function playIncomeCoinFx(dayKey, incomeBefore, incomeAfter) {
     const target = document.getElementById('incomeToggle');
     if (!target || el.incomeBar.hidden) return;
+
+    const before = num(incomeBefore);
+    const after = num(incomeAfter);
+    const incomeDelta = Math.max(0, after - before);
+    const stepIncome = incomeShown && incomeDelta > 0.001;
 
     let sheet;
     try {
@@ -1285,8 +1307,19 @@
         p0, p1: { x: (p0.x + p2.x) / 2, y: ctrlY }, p2,
         delay: i * STAGGER,
         spin: Math.PI * 2 * (3.4 + i * 0.12),
+        arrived: false,
       });
     }
+
+    if (stepIncome) updateIncomeTotalDisplay(before);
+
+    const onCoinArrived = (coinIndex) => {
+      pulseIncomeToggle(target);
+      if (!stepIncome) return;
+      const isLast = coinIndex >= COINS - 1;
+      const partial = before + incomeDelta * (coinIndex + 1) / COINS;
+      updateIncomeTotalDisplay(isLast ? after : partial);
+    };
 
     const dpr = Math.min(window.devicePixelRatio || 1, narrow ? 1.5 : 2);
     const canvas = document.createElement('canvas');
@@ -1314,7 +1347,7 @@
       disposeCoinCanvasSession(session);
       layer.replaceChildren();
       layer.style.cssText = '';
-      pulseIncomeToggle(target);
+      if (stepIncome) updateIncomeTotalDisplay(after);
     };
 
     session.failsafe = window.setTimeout(finish, allDoneAt + 400);
@@ -1331,11 +1364,17 @@
 
         ctx.clearRect(0, 0, vW, vH);
 
-        paths.forEach((path) => {
+        paths.forEach((path, coinIndex) => {
           const local = elapsed - path.delay;
           if (local < 0) return;
           let t = local / DURATION;
-          if (t >= 1) return;
+          if (t >= 1) {
+            if (!path.arrived) {
+              path.arrived = true;
+              onCoinArrived(coinIndex);
+            }
+            return;
+          }
           anyVisible = true;
           const te = t < 0.04 ? (t / 0.04) * 0.04 : t;
           const pt = quadBezierPoint(te, path.p0, path.p1, path.p2);
@@ -3075,7 +3114,7 @@
     if (!empty && incomeMonthVisible) {
       const monthIncomeAfter = incomeOfMonth(saveY, saveM)?.total ?? 0;
       if (monthIncomeAfter > monthIncomeBefore + 0.001) {
-        scheduleIncomeCoinFx(saveKey);
+        scheduleIncomeCoinFx(saveKey, monthIncomeBefore, monthIncomeAfter);
       }
     }
   }
